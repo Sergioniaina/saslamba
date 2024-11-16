@@ -1,0 +1,153 @@
+/* Mouvements.css */
+.mcaisse{
+  background: rgba(0, 0, 0,0.5);
+  height: 86vh;
+  padding: 10px;
+  .period-select{
+    background: rgba(0, 0, 0,0.8);
+    color: white;
+    width: 12%;
+    text-align: center;
+    border-radius: 40px;
+    border: 3px solid gray;
+    outline: none;
+  }
+  .view-buttons{
+    display: flex;
+    justify-content: space-evenly;
+    margin-bottom: 20px;
+    .view-btn.active{
+      background: #054298;
+      transition: 0.3s;
+      width: 40%;
+      flex-grow: 1;
+    }
+    button{
+      width: 20%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+     
+     height: 45px;
+    }
+    .icon{
+      font-size: large;
+      color: orange;
+    }
+  }
+  .m-input{
+    display: flex;
+    justify-content: space-between;
+    input{
+      border-radius: 40px;
+      padding: 10px;
+      height: 20px;
+      background: rgba(0, 0, 0,0.5);
+      border: 3px solid gray;
+      outline: none;
+     width: 100%;
+      color: white;
+      text-align: center;
+    }
+    .icon{
+      position: absolute;
+      right: 20px;
+    }
+    .input{
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 25%;
+    }
+    .date{
+      width: 25%;
+      position: relative;
+      display: flex;
+      align-items: center;
+      .icon{
+        position: absolute;
+        right: 20px;
+        color: aqua;
+        pointer-events: none;
+      }
+    }
+  }
+  .mouv-table{
+    height: 71vh;
+    margin-top: 10px;
+    overflow: auto;
+    tfoot{
+      position: sticky;
+      bottom: -1px;
+      background: black;
+    }
+    .total{
+      color: green;
+      letter-spacing: 1px;
+      font-weight: 600;
+      font-size: x-large;
+      text-align: center;
+    }
+    .total-recette,.total-depense{
+      background-color: rgb(56, 61, 62);
+      color: rgb(56, 216, 64);
+      font-weight: 600;
+      font-size: large;
+      letter-spacing: 1px;
+    }
+  }
+  .mouvements-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(0, 0, 0,0.5);
+    .action{
+      text-align: center;
+    }
+    .td{
+      border-left: 1px solid gray;
+    }
+    .icon-delete{
+      font-size: x-large;
+      color: #f44336;
+    }
+  }
+  
+  .mouvements-table thead {
+    background-color: #f4f4f4;
+    position: sticky;
+    top: 0px;
+  }
+  
+  .mouvements-table th, .mouvements-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid gray;
+  }
+  
+  .mouvements-table th {
+    background-color: rgb(56, 61, 62);
+    color: white;
+  }
+  
+  /* .mouvements-table tr:nth-child(even) {
+    background-color: #0e1229;
+  }
+  
+  .mouvements-table tr:hover {
+    background-color: #070b39;
+  } */
+  
+  .alert {
+    padding: 15px;
+    background-color: #f44336;
+    color: white;
+    margin-bottom: 20px;
+  }
+  
+  .alert-error {
+    background-color: #f44336;
+  }
+  
+}
+

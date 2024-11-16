@@ -1,0 +1,201 @@
+.abonnement-form{
+    background: rgba(0, 0, 0, 0.5);
+ 
+    height: 86vh;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    .ab-table{
+        .select-btn {
+            background-color: #007bff; /* Couleur de fond */
+            color: white;              /* Couleur du texte */
+            border: none;              /* Pas de bordure */
+            border-radius: 4px;       /* Coins arrondis */
+            padding: 8px 12px;        /* Espacement intérieur */
+            cursor: pointer;           /* Curseur en forme de main */
+            display: flex;             /* Utilisation de Flexbox pour l'alignement */
+            align-items: center;       /* Centrer verticalement les éléments */
+          }
+          
+          .select-btn .icon {
+            margin-right: 5px;        /* Espace entre l'icône et le texte */
+          }
+          
+          .select-btn:hover {
+            background-color: #0056b3; /* Couleur de fond au survol */
+          }
+          .selected {
+            background-color: #2f4f5f; /* Couleur de fond pour la sélection */
+          }
+                
+    }
+    .abonnement-tables{
+       
+        height: 80vh;
+        margin-top: 20px;
+        overflow: auto  ;
+    }
+    .abonnement-add{
+        display: flex;
+        gap: 20px;
+        input{
+            width: 20%;
+        }
+    }
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 999;
+      }
+      
+      .modal-content {
+        background: rgba(48, 46, 46, 0.6);
+        padding: 20px;
+        border-radius: 8px;
+        width: 80%;
+        max-width: 600px;
+        position: relative;
+
+        .client-client{
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+            margin-bottom: 20px;
+            margin-top: 20px;
+            button{
+                width: 25%;
+            }
+            input{
+                width: 30%;
+            }
+            .client1{
+                display: flex;
+                justify-content: space-between;
+                gap: 10px;
+            }
+            .client-list{
+                overflow: auto;
+                max-height: 20vh;
+                border-radius: 10px;
+                position: absolute;
+                top: 50px;
+                background: rgb(77, 76, 76);
+                padding: 10px;
+                width: 40%;
+                .client{
+                    display: flex;
+                    justify-content: space-between ;
+                    gap: 20px;
+                }
+            }
+        }
+      }
+      
+      .close-modal {
+        position: absolute;
+        top: 0px;
+        right: 10px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.5rem;
+        color: red;
+      }
+      
+    input{
+        background: transparent;
+        border: 3px solid gray;
+        height: 20px;
+        padding: 10px;
+        border-radius: 40px;
+        outline: none;
+        color: white;
+        
+    }
+    .abonnement-table{
+        thead{
+          position: sticky;
+          top: 0px;
+          background: #14828a;
+        }
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: rgba(0, 0, 0, 0.6);
+      }
+    
+      table,
+      th,
+      td {
+        border: 1px solid gray;
+      }
+    
+      th,
+      td {
+        padding: 10px;
+        text-align: center;
+      }
+      .add-btn {
+        background-color: #4caf50;
+        color: white;
+      }
+      
+      .edit-btn {
+        background-color: #ffa500;
+        color: white;
+      }
+      
+      .delete-btn {
+        background-color: #f44336;
+        color: white;
+      }
+      
+      .details-btn {
+        background-color: #2196f3;
+        color: white;
+      }
+      
+      .cancel-btn {
+        background-color: #e23d3d;
+        color: white;
+      }
+      
+      .icon {
+        margin-right: 5px;
+      }
+      .submit-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 12px;
+        border: none;
+        gap: 10px;
+        border-radius: 4px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      
+      .add-btn {
+        background-color: #4caf50;
+        color: white;
+      }
+      
+      .update-btn {
+        background-color: #ffa500;
+        color: white;
+      }
+      
+      .icon {
+        margin-right: 5px;
+      }
+            
+}

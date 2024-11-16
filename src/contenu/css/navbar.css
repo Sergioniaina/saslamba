@@ -1,0 +1,266 @@
+.navbar {
+    color: white;
+    display: flex;
+    padding: 5px;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    padding-left: 80px;
+    padding-right: 80px;
+
+    .button {
+      background: transparent;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 15px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 5px;
+      transition: background-color 0.3s, transform 0.2s;
+  }
+  
+ 
+  .button:hover {
+      transform: translateY(-1px);
+  }
+    .button-logout {
+      font-size: xx-large;
+      color: #ff4c4c;
+  }
+  
+  .button-profile {
+      background-color: #007bff; /* Bleu */
+      color: white;
+  }
+  
+  .button-visibility {
+    font-size: xx-large;
+      color: #28a745;
+  }
+  
+  .button-settings {
+    background: rgba(12, 135, 192, 0.2);
+    z-index: 999;
+    position: fixed;
+    right: 0px;
+    top: 50%;
+    font-size: xx-large;
+    color: #ffa500;
+  }
+    .modal-overlay {
+      position: fixed;
+      z-index: 999;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      position: relative;
+      background-color: white;  
+      padding: 2rem;
+      color: #333;
+      border-radius: 8px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 60vh;
+      .btn-fermer{
+        position: absolute;
+        top: 20px;
+        right: 20px;
+      }
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    th, td {
+      padding: 0.5rem;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    .lamba{
+        margin-left: 40px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        span{
+            font-weight: 600;
+            font-size: xx-large;
+        }
+    }
+    .profile{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      span{
+        color: red !important;
+      }
+
+    }
+    .sary {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 60px; /* Taille du conteneur du profil */
+        height: 60px;
+        overflow: hidden; /* Pour s'assurer que l'image ne déborde pas du conteneur */
+        border-radius: 50%; /* Pour rendre l'image circulaire */
+        border: 2px solid #ccc; /* Bordure pour l'effet de cadre */
+        align-items: center;
+      }
+       .img {
+        width: 100%; /* L'image prend toute la largeur du conteneur */
+        height: 100%; /* Maintient le ratio d'aspect */
+        object-fit: cover; /* Couvre tout le conteneur en coupant l'image si nécessaire */
+      }
+      .param{
+        border: 2px solid white;
+        position: fixed;
+        width: 200px;
+        height: 20px;
+        overflow: auto;
+        transition: 0.2s;
+        top: 80px;
+        background-color: #432b2b;
+        right: 0px;
+        visibility: hidden;
+        border-radius: 10px;
+        z-index: 999;
+      }
+      .param.afficher{
+        width: 300px;
+        height: 300px;
+        visibility: visible;
+      }
+      .param.cacher{
+        width: 200px;
+        height: 20px;
+        visibility: hidden;
+      }
+
+      .modal-image{
+        position: fixed;
+        top: 0px;
+        right: 0px;
+        z-index: 999;
+        height: 100%;
+        width: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+
+        .modal-image1{
+          border: 3px solid gray;
+          position: fixed;
+          top: 5px;
+          right: 5px;
+          border-radius: 5px;
+          background:  rgba(153, 147, 147, 0.2);
+          display: flex;
+          flex-direction: column;
+          width: 210px;
+          height: 98vh;
+          overflow-y: auto;
+
+          .btn-fermer{
+            position: fixed;
+            top: 0px;
+            right: 0px;
+            background: transparent;
+          font-size: large;
+      
+          }
+          .image-grid {
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+          }
+          
+        }
+      }
+  }
+  
+  .menu-container.left {
+    position: absolute;
+    left: 10px;
+  }
+  
+  .menu-container.right {
+    position: absolute;
+    right: 10px;
+  }
+  
+  .menu-button {
+    background-color: transparent;
+    color: white;
+    
+    height: 40px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size:large;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .search-bar{
+    position: relative;
+    display: flex;
+    align-items: center;
+    .icon{
+      position: absolute;
+      right: 15px;
+      color: gray;
+    }
+  }
+  
+  .search-bar input {
+    padding: 10px;
+    height: 20px;
+    outline: none;
+    background-color: transparent;
+    border-radius: 20px;
+    border: 2px solid gray;
+    color: white;
+  }
+  .profile button {
+    margin-left: 10px;
+    border: 2px solid gray;
+    background: black;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    border-radius: 5px;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.App-logo {
+    animation: spin 2s linear infinite; /* Ajustez la durée selon vos préférences */
+    display: inline-block; /* S'assure que l'animation fonctionne correctement */
+}
+@keyframes cloche {
+  0% { transform: rotate(-10deg); }
+  100% { transform: rotate(10deg); }
+}
+.cloche{
+  animation: cloche 0.3s linear infinite; /* Ajustez la durée selon vos préférences */
+  display: inline-block;
+}
+button{
+  background: transparent;
+}
+  
