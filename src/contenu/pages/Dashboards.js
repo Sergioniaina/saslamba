@@ -96,9 +96,11 @@ function Dashboards() {
   useEffect(() => {
     async function fetchGlobalDatas() {
       try {
+        // Periods to fetch data for
         const periods = ["jour", "semaine", "mois", "annee"];
         const dataByPeriod = {};
 
+        // Fetch global stats for each period
         await Promise.all(
           periods.map(async (period) => {
             const response = await axios.get(
@@ -108,14 +110,36 @@ function Dashboards() {
           })
         );
 
+        // Fetch data from "avant-fermeture" for recette and depense
+        const avantFermetureResponse = await axios.get(
+          "http://localhost:5000/api/mouvements/toutes/mouvements/avant-fermeture"
+        );
+
+        const avantFermetureData = avantFermetureResponse.data;
+
+        // Update the 'jour' period data by adding recette and depense from avant-fermeture
+        const totalRecette = avantFermetureData.reduce(
+          (total, mouvement) => total + (mouvement.recette || 0),
+          0
+        );
+        const totalDepense = avantFermetureData.reduce(
+          (total, mouvement) => total + (mouvement.depense || 0),
+          0
+        );
+
+        // Set the "jour" data with the fetched totals
+        dataByPeriod["jour"] = {
+          recette: totalRecette,
+          depense: totalDepense,
+        };
+
+        // Set the updated data into the state
         setGlobalDatas(dataByPeriod);
       } catch (error) {
-        console.error(
-          "Erreur lors de la récupération des données globales:",
-          error
-        );
+        console.error("Error fetching global data:", error);
       }
     }
+
     fetchGlobalDatas();
   }, []);
 

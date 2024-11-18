@@ -238,9 +238,9 @@ const FactureList = ({ onEdit, onViewDetails, etatFilter }) => {
           return;
         }
         await axios.put(
-          `http://localhost:5000/api/caisses/${selectedCaisse}/update-solde`,
+          `http://localhost:5000/api/caisses/${selectedCaisse}/add-solde`,
           {
-            solde: caisse.solde + amountToPay,
+            solde: amountToPay,
           }
         );
       }
@@ -419,16 +419,26 @@ const FactureList = ({ onEdit, onViewDetails, etatFilter }) => {
                         />
                       </button>
 
-                      {facture.reste > 0 && (
+                     {
+                      facture.reste > 0 &&(
                         <button
                           data-tooltip-id="payer"
                           type="button"
                           onClick={() => handlePay(facture)}
-                          style={{ color: "#ffc107" }}
+                         style={{color:"orange"}}
+                          // style={{
+                          //   color: "#ff5733",
+                          //   opacity: facture.reste === 0  ? 0 : 1, // Opacité à 0 si annulée
+                          //   pointerEvents: facture.reste === 0 ? "none" : "auto" // Désactive les clics
+                          // }}
+                          // disabled={facture.reste === 0} // Si annulée, le bouton est désactivé
+                      
                         >
                           <FontAwesomeIcon icon={faMoneyBillWave} />
                         </button>
-                      )}
+
+                      )
+                     }
                     </>
                   )}
                   <button
@@ -459,24 +469,23 @@ const FactureList = ({ onEdit, onViewDetails, etatFilter }) => {
               <td className="total" colSpan="6">
                 <strong>
                   <div className="div">
-                  <span>total :</span>
-                  <span className="reste">
-                    {handleSearch()
-                      .reduce((acc, facture) => acc + facture.totalPrice, 0)
-                      .toLocaleString()}{" "}
-                    Ar
-                  </span>
+                    <span>total :</span>
+                    <span className="reste">
+                      {handleSearch()
+                        .reduce((acc, facture) => acc + facture.totalPrice, 0)
+                        .toLocaleString()}{" "}
+                      Ar
+                    </span>
                   </div>
                   <div className="div">
-                  <span>Reste :</span>
-                  <span className="reste">
-                    {handleSearch()
-                      .reduce((acc, facture) => acc + facture.reste, 0)
-                      .toLocaleString()}{" "}
-                    Ar
-                  </span>
+                    <span>Reste :</span>
+                    <span className="reste">
+                      {handleSearch()
+                        .reduce((acc, facture) => acc + facture.reste, 0)
+                        .toLocaleString()}{" "}
+                      Ar
+                    </span>
                   </div>
-                 
                 </strong>
               </td>
             </tr>
@@ -543,8 +552,21 @@ const FactureList = ({ onEdit, onViewDetails, etatFilter }) => {
               <input
                 type="number"
                 value={paymentAmount}
-                onChange={(e) => setPaymentAmount(e.target.value)}
-                placeholder={""}
+                onChange={(e) => {
+                  // Convertir la valeur saisie en nombre
+                  const newValue = Number(e.target.value);
+
+                  // Si la valeur est un nombre valide et inférieure ou égale au montant restant
+                  if (!isNaN(newValue) && newValue <= selectedFacture?.reste) {
+                    setPaymentAmount(newValue);
+                  } else if (newValue > selectedFacture?.reste) {
+                    // Si la valeur dépasse le maximum, on définit la valeur de l'input à max
+                    setPaymentAmount(selectedFacture?.reste);
+                  }
+                }}
+                min={0}
+                max={selectedFacture?.reste} // Définir le maximum de l'input
+                placeholder=""
                 required
               />
               <label>{`Montant restant : ${selectedFacture?.reste} Ar`}</label>

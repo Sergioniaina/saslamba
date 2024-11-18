@@ -98,7 +98,6 @@ tbody tr:hover{
       font-size: large;
       background-color: #06272c;
       strong{
-        color: black;
         display: flex;
         align-items: center; 
         justify-content: space-evenly;
