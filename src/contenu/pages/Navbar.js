@@ -1,42 +1,73 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import ModalConfirm from '../modal/ModalConfirm'; // Import the confirmation modal component
-import { Tooltip } from 'react-tooltip';
-import '../css/navbar.css';
-import eric from '../../images/l1.jpg';
-import bg1 from '../background/1.avif';
-import bg2 from '../background/2.jpg';
-import bg3 from '../background/3.jpg';
-import bg4 from '../background/4.jpg';
-import bg5 from '../background/5.jpg';
-import bg6 from '../background/7.jpg';
-import bg7 from '../background/6.jpg';
-import bg8 from '../background/8.jpg';
-import bg11 from '../background/10.jpg';
-import bg9 from '../background/9.avif';
-import bg10 from '../background/9.webp';
-import { FaBars, FaBell, FaCog, FaEye, FaEyeSlash, FaSignOutAlt } from 'react-icons/fa';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import ModalConfirm from "../modal/ModalConfirm"; // Import the confirmation modal component
+import { Tooltip } from "react-tooltip";
+import "../css/navbar.css";
+import eric from "../../images/l1.jpg";
+import bg1 from "../background/1.avif";
+import bg2 from "../background/2.jpg";
+import bg3 from "../background/3.jpg";
+import bg4 from "../background/4.jpg";
+import bg5 from "../background/5.jpg";
+import bg6 from "../background/7.jpg";
+import bg7 from "../background/6.jpg";
+import bg8 from "../background/8.jpg";
+import bg11 from "../background/10.jpg";
+import bg9 from "../background/9.avif";
+import bg10 from "../background/9.webp";
+import {
+  FaBars,
+  FaBell,
+  FaCog,
+  FaEye,
+  FaEyeSlash,
+  FaSignOutAlt,
+} from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
-const Navbar = ({ toggleSidebar, isSidebarLeft, onLogout, hideParam, resetHideParam }) => {
-
-  const [theme, setTheme] = useState('black');
+const Navbar = ({
+  toggleSidebar,
+  isSidebarLeft,
+  onLogout,
+  hideParam,
+  resetHideParam,
+}) => {
+  const [theme, setTheme] = useState("black");
   const [visible, setVisible] = useState(false);
   const [unpaidInvoices, setUnpaidInvoices] = useState(0);
   const [unpaidInvoiceList, setUnpaidInvoiceList] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false); // State for logout confirmation modal
+  const navigate = useNavigate();
+
+  const handleVoir = (id) => {
+    navigate(`/home/FactureId?id=${id}`);
+    setIsModalOpen(!isModalOpen);
+    // Redirection avec l'ID dans l'URL
+  };
 
   const backgroundImages = [
-    bg10, bg9, bg1, eric, bg2, bg3, bg4, bg5, bg6, bg7, bg8, bg11
+    bg10,
+    bg9,
+    bg1,
+    eric,
+    bg2,
+    bg3,
+    bg4,
+    bg5,
+    bg6,
+    bg7,
+    bg8,
+    bg11,
   ];
 
   const defaultBackgroundImage = bg10;
   const changeBackground = (image) => {
     document.body.style.backgroundImage = `url(${image})`;
-    document.body.style.backgroundSize = '100% 100%';
-    document.body.style.backgroundRepeat = 'no-repeat';
-    document.body.style.backgroundAttachment = 'fixed';
+    document.body.style.backgroundSize = "100% 100%";
+    document.body.style.backgroundRepeat = "no-repeat";
+    document.body.style.backgroundAttachment = "fixed";
   };
 
   useEffect(() => {
@@ -46,12 +77,14 @@ const Navbar = ({ toggleSidebar, isSidebarLeft, onLogout, hideParam, resetHidePa
   useEffect(() => {
     const fetchUnpaidInvoices = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/factures');
-        const unpaid = response.data.filter(facture => facture.reste > 0 && facture.etat !== "annulée");
+        const response = await axios.get("http://localhost:5000/api/factures");
+        const unpaid = response.data.filter(
+          (facture) => facture.reste > 0 && facture.etat !== "annulée"
+        );
         setUnpaidInvoices(unpaid.length);
         setUnpaidInvoiceList(unpaid);
       } catch (error) {
-        console.error('Erreur lors du chargement des factures:', error);
+        console.error("Erreur lors du chargement des factures:", error);
       }
     };
     fetchUnpaidInvoices();
@@ -62,7 +95,7 @@ const Navbar = ({ toggleSidebar, isSidebarLeft, onLogout, hideParam, resetHidePa
   };
 
   const applyTheme = (theme) => {
-    document.documentElement.className = '';
+    document.documentElement.className = "";
     document.documentElement.classList.add(`${theme}-theme`);
   };
 
@@ -96,10 +129,15 @@ const Navbar = ({ toggleSidebar, isSidebarLeft, onLogout, hideParam, resetHidePa
   };
 
   return (
-   
     <div className="navbar">
-      <div className={`menu-container ${isSidebarLeft ? 'left' : 'right'}`}>
-        <button data-tooltip-id="menu" className="menu-button" onClick={toggleSidebar}><FaBars /></button>
+      <div className={`menu-container ${isSidebarLeft ? "left" : "right"}`}>
+        <button
+          data-tooltip-id="menu"
+          className="menu-button"
+          onClick={toggleSidebar}
+        >
+          <FaBars />
+        </button>
       </div>
       <div className="lamba">
         <div className="sary">
@@ -112,64 +150,99 @@ const Navbar = ({ toggleSidebar, isSidebarLeft, onLogout, hideParam, resetHidePa
       </div>
       <div className="profile">
         {unpaidInvoices > 0 && (
-          <div data-tooltip-id="notification" className='cloche' style={{ position: 'relative', display: 'inline-block', marginRight: '10px' }} onClick={toggleModal}>
+          <div
+            data-tooltip-id="notification"
+            className="cloche"
+            style={{
+              position: "relative",
+              display: "inline-block",
+              marginRight: "10px",
+            }}
+            onClick={toggleModal}
+          >
             <FaBell size={30} color="#555" />
             <span
               style={{
-                position: 'absolute',
-                top: '-8px',
-                right: '-8px',
-                color: 'white',
-                borderRadius: '50%',
-                padding: '5px',
-                fontSize: '13px',
+                position: "absolute",
+                top: "-8px",
+                right: "-8px",
+                color: "white",
+                borderRadius: "50%",
+                padding: "5px",
+                fontSize: "13px",
               }}
             >
               {unpaidInvoices}
             </span>
           </div>
         )}
-        <button data-tooltip-id="logout" className="button button-logout" onClick={confirmLogout}>
+        <button
+          data-tooltip-id="logout"
+          className="button button-logout"
+          onClick={confirmLogout}
+        >
           <FaSignOutAlt />
         </button>
-        <button data-tooltip-id="theme"  className="button button-visibility" onClick={visibles}>
+        <button
+          data-tooltip-id="theme"
+          className="button button-visibility"
+          onClick={visibles}
+        >
           {visible ? <FaEyeSlash /> : <FaEye />}
         </button>
-        <button data-tooltip-id="setting" className="button button-settings" id="btn-settings" onClick={toggleSettingsModal}>
-          <FaCog className='App-logo'/>
+        <button
+          data-tooltip-id="setting"
+          className="button button-settings"
+          id="btn-settings"
+          onClick={toggleSettingsModal}
+        >
+          <FaCog className="App-logo" />
         </button>
-        <div className={`param ${visible ? 'afficher' : 'cacher'}`}>
-          <button onClick={() => setTheme('light')}>Light</button>
-          <button onClick={() => setTheme('black')}>Black</button>
-          <button onClick={() => setTheme('light-blue')}>Blue</button>
+        <div className={`param ${visible ? "afficher" : "cacher"}`}>
+          <button onClick={() => setTheme("light")}>Light</button>
+          <button onClick={() => setTheme("black")}>Black</button>
+          <button onClick={() => setTheme("light-blue")}>Blue</button>
         </div>
       </div>
 
       {isModalOpen && (
         <div className="modal-overlay" onClick={toggleModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>Liste des factures non payées</h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>Client</th>
-                  <th>Total</th>
-                  <th>Reste</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {unpaidInvoiceList.map((facture) => (
-                  <tr key={facture._id}>
-                    <td>{facture.customerName}</td>
-                    <td>{facture.totalPrice} Ar</td>
-                    <td>{facture.reste} Ar</td>
-                    <td>{new Date(facture.createdAt).toLocaleDateString()}</td>
+            <div className="table-navbar">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Client</th>
+                    <th>Total</th>
+                    <th>Reste</th>
+                    <th>Date</th>
+                    <th>Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            <button className='btn-fermer' onClick={toggleModal}>❌</button>
+                </thead>
+                <tbody>
+                  {unpaidInvoiceList.map((facture) => (
+                    <tr key={facture._id}>
+                      <td>{facture.customerName}</td>
+                      <td>{facture.totalPrice} Ar</td>
+                      <td>{facture.reste} Ar</td>
+                      <td>
+                        {new Date(facture.createdAt).toLocaleDateString()}
+                      </td>
+                      <td>
+                        <button
+                          className="btn-primary"
+                          aria-label="Voir la facture"
+                          onClick={() => handleVoir(facture._id)}
+                        >
+                          <FaEye />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {/* <button className='btn-fermer' onClick={toggleModal}>❌</button> */}
           </div>
         </div>
       )}
@@ -177,15 +250,17 @@ const Navbar = ({ toggleSidebar, isSidebarLeft, onLogout, hideParam, resetHidePa
       {isSettingsModalOpen && (
         <div className="modal-image" onClick={toggleSettingsModal}>
           <div className="modal-image1" onClick={(e) => e.stopPropagation()}>
-            <button className='btn-fermer' onClick={toggleSettingsModal}>❌</button>
-            <div id='image-grid' className="image-grid">
+            <button className="btn-fermer" onClick={toggleSettingsModal}>
+              ❌
+            </button>
+            <div id="image-grid" className="image-grid">
               {backgroundImages.map((image, index) => (
                 <img
                   key={index}
                   src={image}
                   alt={`background ${index}`}
                   onClick={() => changeBackground(image)}
-                  style={{ width: '200px', height: '150px', cursor: 'pointer' }}
+                  style={{ width: "200px", height: "150px", cursor: "pointer" }}
                 />
               ))}
             </div>
@@ -201,13 +276,27 @@ const Navbar = ({ toggleSidebar, isSidebarLeft, onLogout, hideParam, resetHidePa
           message="Voulez-vous déconnecter ?"
         />
       )}
-      <Tooltip className="tooltip" id="notification" content="Notification" place="bottom"/>
-      <Tooltip className="tooltip" id="logout" content="Deconnecter" place="bottom"/>
-      <Tooltip className="tooltip" id="theme" content="Theme" place="bottom"/>
-      <Tooltip className="tooltip" id="menu" content="Menu" place="left"/>
-      <Tooltip className="tooltip" id="setting" content="Setting" place="left"/>
+      <Tooltip
+        className="tooltip"
+        id="notification"
+        content="Notification"
+        place="bottom"
+      />
+      <Tooltip
+        className="tooltip"
+        id="logout"
+        content="Deconnecter"
+        place="bottom"
+      />
+      <Tooltip className="tooltip" id="theme" content="Theme" place="bottom" />
+      <Tooltip className="tooltip" id="menu" content="Menu" place="left" />
+      <Tooltip
+        className="tooltip"
+        id="setting"
+        content="Setting"
+        place="left"
+      />
     </div>
-   
   );
 };
 

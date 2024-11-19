@@ -96,8 +96,8 @@ const MachineModal = ({ show, onClose, onSave, machine }) => {
   if (!show) return null;
 
   return (
-    <div className="modal">
-      <div className="modal-content">
+    <div className="modal-machine">
+      <div className="modal-content-m">
         <h2>{machine ? "Modifier Machine" : "Ajouter Machine"}</h2>
         <form onSubmit={handleSubmit} className="form">
           <div className="form1">

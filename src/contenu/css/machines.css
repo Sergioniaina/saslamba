@@ -125,7 +125,7 @@
     .add-button:hover {
       background-color: #0056b3;
     }
-    .modal {
+    .modal-machine {
       position: fixed;
       top: 0;
       left: 0;
@@ -138,7 +138,7 @@
       align-items: center;
     }
     
-    .modal-content {
+    .modal-content-m {
       background: var(--background-content);
       padding: 20px;
       border-radius: 8px;

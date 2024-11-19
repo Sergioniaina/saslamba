@@ -671,6 +671,21 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+router.get('/listPar/:id', async (req, res) => {
+  try {
+    const facture = await Facture.findById(req.params.id)
+      .populate('machines')
+      .populate('products')
+      .populate('articles.articleId')
+      .populate('articles.machineId')
+      .populate('articleDetails.articleId')
+      .populate('articleDetails.machineId');
+    res.status(200).json(facture);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur lors de la récupération de la facture.' });
+  }
+});
+
 router.get('get/:id', async (req, res) => {
   const { id } = req.params;
 

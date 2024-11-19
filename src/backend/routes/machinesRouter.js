@@ -208,59 +208,59 @@ router.patch("/:id/etat", async (req, res) => {
 // const KILOWATT_CONSUMPTION_PER_HOUR = 2; // Par exemple, 2 kWh par heure
 
 router.patch("/:id/liberer", async (req, res) => {
-  const { id } = req.params;
+    const { id } = req.params;
 
-  try {
-    // Trouver la machine par ID
-    const machine = await Machine.findById(id);
-    if (!machine || machine.etat !== "Indisponible") {
-      return res
-        .status(404)
-        .json({ error: 'Machine non trouvée ou non en état "Indisponible".' });
-    }
-
-    const KILOWATT_CONSUMPTION_PER_HOUR = machine.powerConsumption;
-
-    // Récupérer tous les compteurs associés à cette machine
-    const compteurs = await Compteur.find({ machineId: id });
-
-    let totalKilowattHours = 0;
-
-    // Calculer la consommation totale de tous les compteurs existants
-    for (const compteur of compteurs) {
-      if (!compteur.endTime) {
-        // Si le compteur est encore actif (endTime est null), calculer la durée écoulée
-        const endTime = new Date();
-        const durationHours = (endTime - compteur.startTime) / (1000 * 60 * 60); // Durée en heures
-        totalKilowattHours += durationHours * KILOWATT_CONSUMPTION_PER_HOUR;
-      } else {
-        // Si le compteur est déjà terminé, ajouter simplement les kilowattheures accumulés
-        totalKilowattHours += compteur.kilowattHours;
+    try {
+      // Trouver la machine par ID
+      const machine = await Machine.findById(id);
+      if (!machine || machine.etat !== "Indisponible") {
+        return res
+          .status(404)
+          .json({ error: 'Machine non trouvée ou non en état "Indisponible".' });
       }
+
+      const KILOWATT_CONSUMPTION_PER_HOUR = machine.powerConsumption;
+
+      // Récupérer tous les compteurs associés à cette machine
+      const compteurs = await Compteur.find({ machineId: id });
+
+      let totalKilowattHours = 0;
+
+      // Calculer la consommation totale de tous les compteurs existants
+      for (const compteur of compteurs) {
+        if (!compteur.endTime) {
+          // Si le compteur est encore actif (endTime est null), calculer la durée écoulée
+          const endTime = new Date();
+          const durationHours = (endTime - compteur.startTime) / (1000 * 60 * 60); // Durée en heures
+          totalKilowattHours += durationHours * KILOWATT_CONSUMPTION_PER_HOUR;
+        } else {
+          // Si le compteur est déjà terminé, ajouter simplement les kilowattheures accumulés
+          totalKilowattHours += compteur.kilowattHours;
+        }
+      }
+
+      // Supprimer tous les compteurs précédents pour cette machine
+      await Compteur.deleteMany({ machineId: id });
+
+      // Créer un nouveau compteur avec la consommation totale
+      const newCompteur = new Compteur({
+        machineId: id,
+        startTime: new Date(),
+        endTime: new Date(), // La machine est libérée donc endTime est défini à maintenant
+        kilowattHours: totalKilowattHours, // Ajouter seulement la consommation totale
+      });
+      await newCompteur.save();
+
+      // Mettre à jour l'état de la machine
+      machine.etat = "Disponible";
+      await machine.save();
+
+
+      res.json(machine);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
     }
-
-    // Supprimer tous les compteurs précédents pour cette machine
-    //await Compteur.deleteMany({ machineId: id });
-
-    // Créer un nouveau compteur avec la consommation totale
-    const newCompteur = new Compteur({
-      machineId: id,
-      startTime: new Date(),
-      endTime: new Date(), // La machine est libérée donc endTime est défini à maintenant
-      kilowattHours: totalKilowattHours, // Ajouter seulement la consommation totale
-    });
-    await newCompteur.save();
-
-    // Mettre à jour l'état de la machine
-    machine.etat = "Disponible";
-    await machine.save();
-
-
-    res.json(machine);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+  });
 
 router.get("/:id/consumption", async (req, res) => {
   try {

@@ -4,6 +4,7 @@ import MachineModal from "./MachineModal";
 import MachineDetails from "./MachineDetails";
 import "../css/machines.css";
 import { FaEdit, FaEye, FaPlus, FaSearch, FaTrash } from "react-icons/fa";
+import ModalConfirm from "../modal/ModalConfirm";
 
 const MachineList = () => {
   const [machines, setMachines] = useState([]);
@@ -13,6 +14,14 @@ const MachineList = () => {
   const [error, setError] = useState("");
   const [creatorName, setCreatorName] = useState(""); // Nom du créateur de la machine
   const [isDetailsVisible, setIsDetailsVisible] = useState(false);
+  
+  const [isConfirmVisible, setIsConfirmVisible] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null); // Stores the action to confirm
+  const [confirmMessage, setConfirmMessage] = useState(""); // Stores the confirmation message
+  const confirmActionAndClose = () => {
+    if (confirmAction) confirmAction();
+    setIsConfirmVisible(false);
+  };
 
   useEffect(() => {
     fetchMachines();
@@ -159,6 +168,11 @@ const MachineList = () => {
       console.error("Erreur lors de la suppression de la machine :", error);
     }
   };
+  const confirmRelease = (id) => {
+    setConfirmMessage("Voulez-vous supprimer cet facture?");
+    setConfirmAction(() => () => handleRelease(id));
+    setIsConfirmVisible(true);
+  };
 
   const handleRelease = async (id) => {
     try {
@@ -233,7 +247,7 @@ const MachineList = () => {
                       <FaEye />
                     </button>
                     {machine.etat === "Indisponible" && (
-                      <button onClick={(e) =>{e.stopPropagation();handleRelease(machine._id)}}>
+                      <button onClick={(e) =>{e.stopPropagation();confirmRelease(machine._id)}}>
                         Libérer
                       </button>
                     )}
@@ -257,6 +271,13 @@ const MachineList = () => {
         onSave={handleSave}
         machine={selectedMachine}
       />
+        {isConfirmVisible && (
+        <ModalConfirm
+          onConfirm={confirmActionAndClose}
+          onCancel={() => setIsConfirmVisible(false)}
+          message={confirmMessage}
+        />
+      )}
     </div>
   );
 };

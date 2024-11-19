@@ -38,6 +38,7 @@ const FactureList = ({ onEdit, onViewDetails, etatFilter }) => {
   const [paymentTypes, setPaymentTypes] = useState([]);
   const [selectedPaymentType, setSelectedPaymentType] = useState("Espèce");
   const [newPaymentType, setNewPaymentType] = useState("");
+  const PORT = "http://localhost:5000/api"
   const fetchPaymentTypes = async () => {
     try {
       const response = await axios.get("http://localhost:5000/api/payement");
@@ -61,7 +62,7 @@ const FactureList = ({ onEdit, onViewDetails, etatFilter }) => {
   useEffect(() => {
     const fetchFactures = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/factures");
+        const response = await axios.get(`${PORT}/factures`);
         setFactures(response.data);
       } catch (error) {
         console.error("Erreur lors du chargement des factures:", error);
@@ -574,12 +575,12 @@ const FactureList = ({ onEdit, onViewDetails, etatFilter }) => {
 
             {/* Actions du modal */}
             <div className="modal-actions">
-              <button type="button" onClick={handlePaymentSubmit}>
+              <button className="save" type="button" onClick={handlePaymentSubmit}>
                 {" "}
                 <FaSave />
                 <span>enregistrer</span>
               </button>
-              <button onClick={() => setShowPaymentModal(false)}>
+              <button className="cancel" onClick={() => setShowPaymentModal(false)}>
                 <FaTimes />
                 <span>annuler</span>
               </button>

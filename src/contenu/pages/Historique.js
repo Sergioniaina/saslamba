@@ -233,10 +233,7 @@ const Historique = () => {
                   <td>Type d'entité</td>
                   <td>{selectedEvent.entityType}</td>
                 </tr>
-                <tr>
-                  <td>ID d'entité</td>
-                  <td>{selectedEvent.entityId}</td>
-                </tr>
+               
                 <tr>
                   <td>Nom de l'utilisateur</td>
                   <td>{users[selectedEvent.user] || "Utilisateur inconnu"}</td>

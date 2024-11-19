@@ -198,18 +198,18 @@ tbody tr:hover{
           justify-content: center;
           gap: 10px;
   
-          &:hover {
-            background-color: #f0f0f0;
+        }
+        .save{
+          background: rgb(3, 131, 69);
+          &:hover{
+            background: rgb(4, 133, 51);
           }
-  
-          &:first-child {
-            background-color: #4caf50;
-            color: white;
-          }
-  
-          &:last-child {
-            background-color: #f44336;
-            color: white;
+          
+        }
+        .cancel{
+          background: rgb(220, 48, 48);
+          &:hover{
+            background: rgb(164, 38, 38);
           }
         }
       }

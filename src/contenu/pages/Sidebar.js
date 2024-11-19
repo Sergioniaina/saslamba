@@ -12,7 +12,9 @@ import {
   FaFileAlt,
   FaBoxes,
   FaTasks,
-  FaMoneyCheck
+  FaMoneyCheck,
+  FaFileInvoice,
+  FaTools
 } from "react-icons/fa"; // Import des icônes
 import ss from "../../images/ss.png";
 
@@ -90,11 +92,23 @@ const Sidebar = ({
           </span>
           <span>Demande</span>
         </NavLink>
-        <NavLink style={{color:'blue'}} className="li" to="/home/dashboard">
+        <NavLink className="li" to="/home/machine">
           <span>
-            <FaHome className="icon" />
+            <FaTools style={{color:'white'}} className="icon" />
+          </span>
+          <span>Machines</span>
+        </NavLink>
+        <NavLink  className="li" to="/home/dashboard">
+          <span>
+            <FaHome style={{color:'blue'}} className="icon" />
           </span>
           <span>Dashboard</span>
+        </NavLink>
+        <NavLink  className="li" to="/home/FactureId">
+          <span>
+          <FaFileInvoice className="icon" style={{ color: 'green' }} />
+          </span>
+          <span>FactureList</span>
         </NavLink>
         <NavLink className="li" to="/home/user">
           <span>

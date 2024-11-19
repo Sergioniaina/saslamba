@@ -352,7 +352,7 @@ const FactureForm = () => {
       console.error("Erreur lors du chargement des machines:", error);
     }
   };
-  
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -402,7 +402,11 @@ const FactureForm = () => {
           // Initialize weight if selected
           const machine = machines.find((m) => m._id === machineId);
           if (machine) {
-            updatedWeights[machineId] = "1"; // Default weight when selecting a machine
+            if (machine.type === "Machine à laver") {
+              updatedWeights[machineId] = "6"; // Default weight for "machine a laver"
+            } else {
+              updatedWeights[machineId] = "1"; // Default weight for other types
+            }
           }
         }
 
@@ -713,7 +717,9 @@ const FactureForm = () => {
     if (!validateMachineCapacity()) return;
     if (!(await validateStock())) return;
     if (!formData.totalPrice || formData.totalPrice === undefined) {
-      setError("Le prix total est manquant.");
+      setMessage("Le prix total est manquant.");
+      setModalInfo(true);
+      //setError("Le prix total est manquant.");
       return;
     }
     // Code pour soumettre le formulaire ici
@@ -745,7 +751,8 @@ const FactureForm = () => {
         );
         selectedClient = newClient.data; // Mettre à jour le client sélectionné
       } catch (error) {
-        setError("Erreur lors de la création du client");
+        setMessage("Erreur lors de la création du client");
+        setModalInfo(true);
         return;
       }
     }
@@ -759,6 +766,7 @@ const FactureForm = () => {
         if (!abonnementClient.data || !abonnementClient.data.length) {
           //setMessage("Le client n'est pas inscrit à un abonnement.");
           setMessage("Le client n'est pas inscrit à un abonnement.");
+          setModalInfo(true);
           return;
         }
 
@@ -768,7 +776,8 @@ const FactureForm = () => {
           currentAbonnement.abonnementDetails.weight - formData.totalWeight;
 
         if (remainingWeight < 0) {
-          alert("Le poids dépasse le quota d'abonnement.");
+          // alert("Le poids dépasse le quota d'abonnement.");
+          setMessage("Le poids dépasse le quota d'abonnement.");
           return;
         }
 
@@ -842,7 +851,8 @@ const FactureForm = () => {
     try {
       if (isEditMode) {
         if (!facture || !facture._id) {
-          setError("La facture n'est pas disponible pour la modification.");
+          setMessage("La facture n'est pas disponible pour la modification.");
+          setModalInfo(true);
           return;
         }
         response = await axios.put(
@@ -855,7 +865,8 @@ const FactureForm = () => {
             },
           }
         );
-        alert("Facture modifiée avec succès");
+        // alert("Facture modifiée avec succès");
+        toast.success("Facture modifier avec succes");
       } else {
         response = await axios.post(
           "http://localhost:5000/api/factures",
@@ -879,7 +890,6 @@ const FactureForm = () => {
         printContentAsPDF(); // Appel à l'impression
       } else {
         console.error("L'élément à imprimer n'a pas été trouvé.");
-
       }
       const caisse = caisses.find((caisse) => caisse._id === selectedCaisse);
       const paymentTypeToSubmit =
@@ -2518,8 +2528,8 @@ const FactureForm = () => {
           >
             {latestFacture ? (
               <span className="facture-num">
-                FACTURE N° {latestFacture.ticketNumber + 1 || 1} /{" "}
-                {new Date(Date.now()).toISOString().split("T")[0]}
+                FACTURE N° {latestFacture.ticketNumber + 1 || 1}{" "}
+                {/* {new Date(Date.now()).toISOString().split("T")[0]} */}
               </span>
             ) : (
               <p>Aucune facture trouvée</p> // Message si aucune facture n'est trouvée

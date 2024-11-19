@@ -168,11 +168,15 @@ const UserManagement = () => {
             }
           );
         } else {
-          await axios.post("http://localhost:5000/api/auth/users/ajout", formData, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          });
+          await axios.post(
+            "http://localhost:5000/api/auth/users/ajout",
+            formData,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
+          );
         }
 
         setIsModalOpen(false);
@@ -263,7 +267,6 @@ const UserManagement = () => {
                   <td>{user.role}</td>
                   <td>
                     <button
-
                       className="btn-edit"
                       onClick={() => openModalForEditing(user)}
                     >
@@ -305,9 +308,10 @@ const UserManagement = () => {
                 <td>{currentUser.role}</td>
                 <td className="user-action">
                   <button
-                  className="btn-edit-profile"
-                   onClick={() => openModalForEditing(currentUser)}>
-                   <FaEdit/>
+                    className="btn-edit-profile"
+                    onClick={() => openModalForEditing(currentUser)}
+                  >
+                    <FaEdit />
                   </button>
                 </td>
               </tr>
@@ -407,6 +411,18 @@ const UserManagement = () => {
                   >
                     <option value="superAdmin">Super Admin</option>
                     <option value="simpleAdmin">Simple Admin</option>
+                    <option value="caissiere">Caissiere</option>
+                    <option value="magasinier">Magasinier</option>
+                  </select>
+                </div>
+              )}
+              {formUserRole === "user" && (
+                <div className="input-group">
+                  <select
+                    value={formSubRole || ""}
+                    onChange={(e) => setFormSubRole(e.target.value)}
+                  >
+                   
                     <option value="caissiere">Caissiere</option>
                     <option value="magasinier">Magasinier</option>
                   </select>
