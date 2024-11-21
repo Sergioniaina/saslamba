@@ -761,7 +761,7 @@
   }
 
   .facturePrint {
-    margin-top: 5px;
+    margin-top: 20px;
     display: flex;
     text-align: center;
     flex-direction: column;
@@ -797,7 +797,7 @@
     }
    
     .information {
-      border: 2px solid black;
+     
       display: flex;
       box-sizing: border-box;
       justify-content: space-between;

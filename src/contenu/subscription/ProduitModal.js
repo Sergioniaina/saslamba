@@ -1,37 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+import { FaEdit, FaSave, FaTimes } from "react-icons/fa";
 
 const ProductModal = ({ show, onClose, onSave, product }) => {
   const [formData, setFormData] = useState({
-    _id: '',
-    name: '',
-    price: '',
-    description: '',
-    date: '',
+    _id: "",
+    name: "",
+    price: "",
+    description: "",
     stock: 1,
     photo: null,
   });
 
-  const [fileDetails, setFileDetails] = useState(null); 
+  const [fileDetails, setFileDetails] = useState(null);
 
   useEffect(() => {
     if (product) {
       setFormData({
-        _id: product._id || '',
-        name: product.name || '',
-        price: product.price || '',
-        description: product.description || '',
-        date: product.date ? new Date(product.date).toISOString().split('T')[0] : '',
+        _id: product._id || "",
+        name: product.name || "",
+        price: product.price || "",
+        description: product.description || "",
         stock: product.stock || 1,
         photo: product.photo || null,
       });
-      setFileDetails(product.photo ? { name: product.photo.split('/').pop() } : null);
+      setFileDetails(
+        product.photo ? { name: product.photo.split("/").pop() } : null
+      );
     } else {
       setFormData({
-        _id: '',
-        name: '',
-        price: '',
-        description: '',
-        date: '',
+        _id: "",
+        name: "",
+        price: "",
+        description: "",
+        date: "",
         stock: 1,
         photo: null,
       });
@@ -43,7 +44,7 @@ const ProductModal = ({ show, onClose, onSave, product }) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -52,109 +53,140 @@ const ProductModal = ({ show, onClose, onSave, product }) => {
     if (file) {
       setFormData((prev) => ({
         ...prev,
-        photo: file
+        photo: file,
       }));
       setFileDetails({
         name: file.name,
         size: file.size,
-        type: file.type
+        type: file.type,
       });
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-  
+
     const updatedFormData = new FormData();
-    Object.keys(formData).forEach(key => {
-      if (key === 'photo' && formData[key]) {
+    Object.keys(formData).forEach((key) => {
+      if (key === "photo" && formData[key]) {
         updatedFormData.append(key, formData[key]);
       } else {
         updatedFormData.append(key, formData[key]);
       }
     });
     // Ajouter l'ID de l'utilisateur connecté
-    const currentUser = JSON.parse(localStorage.getItem('user'));
+    const currentUser = JSON.parse(localStorage.getItem("user"));
     if (currentUser && currentUser._id) {
       updatedFormData.append("userId", currentUser._id);
     }
-  
+
     onSave(updatedFormData);
   };
-  
+
   if (!show) return null;
 
   return (
-    <div className="modal">
-      <div className="modal-content">
-        <h2>{product ? 'Edit Product' : 'Add Product'}</h2>
+    <div className="modal-p" onClick={onClose}>
+      <div className="modal-content-p" onClick={(e) => e.stopPropagation()}>
+        <h2>{product ? "Modifier Produit" : "Ajouter Produit"}</h2>
         <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            name="name"
-            placeholder="Name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="number"
-            name="price"
-            placeholder="Price"
-            value={formData.price}
-            onChange={handleChange}
-            min="0"
-            step="0.01"
-            required
-          />
-          <textarea
-            name="description"
-            placeholder="Description"
-            value={formData.description}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="date"
-            name="date"
-            value={formData.date}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="number"
-            name="stock"
-            placeholder="Stock"
-            value={formData.stock}
-            onChange={handleChange}
-            min="1"
-            required
-          />
+          <div className="form-group">
+            <input
+              type="text"
+              name="name"
+              placeholder=" "
+              value={formData.name}
+              onChange={handleChange}
+              required
+            
+            />
+            <label>Name</label>
+          </div>
+
+          <div className="form-group">
+            <input
+              type="number"
+              name="price"
+              placeholder=" "
+              value={formData.price}
+              onChange={handleChange}
+              min="0"
+              step="0.01"
+              required
+            />
+            <label>Price</label>
+          </div>
+
+          <div className="form-group">
+            <textarea
+              name="description"
+              placeholder=" "
+              value={formData.description}
+              onChange={handleChange}
+              required
+            />
+            <label>Type</label>
+          </div>
+
+          <div className="form-group">
+            <input
+              type="number"
+              name="stock"
+              placeholder=" "
+              value={formData.stock}
+              onChange={handleChange}
+              min="1"
+              required
+            />
+            <label>Stock</label>
+          </div>
+
           <input
             type="file"
             name="photo"
             accept="image/*"
             onChange={handleFileChange}
           />
+
           {fileDetails && (
-            <div style={{background:'yellow',color:'black'}}>
-              <p><strong>File Name:</strong> {fileDetails.name}</p>
-              <p><strong>File Size:</strong> {Math.round(fileDetails.size / 1024)} KB</p>
-              <p><strong>File Type:</strong> {fileDetails.type}</p>
+            <div className="file-preview">
+              <p>
+                <strong>File Name:</strong> {fileDetails.name}
+              </p>
+              <p>
+                <strong>File Size:</strong>{" "}
+                {Math.round(fileDetails.size / 1024)} KB
+              </p>
+              <p>
+                <strong>File Type:</strong> {fileDetails.type}
+              </p>
             </div>
           )}
+
           {formData.photo && !fileDetails && (
-            <div>
+            <div className="image-preview">
               <img
-                src={`http://localhost:5000/uploads/${formData.photo.split('/').pop()}`}
+                src={`http://localhost:5000/uploads/${formData.photo
+                  .split("/")
+                  .pop()}`}
                 alt="Product"
-                style={{ width: '100px', height: '100px', objectFit: 'cover' }}
               />
-              <p><strong>Current Photo</strong></p>
+              <p>
+                <strong>Current Photo</strong>
+              </p>
             </div>
           )}
-          <button type="submit">{product ? 'Update' : 'Add'}</button>
-          <button type="button" onClick={onClose}>Cancel</button>
+          <div className="proudit-btn">
+          <button type="submit">
+          {product ? <FaEdit/> : <FaSave/>}
+            {product ? "Update" : "Add"}</button>
+          <button type="button" onClick={onClose}>
+            <FaTimes/>
+            Cancel
+          </button>
+          </div>
+
+        
         </form>
       </div>
     </div>

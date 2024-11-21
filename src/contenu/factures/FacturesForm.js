@@ -2500,7 +2500,8 @@ const FactureForm = () => {
                   src={`http://localhost:5000/${companyInfo.photo}`}
                   alt="Logo de l'entreprise"
                   style={{
-                    width: "100px",
+                    borderRadius:"10px",
+                    width: "50px",
                     height: "50px",
                     backgroundRepeat: "no-repeat",
                   }}

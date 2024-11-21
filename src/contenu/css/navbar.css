@@ -1,3 +1,24 @@
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Animation pour le changement dynamique des couleurs du dégradé */
+@keyframes gradient-animation {
+  0% {
+    background-position: 0% 50%; /* Position initiale */
+  }
+  50% {
+    background-position: 100% 50%; /* Au milieu de l'animation */
+  }
+  100% {
+    background-position: 0% 50%; /* Retour à la position initiale */
+  }
+}
 .navbar {
     color: white;
     display: flex;
@@ -7,6 +28,40 @@
     position: relative;
     padding-left: 80px;
     padding-right: 80px;
+    .info-phone {
+      font-family: Arial, Helvetica, sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .info-phone {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .info-phone .icon {
+      color: #31b594;
+      font-size: large;
+      animation: rotate 2s linear infinite; /* Rotation infinie */
+    }
+    
+    .info-phone span {
+      background: linear-gradient(90deg, green, white, #0843b1, red); /* Couleurs initiales du dégradé */
+      background-size: 300% 300%; /* Étend le dégradé pour une animation fluide */
+      -webkit-background-clip: text; /* Clip le dégradé sur le texte */
+      -webkit-text-fill-color: transparent; /* Rend le texte transparent pour voir le dégradé */
+      animation: gradient-animation 6s ease infinite; /* Animation fluide et infinie */
+      font-weight: bold; /* Optionnel */
+    }
+    
+    /* Animation de rotation pour l'icône */
+  
+    
+    /* Animation de rotation pour l'icône */
+  
+    
 
     .button {
       background: transparent;

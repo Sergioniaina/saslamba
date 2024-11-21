@@ -30,6 +30,9 @@
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(200, 185, 185, 0.1);
   color: white;
+  button{
+    letter-spacing: 1px;
+  }
   user-profile{
     background: red;
     .btn-edit{

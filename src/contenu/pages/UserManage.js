@@ -135,7 +135,7 @@ const UserManagement = () => {
     // Demander confirmation avant de supprimer
     requestConfirmation(
       deleteUser,
-      "Are you sure you want to delete this user?"
+      "Voulez-vous supprimer set utilisateur?"
     );
   };
 

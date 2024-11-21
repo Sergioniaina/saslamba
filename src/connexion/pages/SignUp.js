@@ -84,7 +84,7 @@ const Signup = () => {
               onChange={(e) => setPhoto(e.target.files[0])}
             />
           </div>
-          <label>Photo (optional):</label>
+          <label>Photo (facultatif):</label>
           <button type="submit">
             <FontAwesomeIcon icon={faUserPlus} /> Sign Up
           </button>

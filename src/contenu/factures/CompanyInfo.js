@@ -151,7 +151,6 @@ const CompanyInfo = () => {
             <h2>{isEditing ? 'Modifier les informations' : 'Ajouter des informations'}</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                
                 <input
                   type="text"
                   name="name"
@@ -160,10 +159,9 @@ const CompanyInfo = () => {
                   required
                   placeholder=''
                 />
-                <label>Nom :</label>
+                <label>Nom </label>
               </div>
               <div className="form-group">
-               
                 <input
                   type="text"
                   name="phone"
@@ -172,10 +170,9 @@ const CompanyInfo = () => {
                   required
                   placeholder=''
                 />
-                 <label>Téléphone :</label>
+                 <label>Téléphone </label>
               </div>
-              <div className="form-group">
-                
+              <div className="form-group">  
                 <input
                   type="text"
                   name="address"
@@ -184,11 +181,12 @@ const CompanyInfo = () => {
                   required
                   placeholder=''
                 />
-                <label>Adresse :</label>
+                <label>Adresse </label>
               </div>
               <div className="form-group">
-                <label>Photo :</label>
+               
                 <input type="file" name="photo" onChange={handleFileChange} />
+                <label>Photo </label>
               </div>
               <div className="form-actions">
                 <button type="submit">

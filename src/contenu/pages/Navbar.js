@@ -3,7 +3,7 @@ import axios from "axios";
 import ModalConfirm from "../modal/ModalConfirm"; // Import the confirmation modal component
 import { Tooltip } from "react-tooltip";
 import "../css/navbar.css";
-import eric from "../../images/l1.jpg";
+//import eric from "../../images/l1.jpg";
 import bg1 from "../background/1.avif";
 import bg2 from "../background/2.jpg";
 import bg3 from "../background/3.jpg";
@@ -21,6 +21,7 @@ import {
   FaCog,
   FaEye,
   FaEyeSlash,
+  FaPhone,
   FaSignOutAlt,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -39,6 +40,21 @@ const Navbar = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false); // State for logout confirmation modal
+  const [companyInfo, setCompanyInfo] = useState(null);
+  useEffect(() => {
+    fetchCompanyInfo(); // Load company info when the component mounts
+  }, []);
+
+  const fetchCompanyInfo = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:5000/api/company-info/list"
+      );
+      setCompanyInfo(response.data[0]); // Assuming the first entry is the company info
+    } catch (error) {
+      console.error("Error loading company information:", error);
+    }
+  };
   const navigate = useNavigate();
 
   const handleVoir = (id) => {
@@ -51,7 +67,6 @@ const Navbar = ({
     bg10,
     bg9,
     bg1,
-    eric,
     bg2,
     bg3,
     bg4,
@@ -140,14 +155,25 @@ const Navbar = ({
         </button>
       </div>
       <div className="lamba">
+      {companyInfo && (
+        <>
         <div className="sary">
-          <img className="img" src={eric} alt="eric" />
+             <img
+             className="img"
+             src={`http://localhost:5000/${companyInfo.photo}`}
+             alt="Logo de l'entreprise"
+           />
         </div>
-        <span>SAS Lamba</span>
+        <span>{companyInfo.name}</span>
+        </>
+      )}
       </div>
-      <div>
-        <h2>Home</h2>
+      {companyInfo && (
+      <div className="info-phone">
+        <FaPhone className="icon"/>
+        <span>{companyInfo.phone}</span>
       </div>
+       )}
       <div className="profile">
         {unpaidInvoices > 0 && (
           <div

@@ -5,7 +5,9 @@ import MachineDetails from "./MachineDetails";
 import "../css/machines.css";
 import { FaEdit, FaEye, FaPlus, FaSearch, FaTrash } from "react-icons/fa";
 import ModalConfirm from "../modal/ModalConfirm";
-
+import { Tooltip } from "react-tooltip";
+import "react-toastify/dist/ReactToastify.css";
+import { toast, ToastContainer } from "react-toastify";
 const MachineList = () => {
   const [machines, setMachines] = useState([]);
   const [selectedMachine, setSelectedMachine] = useState(null);
@@ -14,7 +16,7 @@ const MachineList = () => {
   const [error, setError] = useState("");
   const [creatorName, setCreatorName] = useState(""); // Nom du créateur de la machine
   const [isDetailsVisible, setIsDetailsVisible] = useState(false);
-  
+
   const [isConfirmVisible, setIsConfirmVisible] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null); // Stores the action to confirm
   const [confirmMessage, setConfirmMessage] = useState(""); // Stores the confirmation message
@@ -45,14 +47,15 @@ const MachineList = () => {
       const historiqueResponse = await axios.get(
         `http://localhost:5000/api/historique?entityId=${machineId}`
       );
-  
+
       // Vérification que le tableau n'est pas vide avant d'accéder aux propriétés
-      const historique = historiqueResponse.data.length > 0 ? historiqueResponse.data[0] : null;
-  
+      const historique =
+        historiqueResponse.data.length > 0 ? historiqueResponse.data[0] : null;
+
       if (historique) {
         console.log("Historique entityId:", historique.entityId);
         console.log("Historique user:", historique.user);
-  
+
         const userId = historique.user;
         if (userId) {
           // Récupération du nom de l'utilisateur créateur avec son ID
@@ -73,8 +76,6 @@ const MachineList = () => {
       setCreatorName("Erreur");
     }
   };
-  
-  
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -168,8 +169,13 @@ const MachineList = () => {
       console.error("Erreur lors de la suppression de la machine :", error);
     }
   };
+  const confirmDelete = (id) => {
+    setConfirmMessage("Voulez-vous supprimer ce Machine?");
+    setConfirmAction(() => () => handleDelete(id));
+    setIsConfirmVisible(true);
+  };
   const confirmRelease = (id) => {
-    setConfirmMessage("Voulez-vous supprimer cet facture?");
+    setConfirmMessage("Voulez-vous liberer ce Machine?");
     setConfirmAction(() => () => handleRelease(id));
     setIsConfirmVisible(true);
   };
@@ -178,6 +184,7 @@ const MachineList = () => {
     try {
       await axios.patch(`http://localhost:5000/api/machines/${id}/liberer`);
       fetchMachines();
+      toast.success("Machine liberer");
     } catch (error) {
       console.error("Erreur lors de la libération de la machine :", error);
     }
@@ -194,10 +201,12 @@ const MachineList = () => {
               value={searchQuery}
               onChange={handleSearchChange}
             />
-            <FaSearch style={{ position: "absolute", right: "10px", color: "gray" }} />
+            <FaSearch
+              style={{ position: "absolute", right: "10px", color: "gray" }}
+            />
           </div>
           <button onClick={handleAddButtonClick} className="btn-add">
-          <FaPlus/> Ajouter Machine
+            <FaPlus /> Ajouter Machine
           </button>
         </div>
         {error && <p className="error-message">{error}</p>}
@@ -216,7 +225,10 @@ const MachineList = () => {
             </thead>
             <tbody>
               {machines.map((machine) => (
-                <tr key={machine._id} onClick={() => handleMachineClick(machine)}>
+                <tr
+                  key={machine._id}
+                  onClick={() => handleMachineClick(machine)}
+                >
                   <td>
                     {machine.photo && (
                       <img
@@ -237,17 +249,41 @@ const MachineList = () => {
                   <td>{machine.etat}</td>
                   <td>{new Date(machine.dateAdded).toLocaleString()}</td>
                   <td>
-                    <button className="btn-edit" onClick={(e) =>{ e.stopPropagation(); handleEditButtonClick(machine)}}>
+                    <button
+                      data-tooltip-id="modifier"
+                      className="btn-edit"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditButtonClick(machine);
+                      }}
+                    >
                       <FaEdit />
                     </button>
-                    <button className="btn-delete" onClick={() => handleDelete(machine._id)}>
+                    <button
+                      data-tooltip-id="supprimer"
+                      className="btn-delete"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        confirmDelete(machine._id);
+                      }}
+                    >
                       <FaTrash />
                     </button>
-                    <button className="btn-detail" onClick={() => handleMachineClick(machine)}>
+                    <button
+                      data-tooltip-id="detail"
+                      className="btn-detail"
+                      onClick={() => handleMachineClick(machine)}
+                    >
                       <FaEye />
                     </button>
                     {machine.etat === "Indisponible" && (
-                      <button onClick={(e) =>{e.stopPropagation();confirmRelease(machine._id)}}>
+                      <button
+                        data-tooltip-id="liberer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          confirmRelease(machine._id);
+                        }}
+                      >
                         Libérer
                       </button>
                     )}
@@ -257,7 +293,6 @@ const MachineList = () => {
             </tbody>
           </table>
         </div>
-       
       </div>
       <MachineDetails
         machine={selectedMachine}
@@ -271,13 +306,28 @@ const MachineList = () => {
         onSave={handleSave}
         machine={selectedMachine}
       />
-        {isConfirmVisible && (
+      {isConfirmVisible && (
         <ModalConfirm
           onConfirm={confirmActionAndClose}
           onCancel={() => setIsConfirmVisible(false)}
           message={confirmMessage}
         />
       )}
+      <Tooltip
+        className="tooltip"
+        id="modifier"
+        content="Modifier"
+        place="top"
+      />
+      <Tooltip
+        className="tooltip"
+        id="supprimer"
+        content="Supprimer"
+        place="top"
+      />
+      <Tooltip className="tooltip" id="detail" content="detail" place="top" />
+      <Tooltip className="tooltip" id="liberer" content="Liberer" place="top" />
+      <ToastContainer />
     </div>
   );
 };

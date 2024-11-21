@@ -2,16 +2,19 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import ProductModal from "./ProduitModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Tooltip } from "react-tooltip";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   faEdit,
   faTrash,
   faPlus,
   faSearch,
-  faBoxOpen,
-  faTimes,
+  faBoxOpen
 } from "@fortawesome/free-solid-svg-icons";
 import "../css/Products.css";
 import { FaSave, FaTimes } from "react-icons/fa";
+import ModalConfirm from "../modal/ModalConfirm";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -22,27 +25,20 @@ const Products = () => {
   const [quantity, setQuantity] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
   const inputRef = useRef(null);
-
+  const [isConfirmVisible, setIsConfirmVisible] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null); // Stores the action to confirm
+  const [confirmMessage, setConfirmMessage] = useState(""); // Stores the confirmation message
+  const [user, setUser]=useState('');
+  const [filteredProducts, setFilteredProducts] = useState([]); // For filtered products
+  const [selectedType, setSelectedType] = useState("");
+  const [uniqueTypes, setUniqueTypes] = useState([]);
   useEffect(() => {
     fetchAllProducts();
   }, []);
-
-  const fetchProducts = async (term) => {
-    try {
-      const result = await axios.get(
-        "http://localhost:5000/api/products/search",
-        {
-          params: { search: term },
-        }
-      );
-      setProducts(result.data);
-      setCurrentProduct(
-        result.data.find((prod) => prod._id === currentProduct?._id) || null
-      );
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    }
-  };
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    setUser(user);
+  }, []);
 
   const fetchAllProducts = async () => {
     try {
@@ -52,6 +48,21 @@ const Products = () => {
       console.error("Error fetching products:", error);
     }
   };
+  useEffect(() => {
+    const lowerSearchTerm = searchTerm.toLowerCase();
+    const filtered = products.filter((product) => {
+      const matchesName = product.name.toLowerCase().includes(lowerSearchTerm);
+      const matchesType =
+        selectedType === "" || product.description?.toLowerCase() === selectedType.toLowerCase();
+      return matchesName && matchesType;
+    });
+    setFilteredProducts(filtered);
+  }, [searchTerm, selectedType, products]);
+  useEffect(() => {
+    // Extract unique types whenever products change
+    const types = [...new Set(products.map((product) => product.description?.toLowerCase()))];
+    setUniqueTypes(types);
+  }, [products]);
 
   const handleSaveProduct = async (formData) => {
     const token = localStorage.getItem("token"); // Récupération du token d'authentification
@@ -98,9 +109,19 @@ const Products = () => {
       await axios.delete(`http://localhost:5000/api/products/${id}`);
       setCurrentProduct(currentProduct?._id === id ? null : currentProduct);
       await fetchAllProducts();
+      toast.success("Produit ajouter avec succes")
     } catch (error) {
       console.error("Error deleting product:", error);
     }
+  };
+  const confirmDelete = (id) => {
+    setConfirmMessage("Voulez-vous supprimer ce Produit?");
+    setConfirmAction(() => () => handleDeleteProduct(id));
+    setIsConfirmVisible(true);
+  };
+  const confirmActionAndClose = () => {
+    if (confirmAction) confirmAction();
+    setIsConfirmVisible(false);
   };
 
   const handleAddStock = (product) => {
@@ -150,12 +171,24 @@ const Products = () => {
             />
             <FontAwesomeIcon icon={faSearch} className="icon" />
           </div>
+          <select
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
+            className="type-select"
+          >
+            <option value="">Tous les types</option>
+            {uniqueTypes.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
           <button onClick={handleAddButtonClick} className="add-button">
             <FontAwesomeIcon icon={faPlus} /> Ajouter un Produit
           </button>
         </div>
       </div>
-
+      <div className="table-produit">
       <table className="products-table">
         <thead>
           <tr>
@@ -168,51 +201,53 @@ const Products = () => {
           </tr>
         </thead>
         <tbody>
-          {products.length === 0 ? (
-            <tr>
-              <td colSpan="6">Aucun produit disponible</td>
-            </tr>
-          ) : (
-            products.map((product) => (
-              <tr key={product._id}>
-                <td>
-                  {product.photo && (
-                    <img
-                      src={`http://localhost:5000/${product.photo}`}
-                      alt={product.name}
-                      className="product-image"
+            {
+              filteredProducts.map((product) => (
+                <tr key={product._id}>
+                  <td>
+                    {product.photo && (
+                      <img
+                        src={`http://localhost:5000/${product.photo}`}
+                        alt={product.name}
+                        className="product-image"
+                      />
+                    )}
+                  </td>
+                  <td>{product.name}</td>
+                  <td>{product.price} Ar</td>
+                  <td>{product.stock}</td>
+                  <td>{product.description}</td>
+                  <td className="action">
+                    <FontAwesomeIcon
+                      onClick={() =>
+                        setCurrentProduct(product) || setIsModalOpen(true)
+                      }
+                      className="edit-button"
+                      data-tooltip-id="edit"
+                      icon={faEdit}
                     />
-                  )}
-                </td>
-                <td>{product.name}</td>
-                <td>{product.price} €</td>
-                <td>{product.stock}</td>
-                <td>{product.description}</td>
-                <td className="action">
-                  <FontAwesomeIcon
-                    onClick={() =>
-                      setCurrentProduct(product) || setIsModalOpen(true)
-                    }
-                    className="edit-button"
-                    icon={faEdit}
-                  />
-                  <FontAwesomeIcon
-                    onClick={() => handleDeleteProduct(product._id)}
-                    className="delete-button icon"
-                    icon={faTrash}
-                  />
-
-                  <FontAwesomeIcon
-                    onClick={() => handleAddStock(product)}
-                    className="stock-button icon"
-                    icon={faBoxOpen}
-                  />
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
+                    {user.role==="admin" && (
+                       <FontAwesomeIcon
+                       onClick={() => confirmDelete(product._id)}
+                       className="delete-button icon"
+                       data-tooltip-id="delete"
+                       icon={faTrash}
+                     />
+                    )}
+                   
+                    <FontAwesomeIcon
+                      onClick={() => handleAddStock(product)}
+                      className="stock-button icon"
+                      data-tooltip-id="ajouter-stock"
+                      icon={faBoxOpen}
+                    />
+                  </td>
+                </tr>
+              ))
+           }
+          </tbody>
       </table>
+      </div>
 
       {modalStock && (
         <div className="modal-overlay">
@@ -256,6 +291,17 @@ const Products = () => {
           product={currentProduct}
         />
       )}
+       {isConfirmVisible && (
+        <ModalConfirm
+          onConfirm={confirmActionAndClose}
+          onCancel={() => setIsConfirmVisible(false)}
+          message={confirmMessage}
+        />
+      )}
+       <Tooltip className="tooltip" id="edit" content="Modifier" place="top" />
+       <Tooltip className="tooltip" id="delete" content="Supprimer" place="top" />
+       <Tooltip className="tooltip" id="ajouter-stock" content="Ajouter-stock" place="top" />
+       <ToastContainer />
     </div>
   );
 };
