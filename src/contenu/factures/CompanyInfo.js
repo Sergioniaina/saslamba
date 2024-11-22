@@ -95,7 +95,7 @@ const CompanyInfo = () => {
   // Supprimer les informations
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/company-info/delete/${id}`);
+      await axios.delete(`http://localhost:5000/api/company-info/${id}`);
       fetchCompanyInfo(); // Rafraîchir la liste après suppression
     } catch (error) {
       console.error('Erreur lors de la suppression :', error);
@@ -124,7 +124,7 @@ const CompanyInfo = () => {
                   <td>
                     <img
                       src={`http://localhost:5000/${company.photo}`} 
-                      alt="Photo entreprise"
+                      alt=" entreprise"
                       className="photo"
                     />
                   </td>
@@ -146,8 +146,8 @@ const CompanyInfo = () => {
       </button>
 
       {modalOpen && (
-        <div className="modal-logo">
-          <div className="content-logo">
+        <div className="modal-logo" onClick={()=>openModal(false)}>
+          <div className="content-logo" onClick={(e)=>e.stopPropagation()}>
             <h2>{isEditing ? 'Modifier les informations' : 'Ajouter des informations'}</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group">

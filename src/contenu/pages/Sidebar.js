@@ -5,7 +5,6 @@ import {
   FaHome,
   FaCogs,
   FaHistory,
-  FaClipboard,
   FaArrowLeft,
   FaArrowRight,
   FaUser,

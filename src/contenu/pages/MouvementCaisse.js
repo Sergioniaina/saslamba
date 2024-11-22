@@ -3,7 +3,6 @@ import axios from "axios";
 import "./mouvementCaisse.css";
 import {
   FaCalendarDay,
-  FaCashRegister,
   FaMoneyBillWave,
   FaSearch,
   FaTrash,

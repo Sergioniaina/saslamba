@@ -9,6 +9,22 @@ const FactureId = () => {
   const [selectedFacture, setSelectedFacture] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const location = useLocation();
+  const [companyInfo, setCompanyInfo] = useState(null);
+
+  useEffect(() => {
+    fetchCompanyInfo(); // Load company info when the component mounts
+  }, []);
+
+  const fetchCompanyInfo = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:5000/api/company-info/list"
+      );
+      setCompanyInfo(response.data[0]); // Assuming the first entry is the company info
+    } catch (error) {
+      console.error("Error loading company information:", error);
+    }
+  };
 
   // Ref pour la ligne mise en évidence
   // const highlightedRef = useRef(null);
@@ -94,47 +110,79 @@ const FactureId = () => {
       {/* Modal pour afficher les détails */}
       {selectedFacture && (
         <div
-          className={`modal ${showModal ? "show" : ""}`}
+          className={`modal-factureId ${showModal ? "show" : ""}`}
           onClick={() => setShowModal(false)}
         >
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="modal-content-factureId"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-header">
               <h2>Détails de la Facture</h2>
-              <button
-                className="close-button"
-                onClick={() => setShowModal(false)}
-              >
-                &times;
-              </button>
             </div>
             <div className="modal-body">
-              <h5>Référence : {selectedFacture.reference}</h5>
-              <p>
-                <strong>Nom du client :</strong> {selectedFacture.customerName}
-              </p>
-              <p>
-                <strong>Contact :</strong> {selectedFacture.contact}
-              </p>
-              <p>
-                <strong>Total (Poids) :</strong> {selectedFacture.totalWeight}
-              </p>
-              <p>
-                <strong>Total (Prix) :</strong> {selectedFacture.totalPrice}
-              </p>
-              <p>
-                <strong>Type de service :</strong> {selectedFacture.serviceType}
-              </p>
-              <p>
-                <strong>État :</strong> {selectedFacture.etat}
-              </p>
-              <div className="dd">
+              <div className="information-factureId">
+                {companyInfo && (
+                  <div className="company-info-factureId">
+                    <div className="company-photo-factureId">
+                      {/* Affiche la photo de l'entreprise */}
+                      <img
+                        src={`http://localhost:5000/${companyInfo.photo}`}
+                        alt="Logo de l'entreprise"
+                        style={{
+                          borderRadius: "10px",
+                          width: "50px",
+                          height: "50px",
+                          backgroundRepeat: "no-repeat",
+                        }}
+                      />
+                    </div>
+                    <div className="company-details-id">
+                      <div className="info-id">
+                        <p className="name-entrprise-id">
+                          {" "}
+                          <p style={{ margin: 0 }}>{companyInfo.name}</p>
+                        </p>
+                        <p>
+                          <p style={{ margin: 0 }}>{companyInfo.phone}</p>
+                        </p>
+                        <p>
+                          <p style={{ margin: 0 }}>{companyInfo.address}</p>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div>
+                  <h5>Référence : {selectedFacture.reference}</h5>
+                  <p><strong>TICKET  N° :</strong> {selectedFacture.ticketNumber}</p>
+                  <p>
+                    <strong>Nom du client :</strong>{" "}
+                    {selectedFacture.customerName}
+                  </p>
+                  <p>
+                    <strong>Contact :</strong> {selectedFacture.contact}
+                  </p>
+                  <p><strong>Date :</strong> {new Date(selectedFacture.createdAt).toLocaleDateString()}</p>
+                </div>
+              </div>
+              <div className="service">
+                <p>
+                  <strong>Type de service :</strong>{" "}
+                  {selectedFacture.serviceType}
+                </p>
+                <p>
+                  <strong>État :</strong> {selectedFacture.etat}
+                </p>
+              </div>
+              <div className="factureId-table">
                 <table>
                   <thead>
                     <tr>
                       <th>QTÉ</th>
                       <th>DÉSI</th>
                       <th>PU</th>
-                      <th>MONTANT</th>
+                      <th className="action">MONTANT</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -162,7 +210,7 @@ const FactureId = () => {
                           <td>1</td>
                           <td>{description}</td>
                           <td>{totalPrice.toFixed(0)} Ar</td>
-                          <td>{totalPrice.toFixed(0)} Ar</td>
+                          <td className="action">{totalPrice.toFixed(0)} Ar</td>
                         </tr>
                       );
                     })}
@@ -190,7 +238,9 @@ const FactureId = () => {
                       return (
                         <tr key={machine._id}>
                           <td>1</td>
-                          <td>{"Séchage"} ({weight} kg)</td>
+                          <td>
+                            {"Séchage"} ({weight} kg)
+                          </td>
                           <td>{price.toFixed(0)} Ar</td>
                           <td>{price.toFixed(0)} Ar</td>
                         </tr>
@@ -208,7 +258,9 @@ const FactureId = () => {
                           <td>{quantity}</td>
                           <td>{product.name}</td>
                           <td>{product.price} Ar</td>
-                          <td>{(quantity * product.price).toFixed(0)} Ar</td>
+                          <td className="action">
+                            {(quantity * product.price).toFixed(0)} Ar
+                          </td>
                         </tr>
                       );
                     })}
@@ -219,7 +271,7 @@ const FactureId = () => {
                       <td className="total" colSpan="3">
                         <strong>Total</strong>
                       </td>
-                      <td className="total">
+                      <td className="action">
                         {Math.round(selectedFacture.totalPrice)} Ar
                       </td>
                     </tr>
@@ -228,7 +280,7 @@ const FactureId = () => {
                         <td className="total" colSpan="3">
                           <strong>Reste</strong>
                         </td>
-                        <td className="reste">
+                        <td className="action">
                           {Math.round(selectedFacture.reste)} Ar
                         </td>
                       </tr>

@@ -1,5 +1,5 @@
 // src/connexion/pages/SignIn.js
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -10,22 +10,22 @@ const SignIn = ({ onLogin }) => {
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [canShowSignup, setCanShowSignup] = useState(true);
+//  const [canShowSignup, setCanShowSignup] = useState(true);
 
-  useEffect(() => {
-    const checkAdminCount = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/api/auth/admin-count');
-        const { adminCount } = response.data;
-        if (adminCount >= 2) {
-          setCanShowSignup(false);
-        }
-      } catch (error) {
-        console.error('Error fetching admin count', error);
-      }
-    };
-    checkAdminCount();
-  }, []);
+//   useEffect(() => {
+//     const checkAdminCount = async () => {
+//       try {
+//         const response = await axios.get('http://localhost:5000/api/auth/admin-count');
+//         const { adminCount } = response.data;
+//         if (adminCount >= 2) {
+//           setCanShowSignup(false);
+//         }
+//       } catch (error) {
+//         console.error('Error fetching admin count', error);
+//       }
+//     };
+//     checkAdminCount();
+//   }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -81,14 +81,12 @@ const SignIn = ({ onLogin }) => {
             <FontAwesomeIcon icon={faSignInAlt} />
             Sign In
           </button>
-          {canShowSignup && (
             <Link className="link" to="/signup">
               <button type="button">
                 <FontAwesomeIcon icon={faUserPlus} />
                 Sign Up
               </button>
             </Link>
-          )}
         </div>
       </div>
         

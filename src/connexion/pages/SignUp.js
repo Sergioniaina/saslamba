@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faLock, faCamera, faUserPlus } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faLock, faCamera, faUserPlus, faSignInAlt } from '@fortawesome/free-solid-svg-icons';
 import '../css/signUp.css';
 
 const Signup = () => {
@@ -12,6 +12,22 @@ const Signup = () => {
   const [photo, setPhoto] = useState(null); // Pour stocker la photo
   const [error, setError] = useState(''); // Pour afficher les erreurs
   const navigate = useNavigate();
+  const [canShowSignup, setCanShowSignup] = useState(true);
+
+  useEffect(() => {
+    const checkAdminCount = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/auth/admin-count');
+        const { adminCount } = response.data;
+        if (adminCount >= 1) {
+          setCanShowSignup(false);
+        }
+      } catch (error) {
+        console.error('Error fetching admin count', error);
+      }
+    };
+    checkAdminCount();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,18 +42,20 @@ const Signup = () => {
     }
   
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/signup', formData, {
+       await axios.post('http://localhost:5000/api/auth/signup', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
-      alert(response.data.message);
       navigate('/signin');
     } catch (error) {
       setError('Error registering user');
       console.error(error);
     }
   };
+  const signin =()=>{
+    navigate('/signin');
+  }
 
   return (
     <div className='signup'>
@@ -68,14 +86,16 @@ const Signup = () => {
             />
              <label> Password:</label>
           </div>
+          {canShowSignup && (
           <div className="form-group">
-           
             <select value={role} onChange={(e) => setRole(e.target.value)}>
               <option value="user">User</option>
-              <option value="admin">Admin</option>
+            
+                 <option value="admin">Admin</option>
             </select>
             <label>Role:</label>
           </div>
+             )}
           <div className="form-group">
           <FontAwesomeIcon className='icon' icon={faCamera} /> 
             <input
@@ -87,6 +107,9 @@ const Signup = () => {
           <label>Photo (facultatif):</label>
           <button type="submit">
             <FontAwesomeIcon icon={faUserPlus} /> Sign Up
+          </button>
+          <button type="button" onClick={signin}>
+            <FontAwesomeIcon icon={faSignInAlt} /> SignIn
           </button>
         </form>
         {error && <div className="error">{error}</div>}

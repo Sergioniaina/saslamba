@@ -127,6 +127,15 @@ router.put('/update', upload.single('photo'), async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+router.delete('/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await CompanyInfo.findByIdAndDelete(id);
+    res.json({ message: 'Article supprimé avec succès' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 // Route pour supprimer les informations de l'entreprise
 router.delete('/delete', async (req, res) => {

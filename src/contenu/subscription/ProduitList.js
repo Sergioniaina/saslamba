@@ -97,7 +97,9 @@ const Products = () => {
 
       // Récupérer à nouveau tous les produits après ajout ou mise à jour
       await fetchAllProducts();
-      setIsModalOpen(false); // Ferme la modale après l'ajout ou la mise à jour
+      setIsModalOpen(false); 
+      toast.success("Produit Ajouter avec succes")
+      // Ferme la modale après l'ajout ou la mise à jour
     } catch (error) {
       console.error("Error saving product:", error);
       // Vous pouvez afficher un message d'erreur à l'utilisateur ici
@@ -106,10 +108,12 @@ const Products = () => {
 
   const handleDeleteProduct = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/products/${id}`);
+      await axios.delete(`http://localhost:5000/api/products/${id}`,{
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      })
       setCurrentProduct(currentProduct?._id === id ? null : currentProduct);
       await fetchAllProducts();
-      toast.success("Produit ajouter avec succes")
+      toast.success("Produit supprimer avec succes")
     } catch (error) {
       console.error("Error deleting product:", error);
     }

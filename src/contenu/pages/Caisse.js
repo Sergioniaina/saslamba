@@ -268,8 +268,8 @@ const Caisse = () => {
       </table>
 
       {showModal && (
-        <div className="modal">
-          <div className="modal-content">
+        <div className="modal-caisse" onClick={() => setShowModal(false)}>
+          <div className="modal-content-caisse" onClick={(e)=>e.stopPropagation()}>
             <span className="close" onClick={() => setShowModal(false)}>
               <FaTimes />
             </span>

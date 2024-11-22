@@ -8,7 +8,7 @@ const FactureManage = () => {
   const [selectedFacture, setSelectedFacture] = useState(null);
 
   const handleViewChange = (newView, facture = null) => {
-    setView(newView);
+    setView(newView); 
     setSelectedFacture(facture);
   };
 

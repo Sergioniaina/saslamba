@@ -73,6 +73,7 @@
     /* Modal Styling for the Form */
     .form-modal {
       position: fixed;
+      animation: fadIn 0.4s ease;
       top: 0px;
       left: 0px;
       width: 100%;
@@ -123,6 +124,7 @@
         background: rgba(55, 53, 53, 0.6);
         border-radius: 10px;
         padding: 20px;
+        animation: slideIn 0.4s ease;
         .t{
           width: 70%;
           height: 40px;

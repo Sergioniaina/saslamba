@@ -78,6 +78,9 @@ const FactureList = ({ onEdit, onViewDetails, etatFilter }) => {
       try {
         const response = await axios.get("http://localhost:5000/api/caisses");
         setCaisses(response.data);
+        if (response.data.length > 0) {
+          setSelectedCaisse(response.data[0]._id);
+        }
       } catch (error) {
         console.error("Erreur lors du chargement des caisses:", error);
         setError("Une erreur est survenue lors du chargement des caisses.");
@@ -505,13 +508,13 @@ const FactureList = ({ onEdit, onViewDetails, etatFilter }) => {
                 value={selectedCaisse}
                 onChange={(e) => setSelectedCaisse(e.target.value)}
                 required
-              >
-                <option value="">Sélectionner une caisse</option>
+              >   
                 {caisses.map((caisse) => (
                   <option key={caisse._id} value={caisse._id}>
                     {caisse.nom}
                   </option>
                 ))}
+                 <option value="">Sélectionner une caisse</option>
               </select>
               <label>Choisir une caisse :</label>
             </div>

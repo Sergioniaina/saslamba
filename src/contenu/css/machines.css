@@ -136,6 +136,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      animation: fadIn 0.4s ease;
     }
     
     .modal-content-m {
@@ -151,6 +152,7 @@
       border: 3px solid gray;
       max-height: 80vh;
       overflow-y: auto;
+      animation: slideIn 0.4s ease;
       .form{
         height: auto;
         width: 100%;
@@ -223,6 +225,10 @@
         }
         .btn-c{
           background: var(--btn-cancel);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
         }
       }
       .btn-ad:hover{

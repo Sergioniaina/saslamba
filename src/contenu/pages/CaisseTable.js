@@ -66,6 +66,7 @@ function CaisseTable() {
 
   // Get all unique caisse names and historique types for dropdowns
   const caisseNames = [...new Set(caisses.map((caisse) => caisse.nom))];
+  // eslint-disable-next-line
   const historiqueTypes = [
     ...new Set(
       caisses.flatMap((caisse) =>

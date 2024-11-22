@@ -91,7 +91,7 @@
   }
 }
 
-.modal {
+.modal-caisse {
   position: fixed;
   top: 0;
   left: 0;
@@ -103,7 +103,7 @@
   align-items: center;
   z-index: 999;
 
-  .modal-content {
+  .modal-content-caisse {
     background-color: white;
     padding: 20px;
     border-radius: 5px;

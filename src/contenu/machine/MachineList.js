@@ -24,9 +24,9 @@ const MachineList = () => {
     if (confirmAction) confirmAction();
     setIsConfirmVisible(false);
   };
-
   useEffect(() => {
     fetchMachines();
+    // eslint-disable-next-line
   }, [searchQuery]);
 
   const fetchMachines = async () => {

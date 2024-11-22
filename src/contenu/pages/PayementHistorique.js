@@ -31,6 +31,7 @@ const PaymentList = () => {
 
   useEffect(() => {
     fetchPayments();
+    // eslint-disable-next-line
   }, []);
 
   const fetchPayments = async () => {

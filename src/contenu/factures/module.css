@@ -52,7 +52,7 @@
 }
 
 /* Modal styles */
-.modal {
+.modal-factureId {
   display: none;
   position: fixed;
   top: 0;
@@ -69,7 +69,7 @@
     display: flex;
   }
 
-  .modal-content {
+  .modal-content-factureId {
     background: white;
     width: 80%;
     max-width: 600px;
@@ -77,13 +77,12 @@
     border-radius: 8px;
     animation: slideIn 0.4s ease;
     height: 75vh;
-    overflow: auto;
+    color: black;
 
     .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-
+      text-align: center;
+      border-bottom: 4px solid gray;
+      padding: 5px;
       h2 {
         margin: 0;
       }
@@ -99,10 +98,53 @@
         }
       }
     }
+  .factureId-table{
+    height: 38vh;
+    overflow: auto;
+    thead{
+      background: rgb(48, 43, 43);
+      position: sticky;
+      color: white;
+      top: 0px;
+    }
+    tfoot{
+      border: none;
+      td{
+        padding: 10px;
+       color: wheat;
+        letter-spacing: 1px;
+        font-weight: 600;
+        background: rgb(6, 105, 127);
+      }
+    }
+    table{
+      width: 100%;
+      border-collapse: collapse;
+      thead th,tbody td{
+        padding: 10px;
+        border-bottom: 1px solid gray;
+      }
+    }
+    th,td{
+      text-align: left;
+    }
+    .action{
+      text-align: right;
+    }
+  }
 
     .modal-body {
       margin: 20px 0;
-
+      .service{
+        display: flex;
+        justify-content: space-evenly;
+      }
+    .information-factureId{
+      display: flex;
+      border: 2px solid black;
+      justify-content: space-evenly;
+      padding-top: 10px;
+    }
       h5 {
         margin: 0 0 10px;
       }
@@ -116,23 +158,7 @@
         }
       }
     }
-
-    .modal-footer {
-      display: flex;
-      justify-content: flex-end;
-
-      .btn-secondary {
-        background-color: #6c757d;
-        color: white;
-        padding: 5px 10px;
-        border: none;
-        cursor: pointer;
-
-        &:hover {
-          background-color: #5a6268;
-        }
-      }
-    }
+   
   }
 }
 

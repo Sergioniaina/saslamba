@@ -126,7 +126,7 @@ const FactureForm = () => {
     } else {
       setBillet(false);
     }
-  }, []); // Si vous avez une dépendance spécifique qui change
+  }, [billet]); // Si vous avez une dépendance spécifique qui change
 
   const fetchPaymentTypes = async () => {
     try {

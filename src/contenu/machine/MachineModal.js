@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { FaEdit, FaPlus } from "react-icons/fa";
+import { FaEdit, FaPlus, FaTimes } from "react-icons/fa";
 
 const MachineModal = ({ show, onClose, onSave, machine }) => {
   const [formData, setFormData] = useState({
-    type: "",
+    type: "Machine à laver",
     modelNumber: "",
     powerConsumption: "",
     weightCapacity: "",
@@ -96,19 +96,18 @@ const MachineModal = ({ show, onClose, onSave, machine }) => {
   if (!show) return null;
 
   return (
-    <div className="modal-machine">
-      <div className="modal-content-m">
+    <div className="modal-machine" onClick={onClose}>
+      <div className="modal-content-m" onClick={(e)=>e.stopPropagation()}>
         <h2>{machine ? "Modifier Machine" : "Ajouter Machine"}</h2>
         <form onSubmit={handleSubmit} className="form">
           <div className="form1">
             <select name="type" value={formData.type} onChange={handleChange} required>
-              <option value="">Select Type</option>
               <option value="Machine à laver">Machine à laver</option>
               <option value="Sèche-linge">Sèche-linge</option>
             </select>
             <input
               type="text"
-              placeholder="Model Number"
+              placeholder="Numero de Model"
               name="modelNumber"
               value={formData.modelNumber}
               onChange={handleChange}
@@ -117,7 +116,7 @@ const MachineModal = ({ show, onClose, onSave, machine }) => {
           </div>
           <div className="form2">
             <input
-              placeholder="Power Consumption (kW)"
+              placeholder="Consommation (kW)"
               type="number"
               name="powerConsumption"
               value={formData.powerConsumption}
@@ -127,7 +126,7 @@ const MachineModal = ({ show, onClose, onSave, machine }) => {
             <input
               type="number"
               name="weightCapacity"
-              placeholder="Weight Capacity (kg)"
+              placeholder="Capacité de Poids (kg)"
               value={formData.weightCapacity}
               onChange={handleChange}
               required
@@ -200,7 +199,7 @@ const MachineModal = ({ show, onClose, onSave, machine }) => {
             <button className="btn-ad" type="submit">
             {machine ? <FaEdit/> : <FaPlus/>}
               {machine ? "Modifier" : "Ajouter"}</button>
-            <button className="btn-c" type="button" onClick={onClose}>Cancel</button>
+            <button className="btn-c" type="button" onClick={onClose}> <FaTimes/>Cancel</button>
           </div>
         </form>
       </div>

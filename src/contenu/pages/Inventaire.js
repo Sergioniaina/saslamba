@@ -28,6 +28,7 @@ const ProductInventory = () => {
     fetchProducts();
     fetchHistorique();
     fetchUsers();
+    // eslint-disable-next-line
   }, []);
 
   const fetchProducts = async () => {
