@@ -1,0 +1,91 @@
+.machine-consumption-history {
+  height: 84vh;
+ 
+  padding: 20px;
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.5);
+
+  .search-bar {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+
+    input {
+      width: 50%;
+      padding: 10px;
+      font-size: 1rem;
+    }
+  }
+  .table-history{
+    height: 63vh;
+    overflow: auto;
+    thead{
+      position: sticky;
+      top: 0px;
+      border-bottom: 3px solid gray;
+    }
+  }
+  .totals-table{
+    width: 100%;
+    border-collapse: separate;
+    margin-bottom: 20px;
+    background: black;
+    th,
+    td {
+      padding: 12px;
+      text-align: center;
+      border: 1px solid rgb(49, 48, 48);
+    }
+  }
+  .history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    background: black;
+    caption {
+      font-weight: bold;
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+
+    th,
+    td {
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid gray;
+    }
+
+     th {
+      background: rgb(39, 38, 38);
+    }
+/*
+    tbody tr:nth-child(even) {
+      background-color: #f9f9f9;
+    } */
+  }
+
+  .btn {
+    border: none;
+    cursor: pointer;
+    color: red;
+    font-size: 1rem;
+
+    &:hover {
+      color: darkred;
+    }
+  }
+  .td{
+    background: rgb(39, 38, 38);
+  }
+  .history-table tfoot {
+    font-weight: bold;
+    background-color: black;
+    position: sticky;
+    bottom: -1px;
+    color: aqua;
+    letter-spacing: 1px;
+  }
+  
+  .history-table tfoot td {
+    border-top:2px solid #ccc; }  
+}

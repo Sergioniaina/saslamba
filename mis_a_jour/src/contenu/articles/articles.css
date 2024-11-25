@@ -1,0 +1,273 @@
+/* Main wrapper for all styles */
+.article-manage {
+    /* General Styling */
+    text-align: center;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    .input{
+        position: relative;
+        display: flex;
+        align-items: center;
+        .icon{
+            position: absolute;
+            right: 10px;
+            color: gray;
+        }
+    }
+    .search-and-add {
+        display: flex;
+        gap: 200px;
+        align-items: center;
+        margin-bottom: 20px;
+    
+        input[type="text"] {
+          padding: 10px;
+          border-radius: 10px;
+          border: 1px solid #ccc;
+          height: 20px;
+          outline: none;
+          color: white;
+          border: 3px solid gray;
+          background: rgba(0, 0, 0, 0.6);
+          width: 30vw;
+          outline: none;
+        }
+    
+        .button-add {
+          background: #28a745;
+          color: #fff;
+          padding: 12px 15px;
+          width: 20vw;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          font-size: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: 0.2s;
+          gap: 30px;
+          letter-spacing: 1px;
+          border: 3px solid gray;
+          &:hover {
+            background: #218838;
+            width: 30vw;
+          }
+        }
+      }
+    /* Add Button Styling */
+    .button-add {
+      background-color: #007bff;
+      color: #fff;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+  
+      &:hover {
+        background-color: #0056b3;
+      }
+    }
+  
+    /* Modal Styling for the Form */
+    .form-modal {
+      position: fixed;
+      animation: fadIn 0.4s ease;
+      top: 0px;
+      left: 0px;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      .price-field{
+       
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 70%;
+        gap: 10px;
+        input[type="text"],
+        input[type="number"] {
+          height: 40px;
+          border-radius: 40px;
+          border: 3px solid gray;
+          width: 100%;
+          background: transparent;
+          color: white;
+          text-align: center;
+          outline: none;
+        }
+       .price{
+        display: flex;
+       gap: 10px;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+       }
+       button{
+        margin: 0px!important;
+       }
+      }
+  
+      form {
+        width: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        flex-direction: column;
+        background: rgba(55, 53, 53, 0.6);
+        border-radius: 10px;
+        padding: 20px;
+        animation: slideIn 0.4s ease;
+        .t{
+          width: 70%;
+          height: 40px;
+          text-align: center;
+          border: 3px solid gray;
+          border-radius: 40px;
+          background: transparent;
+          color: white;
+        }
+        .ajout-prix{
+          width: 70%;
+          background: #007bff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          &:hover{
+            background: #0056b3;
+          }
+        }
+        .minus{
+          background: #dc3545;
+          &:hover{
+            background: #c82333;
+          }
+        }
+        /* Modal Action Buttons */
+        .modal-actions {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 15px;
+         
+          width: 70%;
+          button {
+            padding: 8px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            margin: 0px!important;
+            width: 45%;
+            gap: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .ajout-m-a{
+            background: #28a745;
+            &:hover{
+              background: #218838;
+            }
+          }
+          .annuler{
+            background: #dc3545;
+            &:hover{
+              background: #c82333;
+            }
+          }
+          .submit-button {
+            background-color: #28a745;
+            color: #fff;
+  
+            &:hover {
+              background-color: #218838;
+            }
+          }
+  
+          .cancel-button {
+            background-color: #dc3545;
+            color: #fff;
+  
+            &:hover {
+              background-color: #c82333;
+            }
+          }
+        }
+      }
+    }
+  
+    /* Table Styles for ArticleList */
+    .article-list {
+      margin-top: 20px;
+  
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: rgba(0, 0, 0, 0.6);
+        .action-edit{
+          background: #28a745;
+          letter-spacing: 1px;
+          &:hover{
+            background: #218838;
+          }
+        }
+        .action-delete{
+          background: #dc3545;
+          letter-spacing: 1px;
+          &:hover{
+            background: #c82333;
+          }
+        }
+        .action{
+            text-align: center;
+            width: 20vw;
+        }
+        .th{
+            text-align: center;
+            ul{
+                text-decoration: none;
+                list-style-type: none;
+                letter-spacing: 1px;
+            }
+        }
+        th,
+        td {
+          border: 1px solid gray;
+          padding: 8px;
+          text-align: left;
+        }
+  
+        th {
+          background-color: rgb(3, 83, 97);
+          font-weight: bold;
+          padding: 15px;
+          border-bottom: 4px solid gray;
+        }
+  
+        .action-buttons {
+          display: flex;
+          gap: 10px;
+  
+          button {
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            color: #007bff;
+  
+            &:hover {
+              color: #0056b3;
+            }
+          }
+        }
+      }
+    }
+  }
+  

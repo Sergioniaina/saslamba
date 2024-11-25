@@ -1,0 +1,119 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+  height: 99.5vh; 
+  background-color: black;
+  padding: 2px;
+  input{
+    transition: 0.3s ease-in-out;
+    transition: background-color 60000s ease-in-out 0s, color 60000s ease-in-out 0s, padding 0.3s ease;
+  }
+
+}
+
+.app {
+  position: fixed;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  border-radius: 10px;
+  height: 100vh;
+  transition: margin-left 0.3s, margin-right 0.3s;
+}
+/* .fixed-div {
+  position: absolute;
+  top: 10px;
+  right: 5px;
+  width: 250px;
+  height: 93vh;
+  background-color: rgb(34, 34, 32);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.4s ease, background-color 0.4s ease; 
+  z-index: 1000;
+  transform: translateX(300px);
+  padding: 20px;
+  border-radius: 5px;
+}
+
+.fixed-div.visible {
+  transform: translateX(0);
+}
+
+  .fixed-div.hidden {
+  transform: translateX(300px);
+} */
+.main-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left 0.3s, margin-right 0.3s;
+  width: 100%;
+}
+.content {
+  flex-grow: 1;
+  color: white;
+  margin-left: 15px;
+  padding-right: 5px;
+}
+/* Styles pour l'ouverture de la Sidebar */
+.app.sidebar-left .sidebar {
+  transform: translateX(0); /* Visible à gauche */
+  transition: transform 0.3s ease; /* Transition plus rapide pour l'ouverture */
+}
+.app.sidebar-right .sidebar {
+  transform: translateX(0); /* Visible à droite */
+  transition: transform 0.3s ease; /* Transition plus rapide pour l'ouverture */
+}
+.app.sidebar-left .fixed-div{
+  right:0px ;
+}
+.app.sidebar-right .fixed-div{
+  left:0px ;
+}
+.app.sidebar-right .fixed-div.hidden{
+  transform: translateX(-300px);
+}
+.app.sidebar-right .fixed-div.visible{
+  
+  transform: translateX(0);
+}
+.app.sidebar-right .sidebar .sidebar-header .close-button{
+  right: 0px;
+  position: absolute;
+}
+
+/* Styles pour la fermeture de la Sidebar */
+.app.sidebar-hidden.sidebar-left .sidebar {
+  transform: translateX(-110%); /* Cachée à gauche */
+  transition: transform 0.7s ease; /* Transition plus lente pour la fermeture */
+}
+
+.app.sidebar-hidden.sidebar-right .sidebar {
+  transform: translateX(100%); /* Cachée à droite */
+  transition: transform 0.7s ease; /* Transition plus lente pour la fermeture */
+}
+
+
+/* Ajustements pour le contenu */
+.app.sidebar-left .main-content {
+  margin-left: 220px;
+  margin-right: 0;
+  transition: margin-left 0.3s ease; /* Transition de marge pour l'ouverture */
+}
+.app.sidebar-right .navbar .lamba{
+  margin-left: -40px;
+  transition: 0.3s;
+}
+.app.sidebar-right .main-content {
+  margin-right: 220px;
+  margin-left: 0;
+  transition: margin-right 0.3s ease; /* Transition de marge pour l'ouverture */
+}
+
+.app.sidebar-hidden .main-content {
+  margin-left: 0;
+  margin-right: 0;
+  transition: margin-left 0.3s ease, margin-right 0.3s ease; /* Transition de marge pour la fermeture */
+}
+

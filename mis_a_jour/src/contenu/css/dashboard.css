@@ -1,0 +1,41 @@
+/* dashboard.css */
+
+.dashboard {
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Prend toute la hauteur de la fenêtre */
+    overflow: hidden; /* Empêche le débordement */
+    
+  }
+  
+  .dashboard > div {
+    flex-shrink: 0; /* Assure que le Dropdown ne rétrécit pas */
+  }
+  
+  .main {
+    display: flex;
+    flex: 1; /* Prend tout l'espace restant après le dropdown */
+    overflow: hidden; /* Empêche le débordement de main */
+    border: 2px solid red;
+  }
+  
+  .sidebar {
+    flex-shrink: 0;
+    width: 250px; /* Largeur de la Sidebar */
+    background-color: #f8f8f8; /* Exemple de couleur de fond pour la Sidebar */
+    overflow-y: auto; /* Barre de défilement si le contenu est plus grand que la hauteur de la fenêtre */
+  }
+  
+  .content {
+    flex: 1; /* Prend tout l'espace restant à côté de la Sidebar */
+    padding: 20px; /* Marge intérieure du contenu */
+    overflow-y: auto; /* Barre de défilement pour le contenu principal si nécessaire */
+  }
+  .dropdown {
+    flex: 1; 
+    height: 100%; 
+    overflow-y: auto;
+    border: 2px solid yellow;
+    box-sizing: border-box;
+  }
+  

@@ -1,0 +1,60 @@
+.input{
+    display: flex;
+    position: relative;
+    background-color: rgb(9, 21, 33) ;
+}
+label{
+    position: absolute;
+    left: 10px;
+    top: 40%;
+    font-weight: 600;
+    font-size: large;
+    transition: top 0.3s, font-size 0.3s;
+    pointer-events: none;
+}
+input:focus~label,
+input:valid~label,
+select:focus~label,
+select:valid~label {
+    top: -18%;
+    font-size: 1em;
+    color: rgb(43, 226, 95);
+    background-color: 9, 21, 33;
+}
+input:hover~label,
+select:hover~label
+{
+    top: -18%;
+    font-size: 1em;
+    color: rgb(6, 164, 51);
+    background-color: rgb(9, 21, 33) ;
+    
+}
+input{
+    background-color: rgb(9, 21, 33) ;
+    outline: none;
+    width: 7cm;
+    height: 30px;
+    color: var(--color);
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: large;
+    outline: none;
+    padding: 10px;
+    border: 3px solid blue;
+}
+select{
+    width: 7.5cm;
+    height: 45px;
+    font-weight: 600;
+    background: transparent;
+    outline: none;
+    border: none;
+    border-bottom: 5px solid  #076784;
+    border-radius: 10px;
+    padding: 10px;
+}
+select option{
+    font-size: large;
+}
+

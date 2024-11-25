@@ -1,0 +1,46 @@
+/* src/css/theme.css */
+:root {
+    --background-color:  black;
+    --text-color: white;
+    --button-bg-color: #333;
+    --button-text-color: white;
+  }
+  
+  /* Light Theme */
+  .light-theme {
+    --background-color: white;
+    --text-color: black;
+    --button-bg-color: #007bff;
+    --button-text-color: white;
+  }
+  
+  /* Black Theme */
+  .black-theme {
+    --background-content: black;
+    --btn-add: rgb(62, 144, 66);
+    --btn-cancel: rgb(172, 35, 35);
+    --background-color:  black;
+    --text-color: white;
+    --button-bg-color: #333;
+    --button-text-color: white;
+  }
+  
+  /* Light Blue Theme */
+  .light-blue-theme {
+    --background-color: #e0f7fa;
+    --text-color: #01579b;
+    --button-bg-color: #0288d1;
+    --button-text-color: white;
+  }
+  
+  /* Apply variables in body, buttons, etc. */
+  body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+  }
+  
+  button {
+    background-color: var(--button-bg-color);
+    color: var(--button-text-color);
+  }
+  
