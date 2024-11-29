@@ -53,6 +53,7 @@ const MachineConsumptionHistory = () => {
       { hourly: 0, daily: 0, weekly: 0, monthly: 0, yearly: 0 }
     );
   };
+  
 
   const calculateTotalPerMachine = (history) => {
     const now = new Date();
@@ -80,6 +81,7 @@ const MachineConsumptionHistory = () => {
       return acc;
     }, {});
   };
+  
 
   const deleteEntry = async (id) => {
     try {
@@ -110,7 +112,7 @@ const MachineConsumptionHistory = () => {
       acc.weekly += weekly || 0;
       acc.monthly += monthly || 0;
       acc.yearly += yearly || 0;
-      acc.totalKilowattHours += entry.kilowattHours || 0; // Add kilowattHours total
+      acc.totalKilowattHours += entry.kilowattHours || 0; // Ajouter le total de kWh
       return acc;
     },
     {
@@ -122,7 +124,6 @@ const MachineConsumptionHistory = () => {
       totalKilowattHours: 0,
     }
   );
-
   return (
     <div className="machine-consumption-history">
       {/* Search Bar */}

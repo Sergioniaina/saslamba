@@ -1,61 +1,68 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios"; // Import d'Axios
+import axios from "axios";
 import "../css/caisseTable.css";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendarAlt, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 function CaisseTable() {
-  const [caisses, setCaisses] = useState([]);
-  const [searchCaisseName, setSearchCaisseName] = useState(""); // Search by caisse name
-  const [searchType, setSearchType] = useState(""); // Search by type
-  const [startDate, setStartDate] = useState(""); // Start date for search
-  const [endDate, setEndDate] = useState(""); // End date for search
+  const [historiques, setHistoriques] = useState([]);
+  const [caisses, setCaisses] = useState([]); // Stocker les informations des caisses séparément
+  const [searchCaisseName, setSearchCaisseName] = useState("");
+  const [searchType, setSearchType] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
-  const apiBaseURL = "http://localhost:5000/api/caisses"; // Replace with your API URL
+  const apiBaseURL = "http://localhost:5000/api";
 
-  // Fetch caisses
+  // Récupérer les données de la collection HistoriqueCaisse et des caisses
   useEffect(() => {
+    fetchHistoriques();
     fetchCaisses();
   }, []);
 
-  // Fetch caisses from API
+  const fetchHistoriques = async () => {
+    try {
+      const response = await axios.get(`${apiBaseURL}/historiques`);
+      setHistoriques(response.data);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des historiques", error);
+    }
+  };
+
   const fetchCaisses = async () => {
     try {
-      const response = await axios.get(apiBaseURL);
+      const response = await axios.get(`${apiBaseURL}/caisses`);
       setCaisses(response.data);
     } catch (error) {
-      console.error("Error fetching caisses", error);
+      console.error("Erreur lors de la récupération des caisses", error);
     }
   };
 
-  // Function to delete a historical entry
-  const deleteHistorique = async (caisseId, historiqueId) => {
+  // Supprimer un historique
+  const deleteHistorique = async (historiqueId) => {
     try {
-      const response = await axios.delete(
-        `${apiBaseURL}/${caisseId}/historique/${historiqueId}`
-      );
-      if (response.status === 200) {
-        fetchCaisses(); // Reload caisses after deletion
+      const response = await axios.delete(`${apiBaseURL}/historiques/${historiqueId}`);
+      if (response.status === 204) {
+        fetchHistoriques(); // Rafraîchir après suppression
       } else {
-        alert("Error deleting entry.");
+        alert("Erreur lors de la suppression.");
       }
     } catch (error) {
-      console.error("Error deleting historique", error);
+      console.error("Erreur lors de la suppression de l'historique", error);
     }
   };
 
-  // Function to compare dates as case-insensitive
+  // Vérifier si une date est dans l'intervalle
   const isDateInRange = (historiqueDate, startDate, endDate) => {
     const historiqueDateStr = new Date(historiqueDate)
       .toISOString()
-      .split("T")[0]
-      .toLowerCase();
+      .split("T")[0];
     const startDateStr = startDate
-      ? new Date(startDate).toISOString().split("T")[0].toLowerCase()
+      ? new Date(startDate).toISOString().split("T")[0]
       : "";
     const endDateStr = endDate
-      ? new Date(endDate).toISOString().split("T")[0].toLowerCase()
+      ? new Date(endDate).toISOString().split("T")[0]
       : "";
 
     return (
@@ -64,54 +71,39 @@ function CaisseTable() {
     );
   };
 
-  // Get all unique caisse names and historique types for dropdowns
-  const caisseNames = [...new Set(caisses.map((caisse) => caisse.nom))];
-  // eslint-disable-next-line
-  const historiqueTypes = [
-    ...new Set(
-      caisses.flatMap((caisse) =>
-        caisse.historique.map((mouvement) => mouvement.type)
-      )
-    ),
-  ];
+  // Obtenir les noms de caisses uniques depuis la collection des caisses
+  const caisseNames = caisses.map((caisse) => caisse.nom);
 
-  // Filter caisses based on search inputs (caisse name, type, and date range)
-  const filteredCaisses = caisses.filter((caisse) => {
-    // Filter by caisse name (case-insensitive)
-    const caisseNameMatches = caisse.nom
-      .toLowerCase()
-      .includes(searchCaisseName.toLowerCase());
-
-    // Filter by historical type (if selected)
-    const filteredHistorique = caisse.historique.filter((mouvement) => {
-      const typeMatches =
-        searchType === "" ||
-        mouvement.type.toLowerCase().includes(searchType.toLowerCase());
-      const dateMatches =
-        isDateInRange(mouvement.date, startDate, endDate) ||
-        !startDate ||
-        !endDate;
-
-      return typeMatches && dateMatches;
-    });
-
-    // Only show caisse if name matches search and if there are any matching historique entries
-    return caisseNameMatches && filteredHistorique.length > 0;
+  // Ajouter les noms de caisses aux historiques
+  const enrichHistoriques = historiques.map((historique) => {
+    const caisse = caisses.find((c) => c._id === historique.caisse.toString());
+    return {
+      ...historique,
+      caisseName: caisse ? caisse.nom : "Caisse inconnue", // Nom de la caisse ou valeur par défaut
+    };
   });
 
-  const totalAmount = filteredCaisses.reduce((total, caisse) => {
-    return (
-      total +
-      caisse.historique.reduce((sum, mouvement) => {
-        return sum + (mouvement.montant || 0);
-      }, 0)
-    );
+  // Filtrer les historiques selon les entrées de recherche
+  const filteredHistoriques = enrichHistoriques.filter((historique) => {
+    const caisseNameMatches = historique.caisseName
+      .toLowerCase()
+      .includes(searchCaisseName.toLowerCase());
+    const typeMatches =
+      searchType === "" ||
+      historique.type.toLowerCase().includes(searchType.toLowerCase());
+    const dateMatches = isDateInRange(historique.date, startDate, endDate);
+
+    return caisseNameMatches && typeMatches && dateMatches;
+  });
+
+  const totalAmount = filteredHistoriques.reduce((total, historique) => {
+    return total + (historique.montant || 0);
   }, 0);
 
   return (
     <div className="caisseTable">
       <div className="searchFilters">
-        {/* Filter by Caisse Name */}
+        {/* Filtrer par nom de caisse */}
         <div className="c-input">
           <select
             value={searchCaisseName}
@@ -127,33 +119,31 @@ function CaisseTable() {
           <label>Caisse</label>
         </div>
 
+        {/* Filtrer par type */}
         <div className="c-input">
           <input
-            required
             placeholder=""
             value={searchType}
             onChange={(e) => setSearchType(e.target.value)}
-          ></input>
+          />
           <label>Type</label>
         </div>
-        {/* Filter by Historique Type */}
 
+        {/* Filtrer par date de début */}
         <div className="c-input">
           <FontAwesomeIcon className="icon" icon={faCalendarAlt} />
           <input
-            placeholder=""
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
           />
-          <label>Date Fin</label>
+          <label>Date début</label>
         </div>
-        {/* Filter by Date */}
 
+        {/* Filtrer par date de fin */}
         <div className="c-input">
           <FontAwesomeIcon className="icon" icon={faCalendarAlt} />
           <input
-            placeholder=""
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
@@ -170,34 +160,30 @@ function CaisseTable() {
               <th>Type</th>
               <th>Montant</th>
               <th>Date</th>
-              <th className="action">Actions</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredCaisses.map((caisse) =>
-              caisse.historique.map((mouvement) => (
-                <tr key={mouvement._id}>
-                  <td>{caisse.nom}</td>
-                  <td>{mouvement.type}</td>
-                  <td>{mouvement.montant || 0} Ar</td>
-                  <td>{new Date(mouvement.date).toLocaleString()}</td>
-                  <td className="action">
-                    <FontAwesomeIcon
-                      onClick={() =>
-                        deleteHistorique(caisse._id, mouvement._id)
-                      }
-                      icon={faTrash}
-                      className="icon"
-                    />{" "}
-                  </td>
-                </tr>
-              ))
-            )}
+            {filteredHistoriques.map((historique) => (
+              <tr key={historique._id}>
+                <td>{historique.caisseName}</td>
+                <td>{historique.type}</td>
+                <td>{historique.montant || 0} Ar</td>
+                <td>{new Date(historique.date).toLocaleString()}</td>
+                <td>
+                  <FontAwesomeIcon
+                    onClick={() => deleteHistorique(historique._id)}
+                    icon={faTrash}
+                    className="icon"
+                  />
+                </td>
+              </tr>
+            ))}
           </tbody>
           <tfoot>
             <tr>
               <td colSpan="2">Total</td>
-              <td className="totalamount">{totalAmount} Ar</td>
+              <td>{totalAmount} Ar</td>
               <td colSpan="2"></td>
             </tr>
           </tfoot>

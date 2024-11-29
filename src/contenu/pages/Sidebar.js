@@ -115,6 +115,12 @@ const Sidebar = ({
           </span>
           <span>User</span>
         </NavLink>
+        <NavLink className="li" to="/home/privilege">
+          <span>
+            <FaTasks style={{ color: 'white' }} className="icon" />
+          </span>
+          <span>Privilege</span>
+        </NavLink>
         <NavLink className="li" to="/home/historique">
           <span>
             <FaHistory style={{ color: 'orange' }} className="icon" />

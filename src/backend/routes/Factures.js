@@ -55,12 +55,11 @@ router.post('/',authMiddleware, async (req, res) => {
       return res.status(400).json({ error: 'Détails des articles invalide.' });
     }
 
-     const ticketCountToday = await Facture.countDocuments({
-      createdAt: { $gte: startOfDay, $lte: endOfDay }
-     });
-   // const latestFacture = await Facture.findOne().sort({ createdAt: -1 });
+    const latestFacture = await Facture.findOne().sort({ ticketNumber: -1 });
 
-    const ticketNumber = ticketCountToday + 1; // Incrémenter le numéro de ticket
+    // Déterminer le prochain numéro de ticket
+    const ticketNumber = latestFacture ? latestFacture.ticketNumber + 1 : 1;
+
 
     // Filtrer les prix pour chaque type d'article
      
@@ -574,18 +573,21 @@ router.get('/', async (req, res) => {
 // Exemple d'implémentation dans le backend Express
 router.get("/last-ticket", async (req, res) => {
   try {
-    const latestFacture = await Facture.findOne().sort({ createdAt: -1 });
+    // Trouver la facture avec le plus grand numéro de ticket
+    const latestFacture = await Facture.findOne().sort({ ticketNumber: -1 });
 
     if (!latestFacture) {
-      // Si aucune facture n'est trouvée, renvoyer un ticket par défaut 1
+      // Si aucune facture n'est trouvée, retourner le numéro de ticket initial
       return res.status(200).json({ ticketNumber: 1 });
     }
 
-    res.status(200).json(latestFacture);
+    // Retourner le dernier numéro de ticket
+    res.status(200).json({ ticketNumber: latestFacture.ticketNumber });
   } catch (error) {
     res.status(500).json({ message: "Erreur lors de la récupération du dernier ticket" });
   }
 });
+
 
 router.post('/cancel/:id', authMiddleware, async (req, res) => {
   const factureId = req.params.id;

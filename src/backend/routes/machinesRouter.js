@@ -6,6 +6,7 @@ const Machine = require("../models/machines");
 const Historique = require("../models/Historique");
 const path = require("path");
 const Compteur = require("../models/compteurMachine");
+const Facture = require("../models/Factures");
 const authMiddleware = require("../middleware/authMiddleware");
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -205,6 +206,35 @@ router.patch("/:id/etat", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+router.patch('/:id/indisponible', async (req, res) => {
+  const machineId = req.params.id;
+
+  try {
+    // Recherche la machine par son ID
+    const machine = await Machine.findById(machineId);
+
+    if (!machine) {
+      return res.status(404).json({ message: 'Machine non trouvée' });
+    }
+
+    // Mettre à jour l'état de la machine
+    machine.etat = 'Indisponible'; // Mise à jour de l'état
+
+    // Sauvegarder la machine avec le nouvel état
+    await machine.save();
+    const compteur = new Compteur({
+      machineId: machine._id,
+      startTime: new Date(), // Démarrage du compteur
+    });
+    await compteur.save();
+
+    return res.status(200).json({ message: 'Machine mise à l\'état Indisponible', machine });
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour de l\'état:', error);
+    return res.status(500).json({ message: 'Erreur interne du serveur' });
+  }
+});
+
 // const KILOWATT_CONSUMPTION_PER_HOUR = 2; // Par exemple, 2 kWh par heure
 
 router.patch("/:id/liberer", async (req, res) => {
@@ -288,6 +318,45 @@ router.delete("/consumption/:id", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+// Route pour récupérer les machines par ID
+router.get('/', async (req, res) => {
+  const { ids } = req.query;
+  const machineIds = ids.split(','); // Les IDs sont passés sous forme de chaîne, donc on les découpe
+  try {
+    const machines = await Machine.find({ '_id': { $in: machineIds } });
+    res.json(machines);
+  } catch (err) {
+    res.status(500).send('Erreur lors de la récupération des machines');
+  }
+});
+// Supposons que vous ayez une route pour récupérer les factures en attente et leurs machines associées
+
+router.get('/factures-machines', async (req, res) => {
+  const { factureId } = req.query; // ID de la facture à filtrer
+  
+  try {
+    // Récupérer la facture avec l'ID fourni
+    const facture = await Facture.findById(factureId);
+    
+    if (!facture) {
+      return res.status(404).send('Facture non trouvée');
+    }
+
+    if (facture.etat !== "en attente") {
+      return res.status(400).send('La facture n\'est pas en attente');
+    }
+
+    // Récupérer les machines associées à cette facture
+    const machineIds = facture.machines; // L'ID des machines associées à la facture
+    const machines = await Machine.find({ '_id': { $in: machineIds } });
+    
+    res.json(machines); // Renvoyer les machines associées à la facture
+  } catch (err) {
+    res.status(500).send('Erreur lors de la récupération des machines');
+  }
+});
+
 
 // Exemple de route pour obtenir l'historique de consommation de toutes les machines
 router.get("/consumption", async (req, res) => {

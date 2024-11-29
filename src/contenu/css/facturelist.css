@@ -92,6 +92,11 @@ tbody tr:hover{
     width: 100%;
     border-collapse: collapse;
     background: rgba(0, 0, 0, 0.6);
+    .highlighted {
+      background-color: rgb(7, 43, 63); 
+      font-weight: bold;
+    }
+    
     tfoot{
       position: sticky;
       bottom: 1px;
@@ -272,3 +277,20 @@ tbody tr:hover{
     }
   } 
 }
+@keyframes clignote {
+  0% {
+    background-color: black;
+  }
+  50% {
+    background-color:#2d2e30; /* Couleur d'arrière-plan claire */
+  }
+  100% {
+    background-color: black;
+  }
+}
+
+.clignote {
+  animation: clignote 0.8s infinite;
+  background-color: red;
+}
+

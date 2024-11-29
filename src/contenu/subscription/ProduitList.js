@@ -10,7 +10,7 @@ import {
   faTrash,
   faPlus,
   faSearch,
-  faBoxOpen
+  faBoxOpen,
 } from "@fortawesome/free-solid-svg-icons";
 import "../css/Products.css";
 import { FaSave, FaTimes } from "react-icons/fa";
@@ -28,13 +28,56 @@ const Products = () => {
   const [isConfirmVisible, setIsConfirmVisible] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null); // Stores the action to confirm
   const [confirmMessage, setConfirmMessage] = useState(""); // Stores the confirmation message
-  const [user, setUser]=useState('');
+   // eslint-disable-next-line
+  const [user, setUser] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([]); // For filtered products
   const [selectedType, setSelectedType] = useState("");
   const [uniqueTypes, setUniqueTypes] = useState([]);
+  const [userPrivileges, setUserPrivileges] = useState(null);
+
   useEffect(() => {
     fetchAllProducts();
   }, []);
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    setUser(user);
+    if (user) {
+      // Récupérer les privilèges de l'utilisateur via l'API
+      axios
+        .get("http://localhost:5000/api/privileges", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        })
+        .then((response) => {
+          console.log("Réponse de l'API :", response.data);
+          // Cherchez les privilèges pour le role et subRole de l'utilisateur
+          const userRole = user.role;
+          const userSubrole = user.subRole;
+          
+          // Trouvez les privilèges de l'utilisateur
+          const privileges = response.data.find(
+            (item) => item.role === userRole && item.subRole === userSubrole
+          )?.permissions;
+  
+          if (privileges) {
+            console.log("Privilèges de l'utilisateur :", privileges);
+            setUserPrivileges(privileges);
+          } else {
+            console.log("Aucun privilège trouvé pour ce rôle et sous-rôle");
+            setUserPrivileges([]);  // Si aucun privilège n'est trouvé
+          }
+        })
+        .catch((error) => {
+          console.error("Erreur lors de la récupération des privilèges :", error);
+        });
+    }
+  }, []);
+  
+  
+  
+  
+
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     setUser(user);
@@ -42,7 +85,10 @@ const Products = () => {
 
   const fetchAllProducts = async () => {
     try {
-      const result = await axios.get("http://localhost:5000/api/products");
+      const token = localStorage.getItem("token");
+      const result = await axios.get("http://localhost:5000/api/products", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setProducts(result.data);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -53,14 +99,17 @@ const Products = () => {
     const filtered = products.filter((product) => {
       const matchesName = product.name.toLowerCase().includes(lowerSearchTerm);
       const matchesType =
-        selectedType === "" || product.description?.toLowerCase() === selectedType.toLowerCase();
+        selectedType === "" ||
+        product.description?.toLowerCase() === selectedType.toLowerCase();
       return matchesName && matchesType;
     });
     setFilteredProducts(filtered);
   }, [searchTerm, selectedType, products]);
   useEffect(() => {
     // Extract unique types whenever products change
-    const types = [...new Set(products.map((product) => product.description?.toLowerCase()))];
+    const types = [
+      ...new Set(products.map((product) => product.description?.toLowerCase())),
+    ];
     setUniqueTypes(types);
   }, [products]);
 
@@ -97,8 +146,8 @@ const Products = () => {
 
       // Récupérer à nouveau tous les produits après ajout ou mise à jour
       await fetchAllProducts();
-      setIsModalOpen(false); 
-      toast.success("Produit Ajouter avec succes")
+      setIsModalOpen(false);
+      toast.success("Produit Ajouter avec succes");
       // Ferme la modale après l'ajout ou la mise à jour
     } catch (error) {
       console.error("Error saving product:", error);
@@ -108,12 +157,12 @@ const Products = () => {
 
   const handleDeleteProduct = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/products/${id}`,{
+      await axios.delete(`http://localhost:5000/api/products/${id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      })
+      });
       setCurrentProduct(currentProduct?._id === id ? null : currentProduct);
       await fetchAllProducts();
-      toast.success("Produit supprimer avec succes")
+      toast.success("Produit supprimer avec succes");
     } catch (error) {
       console.error("Error deleting product:", error);
     }
@@ -193,64 +242,63 @@ const Products = () => {
         </div>
       </div>
       <div className="table-produit">
-      <table className="products-table">
-        <thead>
-          <tr>
-            <th>Image</th>
-            <th>Nom</th>
-            <th>Prix</th>
-            <th>Stock</th>
-            <th>Description</th>
-            <th className="action">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-            {
-              filteredProducts.map((product) => (
-                <tr key={product._id}>
-                  <td>
-                    {product.photo && (
-                      <img
-                        src={`http://localhost:5000/${product.photo}`}
-                        alt={product.name}
-                        className="product-image"
+        <table className="products-table">
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Nom</th>
+              <th>Prix</th>
+              <th>Stock</th>
+              <th>Description</th>
+              <th className="action">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredProducts.map((product) => (
+              <tr key={product._id}>
+                <td>
+                  {product.photo && (
+                    <img
+                      src={`http://localhost:5000/${product.photo}`}
+                      alt={product.name}
+                      className="product-image"
+                    />
+                  )}
+                </td>
+                <td>{product.name}</td>
+                <td>{product.price} Ar</td>
+                <td>{product.stock}</td>
+                <td>{product.description}</td>
+                <td className="action">
+                  <FontAwesomeIcon
+                    onClick={() =>
+                      setCurrentProduct(product) || setIsModalOpen(true)
+                    }
+                    className="edit-button"
+                    data-tooltip-id="edit"
+                    icon={faEdit}
+                  />
+                  {userPrivileges?.products?.includes("delete") &&
+                     (
+                      <FontAwesomeIcon
+                        onClick={() => confirmDelete(product._id)}
+                        className="delete-button icon"
+                        data-tooltip-id="delete"
+                        icon={faTrash}
                       />
                     )}
-                  </td>
-                  <td>{product.name}</td>
-                  <td>{product.price} Ar</td>
-                  <td>{product.stock}</td>
-                  <td>{product.description}</td>
-                  <td className="action">
-                    <FontAwesomeIcon
-                      onClick={() =>
-                        setCurrentProduct(product) || setIsModalOpen(true)
-                      }
-                      className="edit-button"
-                      data-tooltip-id="edit"
-                      icon={faEdit}
-                    />
-                    {user.role==="admin" && (
-                       <FontAwesomeIcon
-                       onClick={() => confirmDelete(product._id)}
-                       className="delete-button icon"
-                       data-tooltip-id="delete"
-                       icon={faTrash}
-                     />
-                    )}
-                   
-                    <FontAwesomeIcon
-                      onClick={() => handleAddStock(product)}
-                      className="stock-button icon"
-                      data-tooltip-id="ajouter-stock"
-                      icon={faBoxOpen}
-                    />
-                  </td>
-                </tr>
-              ))
-           }
+
+                  <FontAwesomeIcon
+                    onClick={() => handleAddStock(product)}
+                    className="stock-button icon"
+                    data-tooltip-id="ajouter-stock"
+                    icon={faBoxOpen}
+                  />
+                </td>
+              </tr>
+            ))}
           </tbody>
-      </table>
+        </table>
       </div>
 
       {modalStock && (
@@ -295,17 +343,27 @@ const Products = () => {
           product={currentProduct}
         />
       )}
-       {isConfirmVisible && (
+      {isConfirmVisible && (
         <ModalConfirm
           onConfirm={confirmActionAndClose}
           onCancel={() => setIsConfirmVisible(false)}
           message={confirmMessage}
         />
       )}
-       <Tooltip className="tooltip" id="edit" content="Modifier" place="top" />
-       <Tooltip className="tooltip" id="delete" content="Supprimer" place="top" />
-       <Tooltip className="tooltip" id="ajouter-stock" content="Ajouter-stock" place="top" />
-       <ToastContainer />
+      <Tooltip className="tooltip" id="edit" content="Modifier" place="top" />
+      <Tooltip
+        className="tooltip"
+        id="delete"
+        content="Supprimer"
+        place="top"
+      />
+      <Tooltip
+        className="tooltip"
+        id="ajouter-stock"
+        content="Ajouter-stock"
+        place="top"
+      />
+      <ToastContainer />
     </div>
   );
 };

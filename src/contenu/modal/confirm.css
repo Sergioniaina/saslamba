@@ -23,9 +23,8 @@
     gap: 50px;
     animation: popInOut 0.3s ease-out forwards;
     .message{
-      align-items: center;
-      justify-content: center;
-      display: flex;
+     text-align: center;
+     padding: 10px;
     }
     button{
       display: flex;

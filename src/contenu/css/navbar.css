@@ -28,6 +28,24 @@
     position: relative;
     padding-left: 80px;
     padding-right: 80px;
+    .unpaid{
+      background: red;
+      position: absolute;
+      top: 0px;
+      color: white!important;
+      font-weight: 600;
+      right: 5px;
+      border-radius: 30px;
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+    }
+    .profiles{
+      position: relative;
+    }
     .info-phone {
       font-family: Arial, Helvetica, sans-serif;
       display: flex;
@@ -167,10 +185,6 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      span{
-        color: red !important;
-      }
-
     }
     .sary {
         display: flex;

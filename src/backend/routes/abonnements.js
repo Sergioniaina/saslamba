@@ -16,9 +16,9 @@ router.get('/', async (req, res) => {
 
 // Créer une nouvelle offre
 router.post('/', async (req, res) => {
-  const { nom, machines, poids, prix, features } = req.body;
+  const { nom, machines, poids, prix, features,sechage } = req.body;
   try {
-    const nouvelAbonnement = new Abonnement({ nom, machines, poids, prix, features });
+    const nouvelAbonnement = new Abonnement({ nom, machines, poids, prix, features,sechage });
     await nouvelAbonnement.save();
     const nouvelHistorique = new Historique({
         action: 'Création',
@@ -38,9 +38,9 @@ router.post('/', async (req, res) => {
 // Mettre à jour une offre
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { nom, machines, poids, prix, features } = req.body;
+  const { nom, machines, poids, prix, features,sechage } = req.body;
   try {
-    const abonnementMisAJour = await Abonnement.findByIdAndUpdate(id, { nom, machines, poids, prix, features }, { new: true });
+    const abonnementMisAJour = await Abonnement.findByIdAndUpdate(id, { nom, machines, poids, prix, features,sechage }, { new: true });
     const nouvelHistorique = new Historique({
         action: 'Mise à jour',
         typeEntite: 'Offre d\'Abonnement',

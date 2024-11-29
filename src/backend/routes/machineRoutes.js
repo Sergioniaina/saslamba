@@ -6,6 +6,7 @@ const Historique = require("../models/Historique");
 const authMiddleware = require("../middleware/authMiddleware");
 const User = require("../models/User");
 const router = express.Router();
+const checkPermission = require('../middleware/checkPermission');
 
 // Configuration de multer pour le stockage des fichiers
 const storage = multer.diskStorage({
@@ -36,16 +37,17 @@ const upload = multer({
   },
 });
 
-// Get all products
-router.get("/", async (req, res) => {
+// Route avec les middlewares
+router.get("/", authMiddleware, checkPermission("products", "list"), async (req, res) => {
   try {
+    console.log("Accès autorisé - Récupération des produits");
     const products = await Product.find().sort({ date: -1 });
     res.json(products);
   } catch (error) {
+    console.error("Erreur lors de la récupération des produits:", error);
     res.status(500).json({ error: error.message });
   }
 });
-
 // Get products with optional search parameter
 router.get("/search", async (req, res) => {
   try {
@@ -66,7 +68,7 @@ router.get("/search", async (req, res) => {
 });
 
 // Create or update a product with photo upload
-router.post("/", authMiddleware, upload.single("photo"), async (req, res) => {
+router.post("/",authMiddleware,checkPermission('products', 'add'), upload.single("photo"), async (req, res) => {
   const { name, price, description, date, stock } = req.body;
   const photo = req.file ? req.file.path : null; // Si la photo est téléchargée
   const userId = req.user._id;
@@ -123,7 +125,7 @@ router.post("/", authMiddleware, upload.single("photo"), async (req, res) => {
 });
 
 // Update a product
-router.put("/:id", authMiddleware, upload.single("photo"), async (req, res) => {
+router.put("/:id", authMiddleware, checkPermission('products', 'edit'), upload.single("photo"), async (req, res) => {
   const { id } = req.params;
   const { name, price, description, stock, date } = req.body;
   const photo = req.file ? req.file.path : null;
@@ -190,7 +192,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // Delete a product
-router.delete("/:id",authMiddleware, async (req, res) => {
+router.delete("/:id",authMiddleware, checkPermission('products', 'delete'), async (req, res) => {
   const { id } = req.params;
   const userId = req.user._id;
   try {

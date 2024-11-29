@@ -19,6 +19,7 @@ function ModalAbonnement({
     machines: abonnementActuel ? abonnementActuel.machines : "",
     poids: abonnementActuel ? abonnementActuel.poids : "",
     prix: abonnementActuel ? abonnementActuel.prix : "",
+    sechage: abonnementActuel ? abonnementActuel.sechage : "",
     features: abonnementActuel ? abonnementActuel.features : [],
   });
 
@@ -83,6 +84,7 @@ function ModalAbonnement({
         machines: abonnementActuel.machines,
         poids: abonnementActuel.poids,
         prix: abonnementActuel.prix,
+        sechage: abonnementActuel.sechage,
         features: abonnementActuel.features,
       });
     }
@@ -125,6 +127,13 @@ function ModalAbonnement({
           name="prix"
           placeholder="prix"
           value={formData.prix}
+          onChange={handleChange}
+        />
+         <input
+          type="number"
+          name="sechage"
+          placeholder="sechage"
+          value={formData.sechage}
           onChange={handleChange}
         />
         {formData.features.map((feature, index) => (

@@ -64,8 +64,9 @@ const FactureForm = () => {
   const [isConfirmVisible, setIsConfirmVisible] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null); // Stores the action to confirm
   const [confirmMessage, setConfirmMessage] = useState(""); // Stores the confirmation message
-  const [reste, setReste]=useState("");
-  const [isreste, setIsreste]=useState("");
+  const [loading, setLoading] = useState(true);
+  // const [reste, setReste]=useState("");
+  // const [isreste, setIsreste]=useState("");
   const confirmActionAndClose = () => {
     if (confirmAction) confirmAction(); // Execute the action
     setIsConfirmVisible(false); // Close the modal
@@ -166,21 +167,21 @@ const FactureForm = () => {
   }, []);
 
   const [latestFacture, setLatestFacture] = useState(null);
+  const fetchLatestFacture = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:5000/api/factures/last-ticket"
+      );
+      setLatestFacture(response.data);
+      console.log("ticket:", response.data.ticketNumber);
+    } catch (error) {
+      console.error(
+        "Erreur lors de la récupération du dernier ticket",
+        error
+      );
+    }
+  };
   useEffect(() => {
-    const fetchLatestFacture = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:5000/api/factures/last-ticket"
-        );
-        setLatestFacture(response.data);
-        console.log("ticket:", response.data.ticketNumber);
-      } catch (error) {
-        console.error(
-          "Erreur lors de la récupération du dernier ticket",
-          error
-        );
-      }
-    };
 
     fetchLatestFacture();
   }, []);
@@ -236,12 +237,18 @@ const FactureForm = () => {
 
   const fetchAllProducts = async () => {
     try {
-      const productsRes = await axios.get("http://localhost:5000/api/products");
+      const token = localStorage.getItem("token");
+      //console.log("Token dans le frontend:", token);  // Affichez le token ici
+      const productsRes = await axios.get("http://localhost:5000/api/products", {
+          headers: { Authorization: `Bearer ${token}` },
+      });
       setProducts(productsRes.data);
-    } catch (error) {
-      console.error("Erreur lors du chargement des produits:", error);
-    }
+      setLoading(false);
+  } catch (error) {
+      console.error("Erreur lors du chargement des produits:", error.response || error);
+  }
   };
+  
   const [abonnementClients, setAbonnementClients] = useState([]); // Déclarez un état pour les abonnements
 
   // Fonction pour charger les abonnements clients
@@ -249,8 +256,9 @@ const FactureForm = () => {
     try {
       const response = await axios.get(
         "http://localhost:5000/api/abonnementClient"
-      ); // Mettez à jour l'URL selon votre API
+      ); // Mettez à jour l'URL selon votre API 
       setAbonnementClients(response.data);
+      setLoading(false);
     } catch (error) {
       console.error(
         "Erreur lors du chargement des abonnements clients:",
@@ -267,15 +275,17 @@ const FactureForm = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const productsRes = await axios.get(
-          "http://localhost:5000/api/products"
-        );
+        const token = localStorage.getItem("token");
+       // console.log("Token dans le frontend:", token);  // Affichez le token ici
+        const productsRes = await axios.get("http://localhost:5000/api/products", {
+            headers: { Authorization: `Bearer ${token}` },
+        });
         setProducts(productsRes.data);
-      } catch (error) {
-        console.error("Erreur lors du chargement des produits:", error);
-      }
+        setLoading(false);
+    } catch (error) {
+        console.error("Erreur lors du chargement des produits:", error.response || error);
+    }
     };
-
     // useEffect(() => {
     //   // Update totalWeight whenever machineWeights changes
     //   const totalWeight = Object.values(machineWeights).reduce((sum, weight) => sum + parseFloat(weight), 0);
@@ -432,13 +442,24 @@ const FactureForm = () => {
           }
           return acc;
         }, 0);
-
+        // const washingMachinesCount = newSelectedMachines.filter((id) => {
+        //   const machine = machines.find((m) => m._id === id);
+        //   return machine && machine.type === "Machine à laver";
+        // }).length;
+  
+        // const dryingMachinesCount = newSelectedMachines.filter((id) => {
+        //   const machine = machines.find((m) => m._id === id);
+        //   return machine && machine.type === "Sèche-linge";
+        // }).length;
+        // console.log("machine nombre selectionner lavage",washingMachinesCount)
+        // console.log("machine nombre selectionner sechage",dryingMachinesCount)
         // Update totalWeight in formData
         setFormData((prevFormData) => ({
           ...prevFormData,
-          totalWeight: totalWeight.toFixed(2),
+          totalWeight: totalWeight.toFixed(2)
+          // machinesLavage: washingMachinesCount,
+          // machinesSechage: dryingMachinesCount,
         }));
-
         return updatedWeights;
       });
 
@@ -761,43 +782,46 @@ const FactureForm = () => {
 
     if (isChoix) {
       try {
-        const abonnementClient = await axios.get(
-          `http://localhost:5000/api/abonnementClient/client/${selectedClient._id}`
-        );
-        console.log(abonnementClient.data);
-        if (!abonnementClient.data || !abonnementClient.data.length) {
-          //setMessage("Le client n'est pas inscrit à un abonnement.");
+        const response = await axios.get(`http://localhost:5000/api/abonnementClient/client/${selectedClient._id}`);
+        const abonnementClient = response.data[0]; // On suppose qu'il y a un abonnement
+  
+        if (!abonnementClient) {
           setMessage("Le client n'est pas inscrit à un abonnement.");
           setModalInfo(true);
           return;
         }
-
-        // Si le client a un abonnement, déduire le poids de l'abonnement
-        const currentAbonnement = abonnementClient.data[0]; // Assumer le premier abonnement récupéré
-        const remainingWeight =
-          currentAbonnement.abonnementDetails.weight - formData.totalWeight;
-
-        if (remainingWeight < 0) {
-          // alert("Le poids dépasse le quota d'abonnement.");
-          setMessage("Le poids dépasse le quota d'abonnement.");
-          return;
-        }
-
-        // Mise à jour des détails de l'abonnement
-        await axios.put(
-          `http://localhost:5000/api/abonnementClient/abonnement/${currentAbonnement._id}`,
-          {
-            abonnementDetails: {
-              weight: remainingWeight,
-              features: currentAbonnement.abonnementDetails.features,
-            },
-          }
+  
+        const totalWeight = parseFloat(formData.totalWeight) || 0; // Poids total en kg
+        const machinesLavage = selectedMachines.filter((machineId) => {
+          const machine = machines.find((m) => m._id === machineId);
+          return machine && machine.type === "Machine à laver";
+        }).length;
+    
+        const machinesSechage = selectedMachines.filter((machineId) => {
+          const machine = machines.find((m) => m._id === machineId);
+          return machine && machine.type === "Sèche-linge";
+        }).length;
+    
+        console.log(
+          `Les totaux et nombre de clics - totalWeight: ${totalWeight}, machinesLavage: ${machinesLavage}, machinesSechage: ${machinesSechage}`
         );
+        // Mise à jour des quotas d'abonnement
+        await axios.put(`http://localhost:5000/api/abonnementClient/abonnement/utiliser/${abonnementClient._id}`, {
+          totalWeight:totalWeight,
+          machinesLavage:machinesLavage,
+          machinesSechage:machinesSechage,
+        });
+  
+        setMessage("Facture enregistrée et quotas mis à jour.");
+        setModalInfo(true);
       } catch (error) {
-        setMessage("Le client n'est pas inscrit à un abonnement.");
+        setMessage(error.response?.data?.error || "Erreur lors de l'enregistrement.");
         setModalInfo(true);
         return;
       }
+    } else {
+      // Logique pour une soumission normale sans abonnement
+      console.log("Soumission sans abonnement");
     }
     // Enregistrement de la facture
     // if (remainingAmount > 0){
@@ -961,7 +985,8 @@ const FactureForm = () => {
         await axios.put(
           `http://localhost:5000/api/caisses/${selectedCaisse}/add-solde`,
           {
-            solde: soldeToAdd, // Utiliser le montant calculé comme solde à ajouter
+            solde: soldeToAdd,
+            motif:"Facture payé" // Utiliser le montant calculé comme solde à ajouter
           }
         );
 
@@ -1248,6 +1273,7 @@ const FactureForm = () => {
     setQuantities({});
     setMachineWeights({});
     setIsEditMode(false);
+    fetchLatestFacture();
   };
 
   const [offeredQuantities, setOfferedQuantities] = useState({}); // To track quantities for "offert"
@@ -1466,25 +1492,29 @@ const FactureForm = () => {
 
   // Set the default selected option when the component mounts
   useEffect(() => {
-    if (filteredOptions.length > 0) {
-      // Pour chaque machine sélectionnée, définissez l'option par défaut
+    if (Array.isArray(filteredOptions) && filteredOptions.length > 0) {
       selectedMachines.forEach((machineId) => {
         if (!selectedOptions[machineId]) {
           const defaultOptionValue = filteredOptions[0].value; // Première option disponible
+
           setSelectedOptions((prev) => ({
             ...prev,
-            [machineId]: defaultOptionValue, // Assurez-vous que c'est une chaîne
+            [machineId]: defaultOptionValue,
           }));
 
-          // Décomposer la valeur et mettre à jour formData avec les valeurs par défaut
           const [articleId, articleType, priceType, value] =
             defaultOptionValue.split("-");
 
           setFormData((prevData) => ({
             ...prevData,
-            articles: [...prevData.articles, { articleId, machineId }],
+            articles: [
+              ...(Array.isArray(prevData.articles) ? prevData.articles : []),
+              { articleId, machineId },
+            ],
             articleDetails: [
-              ...prevData.articleDetails,
+              ...(Array.isArray(prevData.articleDetails)
+                ? prevData.articleDetails
+                : []),
               {
                 articleId: articleId,
                 machineId: machineId,
@@ -1496,38 +1526,40 @@ const FactureForm = () => {
         }
       });
     }
-  }, [filteredOptions, selectedOptions, selectedMachines]); // Exécutez ce useEffect si les options filtrées ou les machines sélectionnées changent
+  }, [filteredOptions, selectedOptions, selectedMachines]);
+ // Exécutez ce useEffect si les options filtrées ou les machines sélectionnées changent
 
   // Fonction de changement d'option
   const handleOptionChange = (machineId, event) => {
     const selectedOptionValue = event.target.value;
 
-    // Vérifiez que la valeur sélectionnée est une chaîne
     if (typeof selectedOptionValue === "string") {
       const [articleId, articleType, priceType, value] =
         selectedOptionValue.split("-");
 
-      // Mettre à jour l'option sélectionnée pour cette machine
       setSelectedOptions((prev) => ({
         ...prev,
-        [machineId]: selectedOptionValue, // Mettez à jour seulement pour la machine en cours
+        [machineId]: selectedOptionValue,
       }));
 
-      // Mettre à jour formData avec les articles sélectionnés et les détails associés à cette machine
       setFormData((prevData) => {
-        const updatedArticles = prevData.articles.filter(
-          (article) => article.machineId !== machineId // Enlever l'article précédent pour cette machine
-        );
+        const updatedArticles = Array.isArray(prevData.articles)
+          ? prevData.articles.filter(
+              (article) => article.machineId !== machineId
+            )
+          : [];
 
-        const updatedArticleDetails = prevData.articleDetails.filter(
-          (detail) => detail.machineId !== machineId // Enlever les détails précédents pour cette machine
-        );
+        const updatedArticleDetails = Array.isArray(prevData.articleDetails)
+          ? prevData.articleDetails.filter(
+              (detail) => detail.machineId !== machineId
+            )
+          : [];
 
         return {
           ...prevData,
           articles: [
             ...updatedArticles,
-            { articleId, machineId }, // Ajouter le nouvel article avec machineId
+            { articleId, machineId },
           ],
           articleDetails: [
             ...updatedArticleDetails,
@@ -1547,6 +1579,7 @@ const FactureForm = () => {
       );
     }
   };
+
 
   /*Modal Information */
   const onOk = () => {
@@ -1617,7 +1650,13 @@ const FactureForm = () => {
       alert("Invalid stock quantity");
     }
   };
-
+  if (loading) {
+    return (
+      <div className="loader-container">
+        <div className="spinner"></div>
+      </div>
+    );
+  }
   return (
     <div className="facture-form1">
       {isModalOpen && (
@@ -1874,7 +1913,7 @@ const FactureForm = () => {
                 <FactureList
                   className="factures"
                   onEdit={handleEdit}
-                  onViewDetails={handleDetails}
+                  etatFilter={["encaisser", "annulée"]}
                 />
               </div>
             )}
@@ -1884,7 +1923,7 @@ const FactureForm = () => {
                 <FactureList
                   className="factures"
                   onEdit={handleEdit}
-                  onViewDetails={handleDetails}
+                  // onViewDetails={handleDetails}
                   etatFilter="en attente" // Filtrer les factures "en attente"
                 />
               </div>
@@ -2258,7 +2297,7 @@ const FactureForm = () => {
                         <tr key={machineId}>
                           <td>1</td>
                           <td>
-                            {machine?.name} ({machine?.type})
+                          N°{machine?.modelNumber} {machine?.name} ({machine?.type})
                           </td>
                           <td>{price.toFixed(2)}</td>
                           <td>

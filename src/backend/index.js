@@ -24,6 +24,8 @@ const mouvementCaisseRoutes = require('./routes/mouvementCaisse');
 const authRoutes = require('./routes/authRoutes');
 const articleRoutes = require('./routes/article');
 const logoRoutes = require('./routes/companyInfo');
+const privilege = require('./routes/privilegeRoute');
+const historiqueCaisse = require('./routes/HistoriqueCaisse');
 const path = require('path');
 const app = express();
 app.use(cors());
@@ -47,6 +49,8 @@ app.use('/api/caisses', caisse);
 app.use('/api/mouvements', mouvementCaisseRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/articles', articleRoutes);
+app.use('/api/historiques', historiqueCaisse);
+app.use('/api/privileges', privilege);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

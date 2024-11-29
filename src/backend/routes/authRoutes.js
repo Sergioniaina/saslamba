@@ -195,7 +195,7 @@ router.post('/users/ajout', authMiddleware, authRole('admin'), upload.single('ph
 
 
 // Route pour mettre à jour un utilisateur
-router.put('/users/:id', authMiddleware, authRole('admin'), upload.single('photo'), async (req, res) => {
+router.put('/users/:id', authMiddleware, upload.single('photo'), async (req, res) => {
   const { id } = req.params;
   const { name, password, role, subRole } = req.body;
   const photo = req.file ? req.file.path : null;
@@ -232,6 +232,30 @@ router.get('/get', async (req, res) => {
   } catch (error) {
     console.error('Erreur lors de la récupération des utilisateurs :', error);
     res.status(500).json({ message: 'Erreur interne du serveur.' });
+  }
+});
+router.get('/roles', async (req, res) => {
+  try {
+    // Récupère tous les rôles et sous-rôles distincts depuis la base de données
+    const roles = await User.aggregate([
+      {
+        $group: {
+          _id: { role: "$role", subRole: "$subRole" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          role: "$_id.role",
+          subRole: "$_id.subRole",
+        },
+      },
+    ]);
+
+    res.status(200).json(roles);
+  } catch (err) {
+    console.error("Erreur lors de la récupération des rôles :", err);
+    res.status(500).json({ message: "Erreur serveur lors de la récupération des rôles." });
   }
 });
 

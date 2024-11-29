@@ -153,6 +153,7 @@ function Abonnement() {
               <th>Machines</th>
               <th>Poids</th>
               <th>Prix</th>
+              <th>Sechage</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -163,6 +164,7 @@ function Abonnement() {
                 <td>{abonnement.machines}</td>
                 <td>{abonnement.poids} kg</td>
                 <td>{abonnement.prix} Ar</td>
+                <td>{abonnement.sechage}</td>
                 <td>
                   <button onClick={() => handleDetailsClick(abonnement)}>
                     <FontAwesomeIcon

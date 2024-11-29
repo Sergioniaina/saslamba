@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const MouvementCaisse = require("../models/mouvementCaisse");
-
+const HistoriqueCaisse = require('../models/HistoriqueCaisse'); 
 const Caisse = require("../models/caisse");
 // Route pour créer un mouvement de caisse
 router.post("/", async (req, res) => {

@@ -59,10 +59,14 @@ function AbonnementForm() {
   //   setShowPaymentModal(true);
   // };
   //Payment de la facture////
-  const abonnememtTest = abonnements.find((abonnememt) => abonnememt._id === selectedAbonnement);
+  const abonnememtTest = abonnements.find(
+    (abonnememt) => abonnememt._id === selectedAbonnement
+  );
   const handlePaymentSubmit = async () => {
     const caisse = caisses.find((caisse) => caisse._id === selectedCaisse);
-    const abonnememt = abonnements.find((abonnememt) => abonnememt._id === selectedAbonnement);
+    const abonnememt = abonnements.find(
+      (abonnememt) => abonnememt._id === selectedAbonnement
+    );
     const token = localStorage.getItem("token");
     try {
       const amountToPay = paymentAmount
@@ -70,9 +74,7 @@ function AbonnementForm() {
         : selectedAbonnement?.prix;
       console.log("le Prix de abonnement", abonnememt.prix);
       if (amountToPay > abonnememt.prix) {
-        alert(
-          "Le montant payé ne peut pas être supérieur au montant restant."
-        );
+        alert("Le montant payé ne peut pas être supérieur au montant restant.");
         return;
       }
 
@@ -120,7 +122,7 @@ function AbonnementForm() {
 
       setShowPaymentModal(false);
       setSelectedCaisse("");
-      alert("payment effectué avec succès")
+      alert("payment effectué avec succès");
       //setPaymentMode("");
     } catch (error) {
       console.error("Erreur lors de l'enregistrement du paiement:", error);
@@ -219,26 +221,35 @@ function AbonnementForm() {
       contact,
       idAbonnement: selectedAbonnement,
     };
-    console.log("selectedAbonnement",selectedAbonnement)
-    const abonnememt = abonnements.find((abonnememt) => abonnememt._id === selectedAbonnement);
-    console.log("le prix de l abonnement ", abonnememt.prix)
+    console.log("selectedAbonnement", selectedAbonnement);
+    const abonnememt = abonnements.find(
+      (abonnememt) => abonnememt._id === selectedAbonnement
+    );
+    console.log("le prix de l abonnement ", abonnememt.prix);
     try {
       if (editMode) {
-        await axios.put(
+        // Prepare client ID for the PUT request
+        let clientId = selectedClient?._id;
+    
+        // If no selected client, create a new one
+        if (!clientId) {
+          const response = await axios.post("http://localhost:5000/api/clients", {
+            name: search,
+            contact,
+          });
+          clientId = response.data._id;
+        }
+    
+        // Make the PUT request to update the AbonnementClient
+        const updateResponse = await axios.put(
           `http://localhost:5000/api/abonnementClient/${currentAbonnementClient._id}`,
           {
-            idClient:
-              selectedClient?._id ||
-              (
-                await axios.post("http://localhost:5000/api/clients", {
-                  name: search,
-                  contact,
-                })
-              ).data._id,
+            idClient: clientId,
             idAbonnement: selectedAbonnement,
           }
         );
-        alert("Abonnement mis à jour avec succès");
+        console.log("Abonnement client mis à jour avec succès:", updateResponse.data);
+       // alert("Abonnement mis à jour avec succès");
       } else {
         const response = await axios.post(
           "http://localhost:5000/api/abonnementClient/associer",
@@ -288,10 +299,13 @@ function AbonnementForm() {
   };
 
   const handleEdit = (abonnementClient) => {
+   const client= clients.find((client) => client._id === abonnementClient.idClient)
     setShowModal(true);
     setSelectedClient(
       clients.find((client) => client._id === abonnementClient.idClient)
     );
+    setSearch(client.name)
+    setContact(client.contact);
     setSelectedAbonnement(abonnementClient.idAbonnement);
     setCurrentAbonnementClient(abonnementClient);
     setEditMode(true);
@@ -309,15 +323,26 @@ function AbonnementForm() {
 
   const handleDetail = async (abonnementClient) => {
     try {
+      // Récupérer les données du client
       const clientResponse = await axios.get(
         `http://localhost:5000/api/clients/${abonnementClient.idClient}`
       );
+
+      // Récupérer les données de l'abonnement
       const abonnementResponse = await axios.get(
         `http://localhost:5000/api/abonnements/${abonnementClient.idAbonnement}`
       );
+
+      // Récupérer les détails de l'abonnementClient, incluant sechage et lavage
+      const abonnementClientDetails = await axios.get(
+        `http://localhost:5000/api/abonnementClient/${abonnementClient._id}`
+      );
+
+      // Mettre à jour l'état avec toutes les informations combinées
       setDetailedAbonnement({
         client: clientResponse.data,
         abonnement: abonnementResponse.data,
+        abonnementDetails: abonnementClientDetails.data.abonnementDetails,
       });
     } catch (error) {
       console.error("Erreur lors de la récupération des détails:", error);
@@ -378,7 +403,7 @@ function AbonnementForm() {
                     </button>
 
                     {editMode && (
-                      <button className="cancel-btn" onClick={handleCancel}>
+                      <button type="button" className="cancel-btn" onClick={handleCancel}>
                         <FaTimes className="icon" /> Annuler
                       </button>
                     )}
@@ -525,34 +550,46 @@ function AbonnementForm() {
         </table>
       </div>
       {detailedAbonnement && (
-        <div className="details" onClick={() => setDetailedAbonnement(null)}>
-          <div
-            className="details-table-abonnement"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <table>
-              <thead>
-                <tr>
-                  <th>Client</th>
-                  <th>Contact</th>
-                  <th>Type</th>
-                  <th>Prix</th>
-                  <th>Detail</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>{detailedAbonnement.client.name}</td>
-                  <td>{detailedAbonnement.client.contact}</td>
-                  <td> {detailedAbonnement.abonnement.nom}</td>
-                  <td> {detailedAbonnement.abonnement.prix} Ar</td>
-                  <td>{detailedAbonnement.abonnement.features}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+  <div className="details" onClick={() => setDetailedAbonnement(null)}>
+    <div
+      className="details-table-abonnement"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <table>
+        <thead>
+          <tr>
+            <th>Client</th>
+            <th>Contact</th>
+            <th>Type</th>
+            <th>Prix</th>
+            <th>Détails</th>
+            <th>Séchage Restant</th>
+            <th>Lavage Restant</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{detailedAbonnement.client.name}</td>
+            <td>{detailedAbonnement.client.contact}</td>
+            <td>{detailedAbonnement.abonnement.nom}</td>
+            <td>{detailedAbonnement.abonnement.prix} Ar</td>
+            <td>
+              {detailedAbonnement.abonnement.features.join(', ')}
+            </td>
+            <td>
+              {detailedAbonnement.abonnementDetails.sechage.reste}
+            </td>
+            <td>
+              {detailedAbonnement.abonnementDetails.lavage.reste}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+)}
+
+
       {showPaymentModal && (
         <div className="modal-abonnement-client">
           <div className="modals-abonnement-client">
@@ -617,10 +654,7 @@ function AbonnementForm() {
                   const newValue = Number(e.target.value);
 
                   // Si la valeur est un nombre valide et inférieure ou égale au montant restant
-                  if (
-                    !isNaN(newValue) &&
-                    newValue <= abonnememtTest.prix
-                  ) {
+                  if (!isNaN(newValue) && newValue <= abonnememtTest.prix) {
                     setPaymentAmount(newValue);
                   } else if (newValue > abonnememtTest.prix) {
                     // Si la valeur dépasse le maximum, on définit la valeur de l'input à max

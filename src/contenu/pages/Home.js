@@ -42,6 +42,7 @@ import HistoriqueProducts from "../subscription/ProduitHistorique";
 import PaymentList from "./PayementHistorique";
 import CaisseTable from "./CaisseTable";
 import FactureId from "../factures/FactureId";
+import PrivilegeManagement from "../Privilege/PrivilegeManagement ";
 
 const DropdownItem = ({ title, icon, children }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -172,6 +173,7 @@ const Home = ({ onLogout }) => {
             <Route path="/paymentHistorique" element={<PaymentList />} />
             <Route path="/caisseTable" element={<CaisseTable />} />
             <Route path="/FactureId" element={<FactureId />} />
+            <Route path="/privilege" element={<PrivilegeManagement />} />
             {/* <Route path="/FactureId/:id" element={<FactureId />} /> */}
             <Route
               path="/machineConsumption"

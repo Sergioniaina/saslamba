@@ -9,6 +9,7 @@ import {
   faSearch,
 } from "@fortawesome/free-solid-svg-icons";
 import "./ProductInventory.css";
+import ModalConfirm from "../modal/ModalConfirm";
 
 const API_URL = "http://localhost:5000/api/products";
 const HISTORIQUE_URL = "http://localhost:5000/api/historique";
@@ -23,6 +24,13 @@ const ProductInventory = () => {
   const [searchTerms, setSearchTerms] = useState("");
   const [showModal, setShowModal] = useState(false);
   const inputRef = useRef(null);
+  const [isConfirmVisible, setIsConfirmVisible] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null); // Stores the action to confirm
+  const [confirmMessage, setConfirmMessage] = useState(""); // Stores the confirmation message
+  const confirmActionAndClose = () => {
+    if (confirmAction) confirmAction();
+    setIsConfirmVisible(false);
+  };
 
   useEffect(() => {
     fetchProducts();
@@ -33,7 +41,11 @@ const ProductInventory = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get(API_URL);
+      const response = await axios.get(API_URL,{
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       setProducts(response.data);
     } catch (error) {
       console.error("Erreur lors du chargement des produits", error);
@@ -103,7 +115,13 @@ const ProductInventory = () => {
       })
     );
   };
-
+  const confirmSave = async () => {
+    setConfirmMessage("Voulez-vous Enregistrer cet Inventaire?");
+    setConfirmAction(() => async () => {
+      await handleSave();
+    });
+    setIsConfirmVisible(true);
+  };
   const handleSave = async () => {
     const token = localStorage.getItem("token");
 
@@ -346,12 +364,19 @@ const ProductInventory = () => {
             </div>
 
             {selectedProducts.length > 0 && (
-              <button onClick={handleSave} className="save-button">
+              <button onClick={confirmSave} className="save-button">
                 <FontAwesomeIcon icon={faCheck} /> Valider l'Inventaire
               </button>
             )}
           </div>
         </div>
+      )}
+       {isConfirmVisible && (
+        <ModalConfirm
+          onConfirm={confirmActionAndClose}
+          onCancel={() => setIsConfirmVisible(false)}
+          message={confirmMessage}
+        />
       )}
     </div>
   );

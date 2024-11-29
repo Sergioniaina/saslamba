@@ -155,29 +155,30 @@ const Navbar = ({
         </button>
       </div>
       <div className="lamba">
+        {companyInfo && (
+          <>
+            <div className="sary">
+              <img
+                alt="Logo de l'entreprise"
+                className="img"
+                src={`http://localhost:5000/${companyInfo.photo}`}
+              />
+            </div>
+            <span>{companyInfo.name}</span>
+          </>
+        )}
+      </div>
       {companyInfo && (
-        <>
-        <div className="sary">
-             <img
-             className="img"
-             src={`http://localhost:5000/${companyInfo.photo}`}
-             alt="Logo de l'entreprise"
-           />
+        <div className="info-phone">
+          <FaPhone className="icon" />
+          <span>{companyInfo.phone}</span>
         </div>
-        <span>{companyInfo.name}</span>
-        </>
       )}
-      </div>
-      {companyInfo && (
-      <div className="info-phone">
-        <FaPhone className="icon"/>
-        <span>{companyInfo.phone}</span>
-      </div>
-       )}
       <div className="profile">
         {unpaidInvoices > 0 && (
+          <div className="profiles" data-tooltip-id="notification">
           <div
-            data-tooltip-id="notification"
+          
             className="cloche"
             style={{
               position: "relative",
@@ -188,6 +189,7 @@ const Navbar = ({
           >
             <FaBell size={30} color="#555" />
             <span
+           
               style={{
                 position: "absolute",
                 top: "-8px",
@@ -198,8 +200,10 @@ const Navbar = ({
                 fontSize: "13px",
               }}
             >
-              {unpaidInvoices}
+             
             </span>
+          </div>
+          <span className="unpaid">{unpaidInvoices}</span> 
           </div>
         )}
         <button

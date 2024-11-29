@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import "./App.css";
 import "../css/facturelist.css";
 import { Tooltip } from "react-tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toast, ToastContainer } from "react-toastify";
+import { useLocation } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import {
   faEye,
@@ -17,7 +18,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FaSave, FaSearch, FaTimes } from "react-icons/fa";
 import ModalConfirm from "../modal/ModalConfirm";
-const FactureList = ({ onEdit, onViewDetails, etatFilter }) => {
+import Facture from "./Facture";
+const FactureList = ({ onEdit, etatFilter }) => {
   const [factures, setFactures] = useState([]);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -26,19 +28,60 @@ const FactureList = ({ onEdit, onViewDetails, etatFilter }) => {
   const [paymentFilter, setPaymentFilter] = useState("tous");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedFacture, setSelectedFacture] = useState(null);
+  const [selectedFactures, setSelectedFactures] = useState(null);
   const [caisses, setCaisses] = useState([]);
   const [selectedCaisse, setSelectedCaisse] = useState("");
-
+  const location = useLocation();
   const [isConfirmVisible, setIsConfirmVisible] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null); // Stores the action to confirm
   const [confirmMessage, setConfirmMessage] = useState(""); // Stores the confirmation message
   // const [paymentMode, setPaymentMode] = useState("");
-
+  const [showFacture, setShowFacture] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentTypes, setPaymentTypes] = useState([]);
   const [selectedPaymentType, setSelectedPaymentType] = useState("Espèce");
   const [newPaymentType, setNewPaymentType] = useState("");
-  const PORT = "http://localhost:5000/api"
+  const [userPrivileges, setUserPrivileges] = useState(null);
+  const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line
+  const [user, setUser] = useState("");
+  const factureRefs = useRef({});
+  // Obtenir l'ID depuis l'URL
+  const searchParams = new URLSearchParams(location.search);
+  const highlightedId = searchParams.get("id");
+
+  useEffect(() => {
+    // Vous devrez remplacer ce fetch par une logique qui récupère les factures avec les machines associées
+    const fetchFactures = async () => {
+      const res = await fetch('http://localhost:5000/api/factures'); // Remplacer par l'URL de votre API pour récupérer les factures
+      const facturesData = await res.json();
+    
+      const updatedFactures = await Promise.all(facturesData.map(async (facture) => {
+        if (facture.etat === "en attente") {
+          // Récupérer les machines associées à la facture en attente
+          const machinesRes = await fetch(`http://localhost:5000/api/machines/factures-machines?factureId=${facture._id}`);
+          const machinesData = await machinesRes.json();
+    
+          // Vérifier si toutes les machines associées sont disponibles
+          const allAvailable = machinesData.every((machine) => machine.etat === "Disponible");
+    
+          return {
+            ...facture,
+            allMachinesAvailable: allAvailable, // Déterminer si la facture doit clignoter
+          };
+        }
+        return facture; // Si la facture n'est pas "en attente", retournez la facture telle quelle
+      }));
+    
+      setFactures(updatedFactures); // Mettez à jour les factures dans l'état
+    };
+    
+    
+  
+      fetchFactures();
+  }, []);
+  
+  const PORT = "http://localhost:5000/api";
   const fetchPaymentTypes = async () => {
     try {
       const response = await axios.get("http://localhost:5000/api/payement");
@@ -60,10 +103,57 @@ const FactureList = ({ onEdit, onViewDetails, etatFilter }) => {
     fetchPaymentTypes();
   }, []);
   useEffect(() => {
+    if (highlightedId && factureRefs.current[highlightedId]) {
+      factureRefs.current[highlightedId].scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, [highlightedId, factures]);
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    setUser(user);
+    if (user) {
+      // Récupérer les privilèges de l'utilisateur via l'API
+      axios
+        .get("http://localhost:5000/api/privileges", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        })
+        .then((response) => {
+          console.log("Réponse de l'API :", response.data);
+          // Cherchez les privilèges pour le role et subRole de l'utilisateur
+          const userRole = user.role;
+          const userSubrole = user.subRole;
+
+          // Trouvez les privilèges de l'utilisateur
+          const privileges = response.data.find(
+            (item) => item.role === userRole && item.subRole === userSubrole
+          )?.permissions;
+
+          if (privileges) {
+            console.log("Privilèges de l'utilisateur :", privileges);
+            setUserPrivileges(privileges);
+          } else {
+            console.log("Aucun privilège trouvé pour ce rôle et sous-rôle");
+            setUserPrivileges([]); // Si aucun privilège n'est trouvé
+          }
+        })
+        .catch((error) => {
+          console.error(
+            "Erreur lors de la récupération des privilèges :",
+            error
+          );
+        });
+    }
+  }, []);
+  useEffect(() => {
     const fetchFactures = async () => {
       try {
         const response = await axios.get(`${PORT}/factures`);
         setFactures(response.data);
+        setLoading(false);
       } catch (error) {
         console.error("Erreur lors du chargement des factures:", error);
         setError("Une erreur est survenue lors du chargement des factures.");
@@ -72,6 +162,21 @@ const FactureList = ({ onEdit, onViewDetails, etatFilter }) => {
 
     fetchFactures();
   }, []);
+  const fetchFactureDetails = async (id) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/api/factures/listPar/${id}`
+      );
+      setSelectedFactures(response.data);
+      console.log("Le facture:", response.data); // Affiche correctement les détails de la facture
+      setShowFacture(true);
+    } catch (err) {
+      console.error(
+        "Erreur lors du chargement des détails de la facture:",
+        err
+      );
+    }
+  };
 
   useEffect(() => {
     const fetchCaisses = async () => {
@@ -269,21 +374,27 @@ const FactureList = ({ onEdit, onViewDetails, etatFilter }) => {
   const handleSearch = () => {
     let filteredFactures = factures;
 
-    // Filtrage par nom de client
-    if (searchTerm) {
-      filteredFactures = filteredFactures.filter((facture) =>
-        facture.customerName.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
+  // Filtrage par nom de client
+  if (searchTerm) {
+    filteredFactures = filteredFactures.filter((facture) =>
+      facture.customerName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }
 
-    // Filtrage par état de la facture
-    if (etatFilter) {
-      filteredFactures = filteredFactures.filter(
-        (facture) =>
-          facture.etat &&
-          facture.etat.toLowerCase() === etatFilter.toLowerCase()
-      );
-    }
+  // Filtrage par état de la facture
+  if (etatFilter && Array.isArray(etatFilter)) {
+    filteredFactures = filteredFactures.filter((facture) =>
+      etatFilter.some((filter) =>
+        facture.etat && facture.etat.toLowerCase() === filter.toLowerCase()
+      )
+    );
+  } else if (etatFilter) {
+    // Si etatFilter n'est pas un tableau (c'est une seule valeur)
+    filteredFactures = filteredFactures.filter(
+      (facture) =>
+        facture.etat && facture.etat.toLowerCase() === etatFilter.toLowerCase()
+    );
+  }
 
     // Filtrage par état de paiement
     if (paymentFilter !== "tous") {
@@ -315,6 +426,13 @@ const FactureList = ({ onEdit, onViewDetails, etatFilter }) => {
 
     return filteredFactures;
   };
+  if (loading) {
+    return (
+      <div className="loader-container">
+        <div className="spinner"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="facturelist">
@@ -374,7 +492,11 @@ const FactureList = ({ onEdit, onViewDetails, etatFilter }) => {
           </thead>
           <tbody>
             {handleSearch().map((facture) => (
-              <tr key={facture._id}>
+              <tr
+                key={facture._id}
+                ref={(el) => (factureRefs.current[facture._id] = el)} // Associer une référence à chaque ligne
+                className={`${facture._id === highlightedId ? "highlighted" : ""} ${facture.allMachinesAvailable ? "clignote" : ""}`}
+              >
                 <td>{facture.customerName}</td>
                 <td>{facture.totalPrice} Ar</td>
                 <td>{facture.reste}</td>
@@ -396,16 +518,23 @@ const FactureList = ({ onEdit, onViewDetails, etatFilter }) => {
                 </ul>
               </td> */}
                 <td className="action">
+                  <button
+                    type="button"
+                    onClick={() => fetchFactureDetails(facture._id)}
+                  >
+                    <FontAwesomeIcon icon={faEye} />
+                  </button>
                   {facture.etat !== "annulée" && (
                     <>
-                      <button
+                      {/* <button
                         data-tooltip-id="menu-eye"
                         type="button"
                         onClick={() => onViewDetails(facture)}
                         style={{ color: "#007bff" }}
                       >
                         <FontAwesomeIcon icon={faEye} />
-                      </button>
+                      </button> */}
+
                       <button
                         data-tooltip-id={`${
                           facture.etat === "en attente"
@@ -423,36 +552,34 @@ const FactureList = ({ onEdit, onViewDetails, etatFilter }) => {
                         />
                       </button>
 
-                     {
-                      facture.reste > 0 &&(
+                      {facture.reste > 0 && (
                         <button
                           data-tooltip-id="payer"
                           type="button"
                           onClick={() => handlePay(facture)}
-                         style={{color:"orange"}}
+                          style={{ color: "orange" }}
                           // style={{
                           //   color: "#ff5733",
                           //   opacity: facture.reste === 0  ? 0 : 1, // Opacité à 0 si annulée
                           //   pointerEvents: facture.reste === 0 ? "none" : "auto" // Désactive les clics
                           // }}
                           // disabled={facture.reste === 0} // Si annulée, le bouton est désactivé
-                      
                         >
                           <FontAwesomeIcon icon={faMoneyBillWave} />
                         </button>
-
-                      )
-                     }
+                      )}
                     </>
                   )}
-                  <button
-                    data-tooltip-id="delete"
-                    type="button"
-                    onClick={() => confirmDelete(facture._id)}
-                    style={{ color: "#dc3545" }}
-                  >
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
+                  {userPrivileges?.invoices?.includes("delete") && (
+                    <button
+                      data-tooltip-id="delete"
+                      type="button"
+                      onClick={() => confirmDelete(facture._id)}
+                      style={{ color: "#dc3545" }}
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  )}
                   {facture.etat !== "annulée" && (
                     <button
                       data-tooltip-id="annuler"
@@ -508,13 +635,13 @@ const FactureList = ({ onEdit, onViewDetails, etatFilter }) => {
                 value={selectedCaisse}
                 onChange={(e) => setSelectedCaisse(e.target.value)}
                 required
-              >   
+              >
                 {caisses.map((caisse) => (
                   <option key={caisse._id} value={caisse._id}>
                     {caisse.nom}
                   </option>
                 ))}
-                 <option value="">Sélectionner une caisse</option>
+                <option value="">Sélectionner une caisse</option>
               </select>
               <label>Choisir une caisse :</label>
             </div>
@@ -578,18 +705,31 @@ const FactureList = ({ onEdit, onViewDetails, etatFilter }) => {
 
             {/* Actions du modal */}
             <div className="modal-actions">
-              <button className="save" type="button" onClick={handlePaymentSubmit}>
+              <button
+                className="save"
+                type="button"
+                onClick={handlePaymentSubmit}
+              >
                 {" "}
                 <FaSave />
                 <span>enregistrer</span>
               </button>
-              <button className="cancel" onClick={() => setShowPaymentModal(false)}>
+              <button
+                className="cancel"
+                onClick={() => setShowPaymentModal(false)}
+              >
                 <FaTimes />
                 <span>annuler</span>
               </button>
             </div>
           </div>
         </div>
+      )}
+      {showFacture && (
+        <Facture
+          selectedFacture={selectedFactures}
+          onCancel={() => setShowFacture(false)} // Passer une fonction pour fermer la modale
+        />
       )}
       {isConfirmVisible && (
         <ModalConfirm

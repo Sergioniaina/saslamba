@@ -8,7 +8,59 @@ import ModalConfirm from "../modal/ModalConfirm";
 import { Tooltip } from "react-tooltip";
 import "react-toastify/dist/ReactToastify.css";
 import { toast, ToastContainer } from "react-toastify";
+
+import { useNavigate } from "react-router-dom";
+
+const FactureModal = ({ factures, onClose,setFacture }) => {
+  const navigate = useNavigate();
+
+  const handleViewFacture = (factureId) => {
+    // Naviguer vers la page FactureList avec un paramètre de filtre
+    navigate(`/home/demande?id=${factureId}`);
+  };
+
+  return (
+    <div className="modal-machine-facture" onClick={onClose}>
+      <div className="modal-content-machine-facture" onClick={(e)=>e.stopPropagation()}>
+        <div className="titre-facture"><h2>{setFacture ? "Factures en attente":"Factures Associés"}</h2></div>
+        <div className="table-form-view">
+        <table className="factures-table">
+          <thead>
+            <tr>
+              <th>Nom du client</th>
+              <th>Référence</th>
+              <th>Numéro de ticket</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {factures.map((facture) => (
+              <tr key={facture._id}>
+                <td>{facture.customerName}</td>
+                <td>{facture.reference}</td>
+                <td>{facture.ticketNumber}</td>
+                <td>
+                  <button
+                    onClick={() => handleViewFacture(facture._id)}
+                    className="btn-view"
+                  >
+                    Voir
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        </div>
+        {/* <button onClick={onClose}>Fermer</button> */}
+      </div>
+    </div>
+  );
+};
+
 const MachineList = () => {
+  const [showModal, setShowModal] = useState(false); // Affichage de la modale
+  const [modalContent, setModalContent] = useState([]); // Contenu des factures
   const [machines, setMachines] = useState([]);
   const [selectedMachine, setSelectedMachine] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -20,6 +72,7 @@ const MachineList = () => {
   const [isConfirmVisible, setIsConfirmVisible] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null); // Stores the action to confirm
   const [confirmMessage, setConfirmMessage] = useState(""); // Stores the confirmation message
+  const [setFacture, setSetFacture]=useState(false);
   const confirmActionAndClose = () => {
     if (confirmAction) confirmAction();
     setIsConfirmVisible(false);
@@ -179,15 +232,103 @@ const MachineList = () => {
     setConfirmAction(() => () => handleRelease(id));
     setIsConfirmVisible(true);
   };
-
-  const handleRelease = async (id) => {
+  const handleStart = async (machineId) => {
     try {
-      await axios.patch(`http://localhost:5000/api/machines/${id}/liberer`);
+      await axios.patch(
+        `http://localhost:5000/api/machines/${machineId}/indisponible`
+      );
+
+      toast.success("Machine demarré et mise à l'état Indisponible");
+      fetchMachines(); // Recharger la liste des machines
+    } catch (error) {
+      console.error("Erreur lors de la mise à l'état Indisponible :", error);
+      toast.error("Erreur lors de la mise à l'état Indisponible");
+    }
+  };
+
+  const confirmStart = (id) => {
+    const machine = machines.find((machine) => machine._id === id);
+    setConfirmMessage(
+      `Voulez-vous vraiment Demarrer la machine numéro ${machine.modelNumber} ?`
+    );
+    setConfirmAction(() => () => handleStart(id));
+    setIsConfirmVisible(true); // Afficher le modal de confirmation
+  };
+  const fetchAndFilterFactures = async (machineId) => {
+    try {
+      // Récupérer toutes les factures depuis l'API
+      const { data: factures } = await axios.get(
+        "http://localhost:5000/api/factures"
+      );
+
+      // Filtrer les factures avec etat = "en attente" et associées à la machine
+      return factures.filter(
+        (facture) =>
+          facture.etat === "en attente" && facture.machines.includes(machineId)
+      );
+    } catch (error) {
+      console.error("Erreur lors de la récupération des factures :", error);
+      return [];
+    }
+  };
+  const fetchAndFilterFacturess = async (machineId) => {
+    try {
+      // Récupérer toutes les factures depuis l'API
+      const { data: factures } = await axios.get(
+        "http://localhost:5000/api/factures"
+      );
+
+      // Filtrer les factures avec etat = "en attente" et associées à la machine
+      return factures.filter(
+        (facture) =>
+         facture.machines.includes(machineId)
+      );
+    } catch (error) {
+      console.error("Erreur lors de la récupération des factures :", error);
+      return [];
+    }
+  };
+
+  const handleRelease = async (machineId) => {
+    try {
+      await axios.patch(
+        `http://localhost:5000/api/machines/${machineId}/liberer`
+      );
+
+      const factures = await fetchAndFilterFactures(machineId);
+      toast.success("Machine libérée");
+
+      if (factures.length > 0) {
+        setModalContent(factures);
+        setShowModal(true);
+      }
       fetchMachines();
-      toast.success("Machine liberer");
+      setSetFacture(true);
     } catch (error) {
       console.error("Erreur lors de la libération de la machine :", error);
+      toast.error("Erreur lors de la libération de la machine");
     }
+  };
+  
+  const voirFacture = async (machineId) => {
+    // try {
+    //   await axios.patch(
+    //     `http://localhost:5000/api/machines/${machineId}/liberer`
+    //   );
+
+      const factures = await fetchAndFilterFacturess(machineId);
+     // toast.success("Machine libérée");
+
+      if (factures.length > 0) {
+        setModalContent(factures);
+        setShowModal(true);
+        setSetFacture(false);
+      }
+     // fetchMachines();
+    // } catch (error) {
+    //   console.error("Erreur lors de la list de la facture :", error);
+    // //  toast.error("Erreur lors de la libération de la machine");
+    // }
   };
 
   return (
@@ -218,9 +359,10 @@ const MachineList = () => {
                 <th>Numéro</th>
                 <th>Kilowatt</th>
                 <th>Poids (kg)</th>
+                <th>Type</th>
                 <th>État</th>
-                <th>Actions</th>
                 <th>Date</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -246,9 +388,20 @@ const MachineList = () => {
                   <td>{machine.modelNumber}</td>
                   <td>{machine.powerConsumption}</td>
                   <td>{machine.weightCapacity}</td>
+                  <td>{machine.type}</td>
                   <td>{machine.etat}</td>
                   <td>{new Date(machine.dateAdded).toLocaleString()}</td>
                   <td>
+                  <button
+                      data-tooltip-id="voir"
+                      className="btn-voir"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        voirFacture(machine._id);
+                      }}
+                    >
+                      <FaEdit />
+                    </button>
                     <button
                       data-tooltip-id="modifier"
                       className="btn-edit"
@@ -285,6 +438,18 @@ const MachineList = () => {
                         }}
                       >
                         Libérer
+                      </button>
+                    )}
+                    {machine.etat === "Disponible" && (
+                      <button
+                        data-tooltip-id="start"
+                        className="btn-start"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          confirmStart(machine._id); // Ouvrir le modal de confirmation
+                        }}
+                      >
+                        Start
                       </button>
                     )}
                   </td>
@@ -328,6 +493,13 @@ const MachineList = () => {
       <Tooltip className="tooltip" id="detail" content="detail" place="top" />
       <Tooltip className="tooltip" id="liberer" content="Liberer" place="top" />
       <ToastContainer />
+      {showModal && (
+        <FactureModal
+          factures={modalContent}
+          onClose={() => setShowModal(false)}
+          setFacture={setFacture}
+        />
+      )}
     </div>
   );
 };

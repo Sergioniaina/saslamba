@@ -89,7 +89,7 @@ const Caisse = () => {
     }
 
     try {
-      const updatedCaisse = { solde: amount };
+      const updatedCaisse = { solde: amount, motif:"Ajout test Motif" };
       await axios.put(
         `http://localhost:5000/api/caisses/${caisse._id}/add-solde`,
         updatedCaisse
@@ -97,6 +97,7 @@ const Caisse = () => {
       fetchCaisses();
       setNewSolde("");
       setEditingSolde(null);
+      console.log("l ajout de :",amount)
       setError("");
     } catch (error) {
       console.error("Erreur lors de l'ajout de solde", error);
@@ -121,7 +122,7 @@ const Caisse = () => {
     }
 
     try {
-      const updatedCaisse = { solde: amount };
+      const updatedCaisse = { solde: amount, motif: "retrait test" };
       await axios.put(
         `http://localhost:5000/api/caisses/${caisse._id}/remove-solde`,
         updatedCaisse
@@ -137,7 +138,7 @@ const Caisse = () => {
 
   const handleCloseCaisse = async (caisse) => {
     try {
-      await axios.post(`http://localhost:5000/api/caisses/${caisse._id}/close`);
+      await axios.post(`http://localhost:5000/api/caisses/${caisse._id}/closes`);
       fetchCaisses();
     } catch (error) {
       console.error("Erreur lors de la fermeture de la caisse", error);

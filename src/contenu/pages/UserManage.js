@@ -3,10 +3,7 @@ import axios from "axios";
 import "../css/UserManagement.css";
 import { FaEdit, FaFile, FaSearch, FaTrash } from "react-icons/fa";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faSave,
-  faTimes,
-} from "@fortawesome/free-solid-svg-icons";
+import { faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
 import ModalConfirm from "../modal/ModalConfirm";
 import CompanyInfo from "../factures/CompanyInfo";
 
@@ -58,10 +55,16 @@ const UserManagement = () => {
   }, []);
 
   useEffect(() => {
-    if (formUserRole === "admin" && !["superAdmin", "simpleAdmin"].includes(formSubRole)) {
+    if (
+      formUserRole === "admin" &&
+      !["superAdmin", "simpleAdmin"].includes(formSubRole)
+    ) {
       setFormSubRole("superAdmin"); // Par défaut pour admin
     }
-    if (formUserRole === "user" && !["caissiere", "magasinier"].includes(formSubRole)) {
+    if (
+      formUserRole === "user" &&
+      !["caissiere", "magasinier"].includes(formSubRole)
+    ) {
       setFormSubRole("caissiere"); // Par défaut pour user
     }
     // eslint-disable-next-line
@@ -180,7 +183,13 @@ const UserManagement = () => {
       }
 
       setIsModalOpen(false);
-      fetchUsers();
+      if (userRole==="user"){
+        fetchCurrentUser();
+      }
+      else{
+         fetchUsers();
+      }
+     
     } catch (error) {
       setErrorMessage("Error submitting form: " + error.message);
       console.error("Error submitting form:", error);
@@ -191,8 +200,8 @@ const UserManagement = () => {
     setEditingUser(user);
     setIsModalOpen(true);
     setName(user.name);
-    setPassword(user.password)
-    setConfirmPassword(user.password)
+    // setPassword(user.password)
+    // setConfirmPassword(user.password)
     setPhoto(null);
     setFormUserRole(user.role);
     setFormSubRole(user.subRole || "");
@@ -311,7 +320,10 @@ const UserManagement = () => {
 
       {isModalOpen && (
         <div className="modal-user">
-          <div className="modal-users" onClick={()=>setIsModalOpen(false)}></div>
+          <div
+            className="modal-users"
+            onClick={() => setIsModalOpen(false)}
+          ></div>
           <div className="modal-content">
             <form onSubmit={handleSubmit}>
               <div className="form-group">
@@ -319,43 +331,42 @@ const UserManagement = () => {
                   type="text"
                   id="name"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => setName(e.target.value)} // Ajout du gestionnaire onChange
                   required
                   placeholder=""
                 />
-                  <label htmlFor="name">Nom</label>
+                <label htmlFor="name">Nom</label>
               </div>
 
               <div className="form-group">
-                
                 <input
                   type="password"
                   id="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => setPassword(e.target.value)} // Ajout du gestionnaire onChange
                   placeholder=""
                   required
                 />
-                  <label>passeword</label>
+                <label>Mot de passe</label>
               </div>
 
               <div className="form-group">
-               
                 <input
                   type="password"
                   id="confirmPassword"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e) => setConfirmPassword(e.target.value)} // Ajout du gestionnaire onChange
                   required
                 />
-                 <label htmlFor="confirmPassword">Confirmer le mot de passe</label>
+                <label htmlFor="confirmPassword">
+                  Confirmer le mot de passe
+                </label>
               </div>
 
               <div className="form-group">
-              
                 <select
                   value={formUserRole}
-                  onChange={(e) => setFormUserRole(e.target.value)}
+                  onChange={(e) => setFormUserRole(e.target.value)} // Ajout du gestionnaire onChange
                 >
                   <option value="user">Utilisateur</option>
                   <option value="admin">Administrateur</option>
@@ -364,10 +375,9 @@ const UserManagement = () => {
               </div>
 
               <div className="form-group">
-              
                 <select
-                  value={formSubRole || "caissiere"}
-                  onChange={(e) => setFormSubRole(e.target.value)}
+                  value={formSubRole || "caissiere"} // Default value set for subRole
+                  onChange={(e) => setFormSubRole(e.target.value)} // Ajout du gestionnaire onChange
                 >
                   <option value="caissiere">Caissière</option>
                   <option value="magasinier">Magasinier</option>
@@ -387,28 +397,32 @@ const UserManagement = () => {
                     type="file"
                     id="photo"
                     ref={fileInputRef}
-                    onChange={(e) => setPhoto(e.target.files[0])}
+                    onChange={(e) => setPhoto(e.target.files[0])} // Ajout du gestionnaire onChange pour le fichier
                     hidden
                   />
-                  <button className="select" type="button" onClick={handleIconClick}>
-                    <FaFile className="faFile"/>
+                  <button
+                    className="select"
+                    type="button"
+                    onClick={handleIconClick}
+                  >
+                    <FaFile className="faFile" />
                     Sélectionner un fichier
                   </button>
                 </div>
               </div>
               <div className="form-group">
-                  <input
-                  value={photo ? photo.name : ""}
+                <input
+                  value={photo ? photo.name : ""} // Affiche le nom du fichier si un fichier est sélectionné
                   placeholder=""
-                  required
-                  />
-                  <label htmlFor="photo">Photo</label>
+                  readOnly // Le champ est en lecture seule car il affiche uniquement le nom du fichier
+                />
+                <label htmlFor="photo">Photo</label>
               </div>
 
               <div className="form-buttons">
                 <button type="submit" className="btn-save">
-                  {editingUser ?<FaEdit/> : <FontAwesomeIcon icon={faSave} /> }
-                  {editingUser ?" Modifier" :"Enregistrer"}
+                  {editingUser ? <FaEdit /> : <FontAwesomeIcon icon={faSave} />}
+                  {editingUser ? "Modifier" : "Enregistrer"}
                 </button>
                 <button
                   type="button"

@@ -4,6 +4,63 @@
     justify-content: space-between;
     align-items: flex-start;
     height: 88vh;
+    .modal-machine-facture {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+      animation: modalFadeIn 0.4s ease;
+    }
+    
+    .modal-content-machine-facture {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      color: black;
+      animation: modalFadeIn 0.4s ease;
+      h2{
+        margin-top: 0px;
+      }
+      .titre-facture{
+        border-bottom: 3px solid gray;
+        height: 30px;
+        margin-bottom: 5px;
+      }
+      
+      overflow: auto;
+      .table-form-view{
+        height: auto;
+        max-height: 60vh;
+        overflow: auto;
+        width: 45vw;
+        table{
+          width: 100%;
+          border-collapse: collapse;
+          td{
+            padding: 5px;
+          }
+        }
+        thead{
+          background: rgb(17, 57, 53);
+          color: white;
+          font-weight: 600;
+          position: sticky;
+          top: 0px;
+          th{
+            padding: 10px;
+          }
+        
+        }
+      }
+    }
+    
     .btn-detail{
       background: rgb(12, 201, 144);
     }
@@ -136,7 +193,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      animation: fadIn 0.4s ease;
+      animation: modalFadeIn 0.4s ease;
     }
     
     .modal-content-m {

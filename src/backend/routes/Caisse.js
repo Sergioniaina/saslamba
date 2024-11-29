@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Caisse = require("../models/caisse");
 const MouvementCaisse = require("../models/mouvementCaisse");
-
+const HistoriqueCaisse = require('../models/HistoriqueCaisse'); 
 // Créer une nouvelle caisse
 router.post("/", async (req, res) => {
   try {
@@ -61,10 +61,9 @@ router.put("/:id", async (req, res) => {
       .json({ message: "Erreur lors de la mise à jour de la caisse", error });
   }
 });
-// Route pour fermer une caisse
-// Route pour fermer une caisse
-router.post("/:id/close", async (req, res) => {
+router.post("/:id/closes", async (req, res) => {
   try {
+    // Récupérer la caisse par son ID
     const caisse = await Caisse.findById(req.params.id);
     if (!caisse) return res.status(404).json({ message: "Caisse non trouvée" });
 
@@ -74,12 +73,13 @@ router.post("/:id/close", async (req, res) => {
 
     const now = new Date();
 
-    // Filter movements that occurred after the caisse opened
-    const filteredMouvements = caisse.historique.filter(
-      (mouvement) => mouvement.date >= caisse.dateOuverture
-    );
+    // Récupérer les mouvements liés à la caisse depuis la date d'ouverture
+    const filteredMouvements = await HistoriqueCaisse.find({
+      caisse: caisse._id,
+      date: { $gte: caisse.dateOuverture }
+    });
 
-    // Calculate totals only from filtered movements
+    // Calculer les totaux des recettes et des dépenses
     const totalRecette = filteredMouvements
       .filter((mouvement) => mouvement.type === "Ajout")
       .reduce((total, mouvement) => total + (mouvement.montant || 0), 0);
@@ -88,25 +88,25 @@ router.post("/:id/close", async (req, res) => {
       .filter((mouvement) => mouvement.type === "Retrait")
       .reduce((total, mouvement) => total + (mouvement.montant || 0), 0);
 
-    // Mark caisse as closed, add the closing date to history
+    // Fermer la caisse et ajouter les informations de fermeture
     caisse.dateFermeture = now;
-    caisse.fermetures.push(now); // Add closure date to history
-    caisse.ouvert = false; // Mark the caisse as closed
-
-    // Save the mouvement with the calculated totals
+    caisse.fermetures.push(now); // Ajouter la date de fermeture à l'historique des fermetures
+    caisse.ouvert = false; // Marquer la caisse comme fermée
+    caisse.historique = []; 
+    // Créer un nouveau mouvement pour documenter la fermeture
     const mouvement = new MouvementCaisse({
       idCaisse: caisse._id,
       recette: totalRecette,
       depense: totalDepense,
       date: now,
-      dateOuverture: caisse.dateOuverture,  // Log the opening date
-      dateFermeture: now  // Log the closing date
+      dateOuverture: caisse.dateOuverture, // Enregistrer la date d'ouverture
+      dateFermeture: now // Enregistrer la date de fermeture
     });
     await mouvement.save();
 
-    // Do NOT reset the historique. Keep all records intact.
-    
+    // Sauvegarder la caisse mise à jour
     await caisse.save();
+
     res.status(200).json(caisse);
   } catch (error) {
     console.error("Erreur lors de la fermeture de la caisse:", error);
@@ -115,6 +115,60 @@ router.post("/:id/close", async (req, res) => {
       .json({ message: "Erreur lors de la fermeture de la caisse", error });
   }
 });
+
+// router.post("/:id/close", async (req, res) => {
+//   try {
+//     const caisse = await Caisse.findById(req.params.id);
+//     if (!caisse) return res.status(404).json({ message: "Caisse non trouvée" });
+
+//     if (!caisse.ouvert) {
+//       return res.status(400).json({ message: "La caisse est déjà fermée." });
+//     }
+
+//     const now = new Date();
+
+//     // Filter movements that occurred after the caisse opened
+//     const filteredMouvements = caisse.historique.filter(
+//       (mouvement) => mouvement.date >= caisse.dateOuverture
+//     );
+
+//     // Calculate totals only from filtered movements
+//     const totalRecette = filteredMouvements
+//       .filter((mouvement) => mouvement.type === "Ajout")
+//       .reduce((total, mouvement) => total + (mouvement.montant || 0), 0);
+
+//     const totalDepense = filteredMouvements
+//       .filter((mouvement) => mouvement.type === "Retrait")
+//       .reduce((total, mouvement) => total + (mouvement.montant || 0), 0);
+
+//     // Mark caisse as closed, add the closing date to history
+//     caisse.dateFermeture = now;
+//     caisse.fermetures.push(now); // Add closure date to history
+//     caisse.ouvert = false; // Mark the caisse as closed
+
+//     // Save the mouvement with the calculated totals
+//     const mouvement = new MouvementCaisse({
+//       idCaisse: caisse._id,
+//       recette: totalRecette,
+//       depense: totalDepense,
+//       date: now,
+//       dateOuverture: caisse.dateOuverture,  // Log the opening date
+//       dateFermeture: now  // Log the closing date
+//     });
+//     await mouvement.save();
+
+//     // Do NOT reset the historique. Keep all records intact.
+    
+//     await caisse.save();
+//     res.status(200).json(caisse);
+//   } catch (error) {
+//     console.error("Erreur lors de la fermeture de la caisse:", error);
+//     res
+//       .status(500)
+//       .json({ message: "Erreur lors de la fermeture de la caisse", error });
+//   }
+// });
+
 // Route pour récupérer les mouvements des caisses avant leur fermeture
 router.get("/toutes/mouvements/avant-fermeture", async (req, res) => {
   try {
@@ -214,7 +268,6 @@ router.post("/:id/jour", async (req, res) => {
   }
 });
 
-
 // Route pour ouvrir une caisse
 router.post("/:id/open", async (req, res) => {
   try {
@@ -299,7 +352,7 @@ router.put("/:id/update-solde", async (req, res) => {
 // Route pour ajouter du solde
 router.put("/:id/add-solde", async (req, res) => {
   const { id } = req.params;
-  const { solde } = req.body;
+  const { solde, motif } = req.body;
 
   try {
     const caisse = await Caisse.findById(id);
@@ -317,6 +370,18 @@ router.put("/:id/add-solde", async (req, res) => {
     });
 
     await caisse.save();
+    const historiqueEntry = new HistoriqueCaisse({
+      caisse: caisse._id, // Référence à l'ID de la caisse
+      type: "Ajout",
+      action: `Ajout de ${solde} au solde`,
+      montant: Math.abs(solde),
+      motif: motif,
+      date: new Date()
+    });
+    console.log(historiqueEntry);
+
+    // Sauvegarder l'entrée dans l'historique
+    await historiqueEntry.save();
     res.json(caisse);
   } catch (error) {
     console.error("Erreur lors de l'ajout du solde:", error);
@@ -327,7 +392,7 @@ router.put("/:id/add-solde", async (req, res) => {
 // Route pour retirer du solde
 router.put("/:id/remove-solde", async (req, res) => {
   const { id } = req.params;
-  const { solde } = req.body;
+  const { solde, motif} = req.body;
 
   try {
     const caisse = await Caisse.findById(id);
@@ -344,6 +409,17 @@ router.put("/:id/remove-solde", async (req, res) => {
       date: new Date(),
     });
     await caisse.save();
+    const historiqueEntry = new HistoriqueCaisse({
+      caisse: caisse._id, // Référence à l'ID de la caisse
+      type: "Retrait",
+      action: `Retrait de ${solde} au solde`,
+      montant: Math.abs(solde),
+      motif: motif,
+      date: new Date()
+    });
+
+    // Sauvegarder l'entrée dans l'historique
+    await historiqueEntry.save();
     res.json(caisse);
   } catch (error) {
     console.error("Erreur lors du retrait du solde:", error);

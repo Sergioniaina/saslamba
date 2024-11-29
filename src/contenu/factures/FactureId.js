@@ -141,13 +141,13 @@ const FactureId = () => {
                       <div className="info-id">
                         <p className="name-entrprise-id">
                           {" "}
-                          <p style={{ margin: 0 }}>{companyInfo.name}</p>
+                          <span style={{ margin: 0 }}>{companyInfo.name}</span>
                         </p>
                         <p>
-                          <p style={{ margin: 0 }}>{companyInfo.phone}</p>
+                          <span style={{ margin: 0 }}>{companyInfo.phone}</span>
                         </p>
                         <p>
-                          <p style={{ margin: 0 }}>{companyInfo.address}</p>
+                          <span style={{ margin: 0 }}>{companyInfo.address}</span>
                         </p>
                       </div>
                     </div>
