@@ -9,7 +9,6 @@ import {
   faEdit,
   faTrash,
   faInfoCircle,
-  faTimes,
   faCalendarAlt,
 } from "@fortawesome/free-solid-svg-icons";
 

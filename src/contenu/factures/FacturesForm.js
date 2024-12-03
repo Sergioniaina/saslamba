@@ -27,6 +27,7 @@ import {
 } from "react-icons/fa";
 import ModalInfo from "../modal/ModalInfo";
 import ModalConfirm from "../modal/ModalConfirm";
+import { useLocation } from "react-router-dom";
 //import { trusted } from "mongoose";
 // import { jsPDF } from "jspdf";
 // import html2canvas from "html2canvas";
@@ -65,7 +66,8 @@ const FactureForm = () => {
   const [confirmAction, setConfirmAction] = useState(null); // Stores the action to confirm
   const [confirmMessage, setConfirmMessage] = useState(""); // Stores the confirmation message
   const [loading, setLoading] = useState(true);
-  // const [reste, setReste]=useState("");
+  const [reste, setReste]=useState(0);
+  const [changeGive, setChangeGive] = useState(0);
   // const [isreste, setIsreste]=useState("");
   const confirmActionAndClose = () => {
     if (confirmAction) confirmAction(); // Execute the action
@@ -76,6 +78,40 @@ const FactureForm = () => {
   useEffect(() => {
     fetchCompanyInfo(); // Load company info when the component mounts
   }, []);
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const view = params.get("view");
+
+    if (view) {
+      setCurrentView(view); // Mettre à jour currentView
+      setCurrent("factures"); // Mettre à jour current
+    }
+
+    // Si currentView est "en-attente", simulez un clic sur le bouton
+    if (view === "en-attente") {
+      setCurrentView("en-attente");
+      setCurrent("factures");
+    }
+
+    // Si currentView est "factures", simulez un clic sur le bouton
+    if (view === "factures") {
+      setCurrentView("factures");
+      setCurrent("factures");
+    }
+  }, [location]);
+
+  const handleEnAttenteClick = () => {
+    setCurrentView("en-attente");
+    setCurrent("factures");
+  };
+
+  // Fonction pour simuler un clic sur le bouton "Factures"
+  const handleFacturesClick = () => {
+    setCurrentView("factures");
+    setCurrent("factures");
+  };
 
   const fetchCompanyInfo = async () => {
     try {
@@ -184,13 +220,35 @@ const FactureForm = () => {
   useEffect(() => {
 
     fetchLatestFacture();
+ //   clickButton();
   }, []);
+  // useEffect pour recalculer quand manualInput ou formData changent
+useEffect(() => {
   const remainingAmount = formData.totalPrice - manualInput;
   const changeToGive =
     manualInput - formData.totalPrice > 0
       ? manualInput - formData.totalPrice
       : 0;
 
+  setReste(remainingAmount);
+  setChangeGive(changeToGive);
+}, [manualInput, formData]); // Dépendances : recalcul à chaque changement
+
+  const remainingAmount = formData.totalPrice - manualInput;
+  const changeToGive =
+    manualInput - formData.totalPrice > 0
+      ? manualInput - formData.totalPrice
+      : 0;
+      
+const clickButton=()=>{
+  const remainingAmount = formData.totalPrice - manualInput;
+  const changeToGive =
+    manualInput - formData.totalPrice > 0
+      ? manualInput - formData.totalPrice
+      : 0;
+      setReste(remainingAmount);
+      setChangeGive(changeToGive); 
+}
   const handleBillClick = (billValue) => {
     setBillBreakdown((prevBreakdown) => ({
       ...prevBreakdown,
@@ -199,10 +257,21 @@ const FactureForm = () => {
     setManualInput((prevCash) => prevCash + parseInt(billValue));
   };
 
+  const calculateAmounts = (totalPrice, input) => {
+    const remainingAmount = totalPrice - input;
+    const changeToGive = input > totalPrice ? input - totalPrice : 0;
+    return { remainingAmount, changeToGive };
+  };
+  
+  // Exemple d'utilisation
   const handleManualInputChange = (e) => {
     const value = parseInt(e.target.value, 10) || 0;
     setManualInput(value);
+    const { remainingAmount, changeToGive } = calculateAmounts(formData.totalPrice, value);
+    setReste(remainingAmount);
+    setChangeGive(changeToGive);
   };
+  
 
   const handlePaymentTypeChange = (e) => {
     const value = e.target.value;
@@ -842,7 +911,7 @@ const FactureForm = () => {
       contact: formData.contact,
       totalWeight: formData.totalWeight,
       totalPrice: formData.totalPrice,
-      reste: remainingAmount > 0 ? remainingAmount : 0,
+      reste: reste > 0 ? reste : 0,
       serviceType: formData.serviceType,
       machines: selectedMachines,
       machineWeights: machineWeights,
@@ -906,6 +975,7 @@ const FactureForm = () => {
           }
         );
         // alert("Facture créée avec succès");
+        toast.success("La facture crée avec succès !");
       }
 
       console.log("Données de la facture envoyées :", response.data._id);
@@ -997,7 +1067,6 @@ const FactureForm = () => {
 
       setPreview(false);
       handleCancel(); // Masquer la prévisualisation après la soumission
-      toast.success("La facture crée avec succès !");
     } catch (error) {
       setError(
         `Erreur lors de l'enregistrement de la facture: ${error.message}`
@@ -1091,89 +1160,89 @@ const FactureForm = () => {
     }
   };
 
-  const handleDetails = (facture) => {
-    if (!facture || typeof facture !== "object") {
-      setError("Facture non disponible ou mal formatée pour l'édition.");
-      return;
-    }
+  // const handleDetails = (facture) => {
+  //   if (!facture || typeof facture !== "object") {
+  //     setError("Facture non disponible ou mal formatée pour l'édition.");
+  //     return;
+  //   }
 
-    // Initialisation des options de sélection
-    const machineOptions = facture.machines.reduce((acc, machineId) => {
-      const articleOptions = article.flatMap((article) =>
-        article.prices
-          .filter(
-            (price) =>
-              (isWeekend && price.priceType === "weekend") ||
-              (!isWeekend && price.priceType === "normale")
-          )
-          .map((price) => ({
-            label: `${article.type} - ${price.priceType}: $${price.value}`,
-            value: `${article._id}-${article.type}-${price.priceType}-${price.value}`,
-          }))
-      );
+  //   // Initialisation des options de sélection
+  //   const machineOptions = facture.machines.reduce((acc, machineId) => {
+  //     const articleOptions = article.flatMap((article) =>
+  //       article.prices
+  //         .filter(
+  //           (price) =>
+  //             (isWeekend && price.priceType === "weekend") ||
+  //             (!isWeekend && price.priceType === "normale")
+  //         )
+  //         .map((price) => ({
+  //           label: `${article.type} - ${price.priceType}: $${price.value}`,
+  //           value: `${article._id}-${article.type}-${price.priceType}-${price.value}`,
+  //         }))
+  //     );
 
-      // Associer les options d'article à la machine
-      acc[machineId] = articleOptions;
-      return acc;
-    }, {});
+  //     // Associer les options d'article à la machine
+  //     acc[machineId] = articleOptions;
+  //     return acc;
+  //   }, {});
 
-    setFacture(facture);
-    // Mettre à jour le formulaire et la sélection
-    setFormData({
-      customerName: facture.customerName || "",
-      contact: facture.contact || "",
-      totalWeight: facture.totalWeight || 0,
-      totalPrice: facture.totalPrice || 0,
-      reste: facture.reste || 0,
-      serviceType: facture.serviceType || "",
-      articles: facture.articles || [],
-      articleDetails: facture.articleDetails || [],
-    });
+  //   setFacture(facture);
+  //   // Mettre à jour le formulaire et la sélection
+  //   setFormData({
+  //     customerName: facture.customerName || "",
+  //     contact: facture.contact || "",
+  //     totalWeight: facture.totalWeight || 0,
+  //     totalPrice: facture.totalPrice || 0,
+  //     reste: facture.reste || 0,
+  //     serviceType: facture.serviceType || "",
+  //     articles: facture.articles || [],
+  //     articleDetails: facture.articleDetails || [],
+  //   });
 
-    // Trouver l'option correspondante à l'édition
-    const selectedOptions = {};
+  //   // Trouver l'option correspondante à l'édition
+  //   const selectedOptions = {};
 
-    // Pour chaque machine, trouvez l'option correspondante à l'édition
-    facture.machines.forEach((machineId) => {
-      const machineArticleDetails = facture.articleDetails.filter(
-        (detail) => detail.machineId === machineId
-      );
+  //   // Pour chaque machine, trouvez l'option correspondante à l'édition
+  //   facture.machines.forEach((machineId) => {
+  //     const machineArticleDetails = facture.articleDetails.filter(
+  //       (detail) => detail.machineId === machineId
+  //     );
 
-      const selectedOption =
-        machineArticleDetails.length > 0
-          ? machineOptions[machineId].find((option) =>
-              machineArticleDetails.some(
-                (detail) =>
-                  `${detail.articleId}-${detail.type}-${detail.prices[0]?.priceType}-${detail.prices[0]?.value}` ===
-                  option.value
-              )
-            )?.value || ""
-          : "";
+  //     const selectedOption =
+  //       machineArticleDetails.length > 0
+  //         ? machineOptions[machineId].find((option) =>
+  //             machineArticleDetails.some(
+  //               (detail) =>
+  //                 `${detail.articleId}-${detail.type}-${detail.prices[0]?.priceType}-${detail.prices[0]?.value}` ===
+  //                 option.value
+  //             )
+  //           )?.value || ""
+  //         : "";
 
-      selectedOptions[machineId] = selectedOption; // Associer l'option sélectionnée à la machine
-    });
+  //     selectedOptions[machineId] = selectedOption; // Associer l'option sélectionnée à la machine
+  //   });
 
-    setSelectedOptions(selectedOptions);
-    setSelectedMachines(facture.machines || []);
-    setSelectedProducts(facture.products || []);
+  //   setSelectedOptions(selectedOptions);
+  //   setSelectedMachines(facture.machines || []);
+  //   setSelectedProducts(facture.products || []);
 
-    const machineWeightsObj = facture.machineWeights.reduce((acc, item) => {
-      if (item.machineId) {
-        acc[item.machineId] = item.weight || 0;
-      }
-      return acc;
-    }, {});
-    setMachineWeights(machineWeightsObj);
+  //   const machineWeightsObj = facture.machineWeights.reduce((acc, item) => {
+  //     if (item.machineId) {
+  //       acc[item.machineId] = item.weight || 0;
+  //     }
+  //     return acc;
+  //   }, {});
+  //   setMachineWeights(machineWeightsObj);
 
-    const productQuantitiesObj = facture.quantities.reduce((acc, item) => {
-      if (item.productId) {
-        acc[item.productId] = item.quantity || 0;
-      }
-      return acc;
-    }, {});
-    setQuantities(productQuantitiesObj);
-    facturesPrint();
-  };
+  //   const productQuantitiesObj = facture.quantities.reduce((acc, item) => {
+  //     if (item.productId) {
+  //       acc[item.productId] = item.quantity || 0;
+  //     }
+  //     return acc;
+  //   }, {});
+  //   setQuantities(productQuantitiesObj);
+  //   facturesPrint();
+  // };
   const handleEdit = (facture) => {
     if (!facture || typeof facture !== "object") {
       setError("Facture non disponible ou mal formatée pour l'édition.");
@@ -1201,18 +1270,23 @@ const FactureForm = () => {
     }, {});
 
     setFacture(facture);
+    const test = facture.totalPrice - facture.reste;
     // Mettre à jour le formulaire et la sélection
     setFormData({
       customerName: facture.customerName || "",
       contact: facture.contact || "",
       totalWeight: facture.totalWeight || 0,
-      totalPrice: facture.totalPrice || 0,
-      reste: facture.reste || 0,
+      totalPrice: facture.totalPrice ,
+      reste: facture.reste ,
       serviceType: facture.serviceType || "",
       articles: facture.articles || [],
       articleDetails: facture.articleDetails || [],
     });
-
+    setManualInput(test);
+    setReste(facture.reste);
+    const { changeToGive } = calculateAmounts(facture.totalPrice, test);
+    setChangeGive(changeToGive);
+   
     // Trouver l'option correspondante à l'édition
     const selectedOptions = {};
 
@@ -1274,6 +1348,8 @@ const FactureForm = () => {
     setMachineWeights({});
     setIsEditMode(false);
     fetchLatestFacture();
+    // setManualInput();
+    // setReste();
   };
 
   const [offeredQuantities, setOfferedQuantities] = useState({}); // To track quantities for "offert"
@@ -1702,7 +1778,7 @@ const FactureForm = () => {
         onSubmit={(e) => {
           e.preventDefault();
           e.stopPropagation();
-
+          clickButton();
           const form = e.target;
 
           if (form.checkValidity()) {
@@ -1746,10 +1822,7 @@ const FactureForm = () => {
               <button
                 type="button"
                 className={currentView === "en-attente" ? "active" : ""}
-                onClick={() => {
-                  setCurrentView("en-attente");
-                  setCurrent("factures");
-                }}
+                onClick={handleEnAttenteClick}
               >
                 <FaHourglassHalf
                   className="icon"
@@ -1760,10 +1833,7 @@ const FactureForm = () => {
               <button
                 type="button"
                 className={currentView === "factures" ? "active" : ""}
-                onClick={() => {
-                  setCurrentView("factures");
-                  setCurrent("factures");
-                }}
+                onClick={handleFacturesClick}
               >
                 <FaFileInvoice className="icon" style={{ color: "#9C27B0" }} />
                 <span>Factures</span>
@@ -1914,10 +1984,11 @@ const FactureForm = () => {
                   className="factures"
                   onEdit={handleEdit}
                   etatFilter={["encaisser", "annulée"]}
+                  setCurrentView={setCurrentView}
+                  setCurrent={setCurrent}
                 />
               </div>
             )}
-
             {currentView === "en-attente" && current === "factures" && (
               <div onClick={(e) => e.stopPropagation()}>
                 <FactureList
@@ -1925,6 +1996,8 @@ const FactureForm = () => {
                   onEdit={handleEdit}
                   // onViewDetails={handleDetails}
                   etatFilter="en attente" // Filtrer les factures "en attente"
+                  setCurrentView={setCurrentView}
+                  setCurrent={setCurrent}
                 />
               </div>
             )}
@@ -2456,7 +2529,7 @@ const FactureForm = () => {
 
         {modalInfo && <ModalInfo message={message} onOk={onOk} />}
         {billet && (
-          <div className="billetage" onClick={() => setBillet(false)}>
+          <div className="billetage" onClick={() =>{setBillet(false)}}>
             <div
               className="billetage-content"
               onClick={(e) => e.stopPropagation()}
@@ -2547,8 +2620,13 @@ const FactureForm = () => {
                       </div>
                       <div className="reste">
                         <span> reste :</span>
-                        {remainingAmount > 0 ? remainingAmount : 0} Ar
-                        
+                        {
+                          isEditMode ? (
+                            <>
+                            {reste > 0 ? reste : 0} Ar
+                            </>
+                          ):(<>{remainingAmount > 0 ? remainingAmount : 0} Ar</>)
+                        }
                       </div>
                       <div className="reste">
                         <span> A rendre :</span> {changeToGive} Ar
@@ -2752,14 +2830,14 @@ const FactureForm = () => {
             </tbody>
             <tfoot>
               <tr>
-                {remainingAmount > 0 && (
+                {reste > 0 && (
                   <td className="total" colSpan="6">
                     <strong>
                       <span>Reste </span>
                       <span className="reste">
                         <span>
                           {" "}
-                          {remainingAmount > 0 ? remainingAmount : 0}
+                          {reste > 0 ? reste : 0}
                         </span>
                         <span>Ar</span>
                       </span>

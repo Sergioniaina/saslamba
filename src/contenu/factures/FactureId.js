@@ -38,7 +38,10 @@ const FactureId = () => {
     const fetchFactures = async () => {
       try {
         const response = await axios.get("http://localhost:5000/api/factures");
-        setFactures(response.data);
+        const sortedFactures = response.data.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        setFactures(sortedFactures);
       } catch (err) {
         console.error("Erreur lors du chargement des factures:", err);
       }
@@ -76,7 +79,9 @@ const FactureId = () => {
         <table className="facture-table">
           <thead>
             <tr>
+              <th>Date</th>
               <th>Référence</th>
+              <th>Numero</th>
               <th>Nom du client</th>
               <th>Contact</th>
               <th>Total (Prix)</th>
@@ -90,7 +95,9 @@ const FactureId = () => {
                 ref={(el) => (factureRefs.current[facture._id] = el)} // Associer une référence à chaque ligne
                 className={facture._id === highlightedId ? "highlighted" : ""}
               >
+                 <td>{new Date(facture.createdAt).toLocaleString()}</td>
                 <td>{facture.reference}</td>
+                <td>{facture.ticketNumber}</td>
                 <td>{facture.customerName}</td>
                 <td>{facture.contact}</td>
                 <td>{facture.totalPrice}</td>

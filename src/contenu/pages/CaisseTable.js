@@ -24,7 +24,10 @@ function CaisseTable() {
   const fetchHistoriques = async () => {
     try {
       const response = await axios.get(`${apiBaseURL}/historiques`);
-      setHistoriques(response.data);
+      const sortedFactures = response.data.sort(
+        (a, b) => new Date(b.date) - new Date(a.date)
+      );
+      setHistoriques(sortedFactures);
     } catch (error) {
       console.error("Erreur lors de la récupération des historiques", error);
     }

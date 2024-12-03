@@ -8,6 +8,7 @@ const path = require("path");
 const Compteur = require("../models/compteurMachine");
 const Facture = require("../models/Factures");
 const authMiddleware = require("../middleware/authMiddleware");
+//const checkPermission = require('../middleware/checkPermission');
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "machine/"); // Dossier où les fichiers seront stockés

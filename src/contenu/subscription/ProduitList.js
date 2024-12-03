@@ -73,11 +73,6 @@ const Products = () => {
         });
     }
   }, []);
-  
-  
-  
-  
-
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     setUser(user);
@@ -278,7 +273,7 @@ const Products = () => {
                     data-tooltip-id="edit"
                     icon={faEdit}
                   />
-                  {userPrivileges?.products?.includes("delete") &&
+                  {userPrivileges?.produits?.includes("delete") &&
                      (
                       <FontAwesomeIcon
                         onClick={() => confirmDelete(product._id)}
@@ -287,7 +282,6 @@ const Products = () => {
                         icon={faTrash}
                       />
                     )}
-
                   <FontAwesomeIcon
                     onClick={() => handleAddStock(product)}
                     className="stock-button icon"

@@ -43,6 +43,8 @@ import PaymentList from "./PayementHistorique";
 import CaisseTable from "./CaisseTable";
 import FactureId from "../factures/FactureId";
 import PrivilegeManagement from "../Privilege/PrivilegeManagement ";
+import Machines from "../machine/Machines";
+import GestionCaisse from "./HistoriqueDepense";
 
 const DropdownItem = ({ title, icon, children }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -76,7 +78,7 @@ const Home = ({ onLogout }) => {
 
   useEffect(() => {
     const fixedDiv = document.querySelector(".fixed-div");
-    
+
     const fixedDivs = document.querySelector(".fixeddiv");
     if (fixedDiv && fixedDivs) {
       fixedDiv.classList.remove("visible");
@@ -161,6 +163,7 @@ const Home = ({ onLogout }) => {
             <Route path="/abonement" element={<SubscriptionManager />} />
             <Route path="/abonnements" element={<AbonnementForm />} />
             <Route path="/machine" element={<MachineList />} />
+            <Route path="/machines" element={<Machines/>} />
             <Route path="/about" element={<ClientPages />} />
             <Route path="/historique" element={<Historique />} />
             <Route path="/produit" element={<Products />} />
@@ -174,6 +177,7 @@ const Home = ({ onLogout }) => {
             <Route path="/caisseTable" element={<CaisseTable />} />
             <Route path="/FactureId" element={<FactureId />} />
             <Route path="/privilege" element={<PrivilegeManagement />} />
+            <Route path="/depense" element={<GestionCaisse />} />
             {/* <Route path="/FactureId/:id" element={<FactureId />} /> */}
             <Route
               path="/machineConsumption"
@@ -182,92 +186,101 @@ const Home = ({ onLogout }) => {
             <Route path="/inventaire" element={<ProductInventory />} />
           </Routes>
         </div>
-        {isFixedDivVisible && ( 
-          <div className="fixeddiv hidden" onClick={closeFixedDiv}> 
-          <div className="fixed-div hidden"onClick={(e)=>(e.stopPropagation())}>
-            <button className="btn-close" onClick={closeFixedDiv}>
-              ❌
-            </button>
-            <div className="dropdown-menu">
-              <DropdownItem
-                title="Stock"
-                icon={<FaWarehouse style={{ color: "#FF9800" }} />}
-              >
-                <NavLink to="/home/produitentrer" className="dropdown-subitem">
-                  <FaArrowDown style={{ color: "#FF9800" }} /> ENTRER
-                </NavLink>
-                <NavLink to="/home/produit" className="dropdown-subitem">
-                  <FaBoxOpen style={{ color: "#FF9800" }} /> PRODUITS
-                </NavLink>
-                <NavLink to="/home/inventaire" className="dropdown-subitem">
-                  <FaBoxes style={{ color: "brown" }} /> INVENTAIRE
-                </NavLink>
-                <NavLink to="/home/historiqueStock" className="dropdown-subitem">
-                  <FaBoxes style={{ color: "brown" }} /> HISTORIQUE
-                </NavLink>
-              </DropdownItem>
-
-              <DropdownItem
-                title="Caisse"
-                icon={<FaCashRegister style={{ color: "#4CAF50" }} />}
-              >
-                <NavLink to="/home/caisse" className="dropdown-subitem">
-                  <FaTasks style={{ color: "#4CAF50" }} /> GESTION
-                </NavLink>
-                <NavLink
-                  to="/home/caissemouvement"
-                  className="dropdown-subitem"
+        {isFixedDivVisible && (
+          <div className="fixeddiv hidden" onClick={closeFixedDiv}>
+            <div
+              className="fixed-div hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button className="btn-close" onClick={closeFixedDiv}>
+                ❌
+              </button>
+              <div className="dropdown-menu">
+                <DropdownItem
+                  title="Stock"
+                  icon={<FaWarehouse style={{ color: "#FF9800" }} />}
                 >
-                  <FaExchangeAlt style={{ color: "#4CAF50" }} /> MOUVEMENT
-                </NavLink>
-                <NavLink
-                  to="/home/caisseTable"
-                  className="dropdown-subitem"
+                  <NavLink
+                    to="/home/produitentrer"
+                    className="dropdown-subitem"
+                  >
+                    <FaArrowDown style={{ color: "#FF9800" }} /> ENTRER
+                  </NavLink>
+                  <NavLink to="/home/produit" className="dropdown-subitem">
+                    <FaBoxOpen style={{ color: "#FF9800" }} /> PRODUITS
+                  </NavLink>
+                  <NavLink to="/home/inventaire" className="dropdown-subitem">
+                    <FaBoxes style={{ color: "brown" }} /> INVENTAIRE
+                  </NavLink>
+                  <NavLink
+                    to="/home/historiqueStock"
+                    className="dropdown-subitem"
+                  >
+                    <FaHistory style={{ color: "brown" }} /> HISTORIQUE
+                  </NavLink>
+                </DropdownItem>
+
+                <DropdownItem
+                  title="Caisse"
+                  icon={<FaCashRegister style={{ color: "#4CAF50" }} />}
                 >
-                  <FaExchangeAlt style={{ color: "#4CAF50" }} /> HISTORIQUE
-                </NavLink>
-              </DropdownItem>
+                  <NavLink to="/home/caisse" className="dropdown-subitem">
+                    <FaTasks style={{ color: "#4CAF50" }} /> GESTION
+                  </NavLink>
+                  <NavLink
+                    to="/home/caissemouvement"
+                    className="dropdown-subitem"
+                  >
+                    <FaExchangeAlt style={{ color: "#4CAF50" }} /> MOUVEMENT
+                  </NavLink>
+                  <NavLink to="/home/caisseTable" className="dropdown-subitem">
+                    <FaHistory style={{ color: "#4CAF50" }} /> HISTORIQUE
+                  </NavLink>
+                  <NavLink to="/home/depense" className="dropdown-subitem">
+                    <FaHistory style={{ color: "#4CAF50" }} /> DEPENSE
+                  </NavLink>
+                </DropdownItem>
 
-              <DropdownItem
-                title="Machine"
-                icon={<FaTools style={{ color: "#2196F3" }} />}
-              >
-                <NavLink to="/home/machine" className="dropdown-subitem">
-                  <FaPlus style={{ color: "#2196F3" }} /> AJOUT
-                </NavLink>
-                <NavLink
-                  to="/home/machineConsumption"
-                  className="dropdown-subitem"
+                <DropdownItem
+                  title="Machine"
+                  icon={<FaTools style={{ color: "#2196F3" }} />}
                 >
-                  <FaHistory style={{ color: "#2196F3" }} /> HISTORIQUE
-                </NavLink>
-              </DropdownItem>
+                  <NavLink to="/home/machine" className="dropdown-subitem">
+                    <FaPlus style={{ color: "#2196F3" }} /> AJOUT
+                  </NavLink>
+                  <NavLink
+                    to="/home/machineConsumption"
+                    className="dropdown-subitem"
+                  >
+                    <FaHistory style={{ color: "#2196F3" }} /> HISTORIQUE
+                  </NavLink>
+                </DropdownItem>
 
-              <DropdownItem
-                title="Abonnement"
-                icon={<FaClipboardList style={{ color: "#9C27B0" }} />}
-              >
-                <NavLink to="/home/abonnement" className="dropdown-subitem">
-                  <FaPlusSquare style={{ color: "#9C27B0" }} /> CREATION
-                </NavLink>
-                <NavLink to="/home/abonnements" className="dropdown-subitem">
-                  <FaUserFriends style={{ color: "#9C27B0" }} />{" "}
-                  CLIENT-ABONNEMENT
-                </NavLink>
-              </DropdownItem>
+                <DropdownItem
+                  title="Abonnement"
+                  icon={<FaClipboardList style={{ color: "#9C27B0" }} />}
+                >
+                  <NavLink to="/home/abonnement" className="dropdown-subitem">
+                    <FaPlusSquare style={{ color: "#9C27B0" }} /> CREATION
+                  </NavLink>
+                  <NavLink to="/home/abonnements" className="dropdown-subitem">
+                    <FaUserFriends style={{ color: "#9C27B0" }} />{" "}
+                    CLIENT-ABONNEMENT
+                  </NavLink>
+                </DropdownItem>
 
-              <DropdownItem
-                title="Parametre"
-                icon={<FaCog style={{ color: "#607D8B" }} />}
-              >
-                <NavLink to="/home/test" className="dropdown-subitem">
-                  <FaSignOutAlt style={{ color: "#607D8B" }} /> DECONNECTER
-                </NavLink>
-                <NavLink to="/home/contact" className="dropdown-subitem">
-                  <FaUserTie style={{ color: "#607D8B" }} /> CLIENT-ABONNEMENT
-                </NavLink>
-              </DropdownItem>
-            </div>
+                <DropdownItem
+                  title="Parametre"
+                  icon={<FaCog style={{ color: "#607D8B" }} />}
+                >
+                  <NavLink to="/home/test" className="dropdown-subitem">
+                    <FaSignOutAlt style={{ color: "#607D8B" }} /> DECONNECTER
+                  </NavLink>
+                  <NavLink to="/home/contact" className="dropdown-subitem">
+                    <FaUserTie style={{ color: "#607D8B" }} /> CLIENT-ABONNEMENT
+                  </NavLink>
+                </DropdownItem>
+              </div>
             </div>
           </div>
         )}

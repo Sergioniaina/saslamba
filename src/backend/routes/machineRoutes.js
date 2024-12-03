@@ -38,7 +38,7 @@ const upload = multer({
 });
 
 // Route avec les middlewares
-router.get("/", authMiddleware, checkPermission("products", "list"), async (req, res) => {
+router.get("/", authMiddleware, checkPermission("produits", "list"), async (req, res) => {
   try {
     console.log("Accès autorisé - Récupération des produits");
     const products = await Product.find().sort({ date: -1 });
@@ -68,7 +68,7 @@ router.get("/search", async (req, res) => {
 });
 
 // Create or update a product with photo upload
-router.post("/",authMiddleware,checkPermission('products', 'add'), upload.single("photo"), async (req, res) => {
+router.post("/",authMiddleware,checkPermission('produits', 'add'), upload.single("photo"), async (req, res) => {
   const { name, price, description, date, stock } = req.body;
   const photo = req.file ? req.file.path : null; // Si la photo est téléchargée
   const userId = req.user._id;
@@ -125,7 +125,7 @@ router.post("/",authMiddleware,checkPermission('products', 'add'), upload.single
 });
 
 // Update a product
-router.put("/:id", authMiddleware, checkPermission('products', 'edit'), upload.single("photo"), async (req, res) => {
+router.put("/:id", authMiddleware, checkPermission('produits', 'edit'), upload.single("photo"), async (req, res) => {
   const { id } = req.params;
   const { name, price, description, stock, date } = req.body;
   const photo = req.file ? req.file.path : null;
@@ -192,7 +192,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // Delete a product
-router.delete("/:id",authMiddleware, checkPermission('products', 'delete'), async (req, res) => {
+router.delete("/:id",authMiddleware, checkPermission('produits', 'delete'), async (req, res) => {
   const { id } = req.params;
   const userId = req.user._id;
   try {

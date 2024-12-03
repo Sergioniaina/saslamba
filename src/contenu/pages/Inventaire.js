@@ -27,6 +27,7 @@ const ProductInventory = () => {
   const [isConfirmVisible, setIsConfirmVisible] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null); // Stores the action to confirm
   const [confirmMessage, setConfirmMessage] = useState(""); // Stores the confirmation message
+  const [userPrivileges, setUserPrivileges] = useState(null);
   const confirmActionAndClose = () => {
     if (confirmAction) confirmAction();
     setIsConfirmVisible(false);
@@ -93,7 +94,11 @@ const ProductInventory = () => {
       console.error("Erreur lors de la suppression de l'historique", error);
     }
   };
-
+  const confirmDelete = (id) => {
+    setConfirmMessage("Voulez-vous supprimer ce Inventaire?");
+    setConfirmAction(() => () => handleDeleteHistorique(id));
+    setIsConfirmVisible(true);
+  };
   const handleProductSelect = (product) => {
     setSelectedProducts((prev) =>
       prev.some((p) => p._id === product._id)
@@ -200,6 +205,44 @@ const ProductInventory = () => {
       ? produit.name.toLowerCase().includes(searchTerms.toLowerCase())
       : false;
   });
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+  
+    if (user) {
+      // Récupérer les privilèges de l'utilisateur via l'API
+      axios
+        .get("http://localhost:5000/api/privileges", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        })
+        .then((response) => {
+         // console.log("Réponse de l'API :", response.data);
+          // Cherchez les privilèges pour le role et subRole de l'utilisateur
+          const userRole = user.role;
+          const userSubrole = user.subRole;
+
+          // Trouvez les privilèges de l'utilisateur
+          const privileges = response.data.find(
+            (item) => item.role === userRole && item.subRole === userSubrole
+          )?.permissions;
+
+          if (privileges) {
+          //console.log("Privilèges de l'utilisateur :", privileges);
+            setUserPrivileges(privileges);
+          } else {
+            console.log("Aucun privilège trouvé pour ce rôle et sous-rôle");
+            setUserPrivileges([]); // Si aucun privilège n'est trouvé
+          }
+        })
+        .catch((error) => {
+          console.error(
+            "Erreur lors de la récupération des privilèges :",
+            error
+          );
+        });
+    }
+  }, []);
 
   return (
     <div className="inventaire">
@@ -230,7 +273,7 @@ const ProductInventory = () => {
             <th>Quantité en Stock</th>
             <th>Stock après Inventaire</th>
             <th>Utilisateur</th>
-            <th className="action">Action</th>
+            {userPrivileges?.produits?.includes("delete") &&  <th className="action">Action</th>}
           </tr>
         </thead>
         <tbody>
@@ -247,7 +290,6 @@ const ProductInventory = () => {
               ? detailsParsed[3]
               : produit?.stock || "N/A";
             const stockAfterInventory = parseInt(stock) + parseInt(ecart);
-
             return (
               <tr key={item._id}>
                 <td>{new Date(item.date).toLocaleDateString()}</td>
@@ -257,14 +299,15 @@ const ProductInventory = () => {
                 <td>{stock}</td>
                 <td>{stockAfterInventory}</td>
                 <td>{user}</td>
+                {userPrivileges?.produits?.includes("delete") && 
                 <td className="action">
                   <button
-                    onClick={() => handleDeleteHistorique(item._id)}
+                    onClick={() => confirmDelete(item._id)}
                     className="delete-button"
                   >
                     <FontAwesomeIcon icon={faTrash} />
                   </button>
-                </td>
+                </td>}
               </tr>
             );
           })}

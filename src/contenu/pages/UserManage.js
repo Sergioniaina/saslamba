@@ -41,7 +41,7 @@ const UserManagement = () => {
       setSubRole(user.subRole);
       setFormUserRole(user.role);
       setFormSubRole(user.subRole);
-
+      console.log("userRole :",user.role)
       if (user.role === "admin") {
         fetchUsers();
       } else if (user.role === "user") {

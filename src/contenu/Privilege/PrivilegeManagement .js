@@ -4,19 +4,31 @@ import axios from "axios";
 import { FaSave } from "react-icons/fa";
 import ModalConfirm from "../modal/ModalConfirm";
 import { useMemo } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const PrivilegeManagement = () => {
   const [roles, setRoles] = useState([]);
   const [privileges, setPrivileges] = useState({});
   const [loading, setLoading] = useState(true);
   const [searchQueries, setSearchQueries] = useState({
-    products: '',
-    invoices: '',
-    machines: '',
-    users: ''
+    products: "",
+    invoices: "",
+    machines: "",
+    users: "",
   });
 
-  const modules = useMemo(() => ["products", "invoices", "machines", "users","mouvement","historique"],[]);
+  const modules = useMemo(
+    () => [
+      "produits",
+      "factures",
+      "machines",
+      "users",
+      "mouvement",
+      "historique",
+    ],
+    []
+  );
   const [isConfirmVisible, setIsConfirmVisible] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null); // Stores the action to confirm
   const [confirmMessage, setConfirmMessage] = useState(""); // Stores the confirmation message
@@ -85,7 +97,7 @@ const PrivilegeManagement = () => {
     const { value } = event.target;
     setSearchQueries((prevQueries) => ({
       ...prevQueries,
-      [module]: value.toLowerCase()
+      [module]: value.toLowerCase(),
     }));
   };
   const confirmSave = async () => {
@@ -95,7 +107,7 @@ const PrivilegeManagement = () => {
     });
     setIsConfirmVisible(true);
   };
-  
+
   const savePrivileges = async () => {
     try {
       const updates = Object.entries(privileges).map(
@@ -106,7 +118,8 @@ const PrivilegeManagement = () => {
       );
 
       await axios.put("http://localhost:5000/api/privileges", { updates });
-      alert("Privilèges sauvegardés !");
+      // alert("Privilèges sauvegardés !");
+      toast.success("Privilèges sauvegardés !")
     } catch (err) {
       console.error("Erreur lors de la sauvegarde :", err);
       alert("Erreur lors de la sauvegarde.");
@@ -118,9 +131,10 @@ const PrivilegeManagement = () => {
     const query = searchQueries[module];
     if (!query) return roles; // Si pas de recherche, retourner tous les rôles
 
-    return roles.filter(role => 
-      role.role.toLowerCase().includes(query) || 
-      (role.subRole && role.subRole.toLowerCase().includes(query))
+    return roles.filter(
+      (role) =>
+        role.role.toLowerCase().includes(query) ||
+        (role.subRole && role.subRole.toLowerCase().includes(query))
     );
   };
 
@@ -135,73 +149,78 @@ const PrivilegeManagement = () => {
   return (
     <div className="privilege-managements">
       <div className="privilege-management">
-      {modules.map((module) => (
-        <div className="module-section" key={module}>
-          <h3>Privilèges pour {module}</h3>
-          {/* Champ de recherche */}
-          <div className="search">
-          <input
-            type="text"
-            placeholder={`Rechercher par rôle ou sous-rôle dans ${module}`}
-            value={searchQueries[module]}
-            onChange={(e) => handleSearchChange(module, e)}
-            className="search-input"
-          />
-          <button onClick={confirmSave}><FaSave/> Sauvegarder</button>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>Rôle</th>
-                <th>Sub-Rôle</th>
-                <th>List</th>
-                <th>Add</th>
-                <th>Edit</th>
-                <th>Delete</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filterRolesBySearch(module).map((role) => {
-                const roleKey =
-                  role.role + (role.subRole ? `-${role.subRole}` : "");
-                const permissions = privileges[roleKey] || {};
+        {modules.map((module) => (
+          <div className="module-section" key={module}>
+            <h3>Privilèges pour {module}</h3>
+            {/* Champ de recherche */}
+            <div className="search">
+              <input
+                type="text"
+                placeholder={`Rechercher par rôle ou sous-rôle dans ${module}`}
+                value={searchQueries[module]}
+                onChange={(e) => handleSearchChange(module, e)}
+                className="search-input"
+              />
+              <button onClick={confirmSave}>
+                <FaSave /> Sauvegarder
+              </button>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Rôle</th>
+                  <th>Sub-Rôle</th>
+                  <th>List</th>
+                  <th>Add</th>
+                  <th>Edit</th>
+                  <th>Delete</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filterRolesBySearch(module).map((role) => {
+                  const roleKey =
+                    role.role + (role.subRole ? `-${role.subRole}` : "");
+                  const permissions = privileges[roleKey] || {};
 
-                return (
-                  <tr key={roleKey}>
-                    <td>{role.role}</td>
-                    <td>{role.subRole || "-"}</td>
-                    {["list", "add", "edit", "delete"].map((action) => (
-                      <td key={action} className="privilege-cell">
-                        {permissions[module]?.includes(action) ? (
-                          <span className="icon-checked">✅</span>
-                        ) : (
-                          <span className="icon-unchecked">❌</span>
-                        )}
-                        <input
-                          type="checkbox"
-                          className="hidden-checkbox"
-                          checked={permissions[module]?.includes(action) || false}
-                          onChange={() =>
-                            handleCheckboxChange(roleKey, module, action)
-                          }
-                        />
-                      </td>
-                    ))}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      ))}
-    </div>
-    {isConfirmVisible && (
+                  return (
+                    <tr key={roleKey}>
+                      <td>{role.role}</td>
+                      <td>{role.subRole || "-"}</td>
+                      {["list", "add", "edit", "delete"].map((action) => (
+                        <td key={action} className="privilege-cell">
+                          {permissions[module]?.includes(action) ? (
+                            <span className="icon-checked">✅</span>
+                          ) : (
+                            <span className="icon-unchecked">❌</span>
+                          )}
+                          <input
+                            type="checkbox"
+                            className="hidden-checkbox"
+                            checked={
+                              permissions[module]?.includes(action) || false
+                            }
+                            onChange={() =>
+                              handleCheckboxChange(roleKey, module, action)
+                            }
+                          />
+                        </td>
+                      ))}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ))}
+      </div>
+      {isConfirmVisible && (
         <ModalConfirm
           onConfirm={confirmActionAndClose}
           onCancel={() => setIsConfirmVisible(false)}
           message={confirmMessage}
         />
       )}
+      <ToastContainer />
     </div>
   );
 };

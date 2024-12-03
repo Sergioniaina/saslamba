@@ -23,13 +23,12 @@ const Sidebar = ({
   toggleSidebarPosition,
   toggleFixedDiv,
 }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState([]);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     setUser(storedUser);
     let scrollbarTimeout;
-
     const showScrollbar = () => {
       document.documentElement.classList.add("show-scrollbar");
 
@@ -91,7 +90,7 @@ const Sidebar = ({
           </span>
           <span>Demande</span>
         </NavLink>
-        <NavLink className="li" to="/home/machine">
+        <NavLink className="li" to="/home/machines">
           <span>
             <FaTools style={{color:'white'}} className="icon" />
           </span>
@@ -115,12 +114,14 @@ const Sidebar = ({
           </span>
           <span>User</span>
         </NavLink>
-        <NavLink className="li" to="/home/privilege">
-          <span>
-            <FaTasks style={{ color: 'white' }} className="icon" />
-          </span>
-          <span>Privilege</span>
-        </NavLink>
+        { user.role === "admin" && (
+           <NavLink className="li" to="/home/privilege">
+           <span>
+             <FaTasks style={{ color: 'white' }} className="icon" />
+           </span>
+           <span>Privilege</span>
+         </NavLink>
+        )}
         <NavLink className="li" to="/home/historique">
           <span>
             <FaHistory style={{ color: 'orange' }} className="icon" />

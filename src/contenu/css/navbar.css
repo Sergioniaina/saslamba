@@ -28,6 +28,10 @@
     position: relative;
     padding-left: 80px;
     padding-right: 80px;
+    /* background: rgba(57, 52, 52, 0.5);
+    margin-left: 15px;
+    margin-right: 10px;
+    border-radius: 10px; */
     .unpaid{
       background: red;
       position: absolute;
@@ -39,6 +43,7 @@
       width: 18px;
       height: 18px;
       display: flex;
+      pointer-events: none;
       align-items: center;
       justify-content: center;
 
@@ -120,7 +125,7 @@
     font-size: xx-large;
     color: #ffa500;
   }
-    .modal-overlay {
+    .modal-overlay-nav {
       position: fixed;
       z-index: 999;
       top: 0;
@@ -131,8 +136,9 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      animation: modalFadeIn 0.4s ease;
     }
-    .modal-content {
+    .modal-content-nav {
       position: relative;
       background-color: white;  
       padding: 2rem;
@@ -141,7 +147,7 @@
       max-width: 600px;
       width: 100%;
       max-height: 60vh;
-     
+      animation: fadIn 0.4s ease;
       .table-navbar{
         overflow: auto;
         height: 59vh;

@@ -338,7 +338,7 @@
       height: 89vh;
       padding: 5px;
       width: 100%;
-      background: rgba(3, 40, 68, 0.4);
+      background: rgba(64, 67, 69, 0.4);
       /* Style de base pour le conteneur principal */
       font-family: Arial, sans-serif;
 
@@ -715,7 +715,6 @@
 
   .billetage {
     animation: fadIn 0.4s ease;
-
     .billetage-confirm button {
       display: flex;
       gap: 30px;

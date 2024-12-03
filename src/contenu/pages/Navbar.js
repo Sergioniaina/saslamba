@@ -236,8 +236,8 @@ const Navbar = ({
       </div>
 
       {isModalOpen && (
-        <div className="modal-overlay" onClick={toggleModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay-nav" onClick={toggleModal}>
+          <div className="modal-content-nav" onClick={(e) => e.stopPropagation()}>
             <div className="table-navbar">
               <table>
                 <thead>

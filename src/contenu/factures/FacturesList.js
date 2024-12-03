@@ -19,7 +19,7 @@ import {
 import { FaSave, FaSearch, FaTimes } from "react-icons/fa";
 import ModalConfirm from "../modal/ModalConfirm";
 import Facture from "./Facture";
-const FactureList = ({ onEdit, etatFilter }) => {
+const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent }) => {
   const [factures, setFactures] = useState([]);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -73,10 +73,12 @@ const FactureList = ({ onEdit, etatFilter }) => {
         return facture; // Si la facture n'est pas "en attente", retournez la facture telle quelle
       }));
     
-      setFactures(updatedFactures); // Mettez à jour les factures dans l'état
+      const sortedFactures = updatedFactures.sort(
+        (a, b) => new Date(b.dateFacture) - new Date(a.dateFacture) // Trier par date décroissante
+      );
+
+      setFactures(sortedFactures); 
     };
-    
-    
   
       fetchFactures();
   }, []);
@@ -100,6 +102,16 @@ const FactureList = ({ onEdit, etatFilter }) => {
     }
   };
   useEffect(() => {
+    // Lire les paramètres de l'URL
+    const params = new URLSearchParams(location.search);
+    const view = params.get("view");
+
+    if (view) {
+      setCurrentView(view);
+      setCurrent("factures") // Appelle la fonction passée depuis FactureForm
+    }
+  }, [location, setCurrentView,setCurrent]);
+  useEffect(() => {
     fetchPaymentTypes();
   }, []);
   useEffect(() => {
@@ -122,7 +134,7 @@ const FactureList = ({ onEdit, etatFilter }) => {
           },
         })
         .then((response) => {
-          console.log("Réponse de l'API :", response.data);
+         // console.log("Réponse de l'API :", response.data);
           // Cherchez les privilèges pour le role et subRole de l'utilisateur
           const userRole = user.role;
           const userSubrole = user.subRole;
@@ -133,10 +145,10 @@ const FactureList = ({ onEdit, etatFilter }) => {
           )?.permissions;
 
           if (privileges) {
-            console.log("Privilèges de l'utilisateur :", privileges);
+           // console.log("Privilèges de l'utilisateur :", privileges);
             setUserPrivileges(privileges);
           } else {
-            console.log("Aucun privilège trouvé pour ce rôle et sous-rôle");
+           // console.log("Aucun privilège trouvé pour ce rôle et sous-rôle");
             setUserPrivileges([]); // Si aucun privilège n'est trouvé
           }
         })
@@ -152,23 +164,30 @@ const FactureList = ({ onEdit, etatFilter }) => {
     const fetchFactures = async () => {
       try {
         const response = await axios.get(`${PORT}/factures`);
-        setFactures(response.data);
+  
+        // Trier les factures par ordre décroissant selon la date ou un autre critère
+        const sortedFactures = response.data.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+  
+        setFactures(sortedFactures);
         setLoading(false);
       } catch (error) {
         console.error("Erreur lors du chargement des factures:", error);
         setError("Une erreur est survenue lors du chargement des factures.");
       }
     };
-
+  
     fetchFactures();
   }, []);
+  
   const fetchFactureDetails = async (id) => {
     try {
       const response = await axios.get(
         `http://localhost:5000/api/factures/listPar/${id}`
       );
       setSelectedFactures(response.data);
-      console.log("Le facture:", response.data); // Affiche correctement les détails de la facture
+     // console.log("Le facture:", response.data); // Affiche correctement les détails de la facture
       setShowFacture(true);
     } catch (err) {
       console.error(
@@ -424,6 +443,10 @@ const FactureList = ({ onEdit, etatFilter }) => {
       });
     }
 
+    filteredFactures = filteredFactures.sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+  
     return filteredFactures;
   };
   if (loading) {

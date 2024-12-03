@@ -89,7 +89,7 @@ const Caisse = () => {
     }
 
     try {
-      const updatedCaisse = { solde: amount, motif:"Ajout test Motif" };
+      const updatedCaisse = { solde: amount, motif:"Recette" };
       await axios.put(
         `http://localhost:5000/api/caisses/${caisse._id}/add-solde`,
         updatedCaisse
@@ -122,7 +122,7 @@ const Caisse = () => {
     }
 
     try {
-      const updatedCaisse = { solde: amount, motif: "retrait test" };
+      const updatedCaisse = { solde: amount, motif: "Depense" };
       await axios.put(
         `http://localhost:5000/api/caisses/${caisse._id}/remove-solde`,
         updatedCaisse

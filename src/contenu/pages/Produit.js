@@ -18,8 +18,11 @@ const ProductStockForm = () => {
   // Charger tous les produits depuis le backend
   useEffect(() => {
     const fetchProducts = async () => {
+      const token = localStorage.getItem("token");
       try {
-        const response = await axios.get("http://localhost:5000/api/products");
+        const response = await axios.get("http://localhost:5000/api/products",{
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setProducts(response.data);
       } catch (error) {
         console.error("Error fetching products", error);
@@ -28,8 +31,11 @@ const ProductStockForm = () => {
     fetchProducts();
   }, []);
   const fetchProducts = async () => {
+    const token = localStorage.getItem("token");
     try {
-      const response = await axios.get("http://localhost:5000/api/products");
+      const response = await axios.get("http://localhost:5000/api/products",{
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setProducts(response.data);
     } catch (error) {
       console.error("Error fetching products", error);
