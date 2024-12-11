@@ -15,15 +15,16 @@ const ArticleManage = () => {
   const [editingArticle, setEditingArticle] = useState(null);
   const [confirmAction, setConfirmAction] = useState(null); // Stores the action to confirm
   const [confirmMessage, setConfirmMessage] = useState(''); // Stores the confirmation message
-
+  const PORT = process.env.REACT_APP_BACKEND_URL;
   // Fetch articles on component mount
   useEffect(() => {
     const fetchArticles = async () => {
-      const response = await axios.get('http://localhost:5000/api/articles');
+      console.log("Backend URL est:", PORT);
+      const response = await axios.get(`${PORT}/api/articles`);
       setArticles(response.data);
     };
     fetchArticles();
-  }, []);
+  }, [PORT]);
 
   // Update search query
   const handleSearch = (e) => {
@@ -33,11 +34,11 @@ const ArticleManage = () => {
   // Handle form submission (add or edit article)
   const handleSubmit = async (formData) => {
     if (editingArticle) {
-      await axios.put(`http://localhost:5000/api/articles/${editingArticle._id}`, formData);
+      await axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/articles/${editingArticle._id}`, formData);
     } else {
-      await axios.post('http://localhost:5000/api/articles', formData);
+      await axios.post(`${PORT}api/articles`, formData);
     }
-    const response = await axios.get('http://localhost:5000/api/articles');
+    const response = await axios.get(`${PORT}/api/articles`);
     setArticles(response.data);
     setEditingArticle(null);
     setIsFormVisible(false);
@@ -58,7 +59,7 @@ const ArticleManage = () => {
 
   // Delete article if confirmed
   const handleDelete = async (id) => {
-    await axios.delete(`http://localhost:5000/api/articles/${id}`);
+    await axios.delete(`${PORT}api/articles/${id}`);
     setArticles(articles.filter((article) => article._id !== id));
     setIsConfirmVisible(false);
   };

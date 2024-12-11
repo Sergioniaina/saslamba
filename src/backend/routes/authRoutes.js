@@ -43,7 +43,6 @@ router.post('/signup', upload.single('photo'), async (req, res) => {
     if (!photo) {
       photo = role === 'admin' ? 'default_images/admin_default.jpg' : 'default_images/user_default.jpg';
     }
-
     // subRole est laissé à null par défaut
     const user = new User({ name, password, role, subRole: null, photo });
     await user.save();
@@ -57,15 +56,30 @@ router.post('/signup', upload.single('photo'), async (req, res) => {
 // Route pour la connexion
 router.post('/login', async (req, res) => {
   const { name, password } = req.body;
+
   try {
     console.log('Login attempt for user:', name); // Log pour vérifier le nom d'utilisateur
+    // Trouver l'utilisateur par son nom
     const user = await User.findOne({ name });
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
     console.log('Found user:', user); // Log pour voir l'utilisateur trouvé
-    if (!user || !(await user.comparePassword(password))) {
+
+    // Vérifier si le mot de passe correspond
+    const isMatch = await user.comparePassword(password); 
+    console.log('Password match:', isMatch); // Afficher si le mot de passe correspond
+
+    if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ id: user._id, role: user.role,subRole: user.subRole }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    // Générer un token JWT
+    const token = jwt.sign(
+      { id: user._id, role: user.role, subRole: user.subRole },
+      process.env.JWT_SECRET,
+      { expiresIn: '12h' }
+    );
 
     // Renvoyer le token et les informations de l'utilisateur
     res.json({
@@ -75,7 +89,7 @@ router.post('/login', async (req, res) => {
         name: user.name,
         photo: user.photo,
         role: user.role,
-        subRole :user.subRole
+        subRole: user.subRole,
       },
     });
   } catch (error) {
@@ -195,12 +209,13 @@ router.post('/users/ajout', authMiddleware, authRole('admin'), upload.single('ph
 
 
 // Route pour mettre à jour un utilisateur
-router.put('/users/:id', authMiddleware, upload.single('photo'), async (req, res) => {
+router.put('/userss/:id', upload.single('photo'), async (req, res) => {
   const { id } = req.params;
   const { name, password, role, subRole } = req.body;
   const photo = req.file ? req.file.path : null;
 
   try {
+    // Récupérer l'utilisateur
     const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -209,20 +224,52 @@ router.put('/users/:id', authMiddleware, upload.single('photo'), async (req, res
     // Mise à jour des champs uniquement s'ils sont fournis
     if (name) user.name = name;
     if (password) {
-      user.password = await bcrypt.hash(password, 10); // Hachage du nouveau mot de passe
+      // Vérifier si le mot de passe a été changé, et le hacher s'il l'est
+      user.password = await bcrypt.hash(password, 10);
     }
     if (role) user.role = role;
     if (subRole) user.subRole = subRole; // Mise à jour du subRole si fourni
     if (photo) user.photo = photo;
 
+    // Sauvegarder les modifications dans la base de données
     await user.save();
-
+    
+    // Renvoyer la réponse avec l'utilisateur mis à jour
     res.status(200).json({ message: 'User updated successfully', user });
   } catch (error) {
     console.error('Error updating user:', error); // Log d'erreur
     res.status(500).json({ message: 'Server error', error });
   }
 });
+router.put('/users/:id',authMiddleware, upload.single('photo'), async (req, res) => {
+  const { id } = req.params;
+  const { name, role, subRole } = req.body; // Ne pas inclure `password` ici
+  const photo = req.file ? req.file.path : null;
+
+  try {
+    // Récupérer l'utilisateur
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Mise à jour des champs uniquement s'ils sont fournis
+    if (name) user.name = name;
+    if (role) user.role = role;
+    if (subRole) user.subRole = subRole; // Mise à jour du subRole si fourni
+    if (photo) user.photo = photo;
+
+    // Sauvegarder les modifications dans la base de données
+    await user.save();
+    
+    // Renvoyer la réponse avec l'utilisateur mis à jour
+    res.status(200).json({ message: 'User updated successfully', user });
+  } catch (error) {
+    console.error('Error updating user:', error); // Log d'erreur
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
+
 
 router.get('/get', async (req, res) => {
   const { ids } = req.query;

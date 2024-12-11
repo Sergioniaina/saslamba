@@ -45,6 +45,7 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent }) => {
   const [loading, setLoading] = useState(true);
   // eslint-disable-next-line
   const [user, setUser] = useState("");
+  const PORT = process.env.REACT_APP_BACKEND_URL;
   const factureRefs = useRef({});
   // Obtenir l'ID depuis l'URL
   const searchParams = new URLSearchParams(location.search);
@@ -53,13 +54,13 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent }) => {
   useEffect(() => {
     // Vous devrez remplacer ce fetch par une logique qui récupère les factures avec les machines associées
     const fetchFactures = async () => {
-      const res = await fetch('http://localhost:5000/api/factures'); // Remplacer par l'URL de votre API pour récupérer les factures
+      const res = await fetch(`${PORT}/api/factures`); // Remplacer par l'URL de votre API pour récupérer les factures
       const facturesData = await res.json();
     
       const updatedFactures = await Promise.all(facturesData.map(async (facture) => {
         if (facture.etat === "en attente") {
           // Récupérer les machines associées à la facture en attente
-          const machinesRes = await fetch(`http://localhost:5000/api/machines/factures-machines?factureId=${facture._id}`);
+          const machinesRes = await fetch(`${PORT}/api/machines/factures-machines?factureId=${facture._id}`);
           const machinesData = await machinesRes.json();
     
           // Vérifier si toutes les machines associées sont disponibles
@@ -81,12 +82,11 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent }) => {
     };
   
       fetchFactures();
-  }, []);
+  }, [PORT]);
   
-  const PORT = "http://localhost:5000/api";
   const fetchPaymentTypes = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/payement");
+      const response = await axios.get(`${PORT}/api/payement`);
 
       // Ajouter "Espèce" comme option par défaut s'il n'est pas déjà dans la liste
       const uniquePaymentTypes = Array.from(
@@ -113,6 +113,7 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent }) => {
   }, [location, setCurrentView,setCurrent]);
   useEffect(() => {
     fetchPaymentTypes();
+    // eslint-disable-next-line
   }, []);
   useEffect(() => {
     if (highlightedId && factureRefs.current[highlightedId]) {
@@ -128,7 +129,7 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent }) => {
     if (user) {
       // Récupérer les privilèges de l'utilisateur via l'API
       axios
-        .get("http://localhost:5000/api/privileges", {
+        .get(`${PORT}/api/privileges`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -159,11 +160,11 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent }) => {
           );
         });
     }
-  }, []);
+  }, [PORT]);
   useEffect(() => {
     const fetchFactures = async () => {
       try {
-        const response = await axios.get(`${PORT}/factures`);
+        const response = await axios.get(`${PORT}/api/factures`);
   
         // Trier les factures par ordre décroissant selon la date ou un autre critère
         const sortedFactures = response.data.sort(
@@ -179,12 +180,12 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent }) => {
     };
   
     fetchFactures();
-  }, []);
+  }, [PORT]);
   
   const fetchFactureDetails = async (id) => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/factures/listPar/${id}`
+        `${PORT}/api/factures/listPar/${id}`
       );
       setSelectedFactures(response.data);
      // console.log("Le facture:", response.data); // Affiche correctement les détails de la facture
@@ -200,7 +201,7 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent }) => {
   useEffect(() => {
     const fetchCaisses = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/caisses");
+        const response = await axios.get(`${PORT}/api/caisses`);
         setCaisses(response.data);
         if (response.data.length > 0) {
           setSelectedCaisse(response.data[0]._id);
@@ -212,7 +213,7 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent }) => {
     };
 
     fetchCaisses();
-  }, []);
+  }, [PORT]);
 
   useEffect(() => {
     if (factures.length > 0) {
@@ -246,7 +247,7 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent }) => {
   const handleDelete = async (id) => {
     try {
       // Supprimer la facture en utilisant axios
-      await axios.delete(`http://localhost:5000/api/factures/${id}`, {
+      await axios.delete(`${PORT}/api/factures/${id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
 
@@ -269,7 +270,7 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent }) => {
     const token = localStorage.getItem("token");
     try {
       await axios.post(
-        `http://localhost:5000/api/factures/cancel/${id}`,
+        `${PORT}/api/factures/cancel/${id}`,
         null,
         {
           headers: {
@@ -324,7 +325,7 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent }) => {
       console.log("payementType :", newPaymentType);
 
       await axios.post(
-        "http://localhost:5000/api/payement",
+        `${PORT}/api/payement`,
         {
           type: paymentTypeToSubmit,
           facture: selectedFacture._id,
@@ -345,13 +346,13 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent }) => {
 
       // Mettre à jour uniquement le champ `reste` de la facture
       await axios.patch(
-        `http://localhost:5000/api/factures/${selectedFacture._id}/reste`, // Utiliser la nouvelle route PATCH
+        `${PORT}/api/factures/${selectedFacture._id}/reste`, // Utiliser la nouvelle route PATCH
         { reste: newReste } // Envoyer uniquement le champ `reste`
       );
 
       if (newReste === 0) {
         await axios.put(
-          `http://localhost:5000/api/factures/${selectedFacture._id}/etat`,
+          `${PORT}/api/factures/${selectedFacture._id}/etat`,
           { estPaye: true }
         );
       }
@@ -366,7 +367,7 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent }) => {
           return;
         }
         await axios.put(
-          `http://localhost:5000/api/caisses/${selectedCaisse}/add-solde`,
+          `${PORT}/api/caisses/${selectedCaisse}/add-solde`,
           {
             solde: amountToPay,
           }
@@ -593,7 +594,7 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent }) => {
                       )}
                     </>
                   )}
-                  {userPrivileges?.invoices?.includes("delete") && (
+                  {userPrivileges?.factures?.includes("delete") && (
                     <button
                       data-tooltip-id="delete"
                       type="button"

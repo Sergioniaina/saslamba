@@ -60,7 +60,7 @@ router.post('/associer', async (req, res) => {
 
 router.put('/associer/:id', async (req, res) => {
   const { id } = req.params; // Get the AbonnementClient ID from the URL parameter
-  const { idClient, idAbonnement } = req.body;
+  const { idClient, idAbonnement,sechageReste,lavageReste } = req.body;
 
   try {
     // Rechercher le client
@@ -92,13 +92,13 @@ router.put('/associer/:id', async (req, res) => {
         total: abonnement.machines, // Nombre total de séchages
         used: 0, // Utiliser l'usage actuel (ou 0 si non défini)
         weeklyLimit: abonnement.machines,
-        reste: abonnement.machines, // Limite restante
+        reste: lavageReste, // Limite restante
       },
       sechage: {
         total: abonnement.sechage, // Nombre total de séchages
         used:  0, // Utiliser l'usage actuel (ou 0 si non défini)
         weeklyLimit: abonnement.sechage,
-        reste: abonnement.sechage, // Limite restante
+        reste: sechageReste, // Limite restante
       },
     };
 
@@ -118,7 +118,7 @@ router.put('/associer/:id', async (req, res) => {
 // Mettre à jour un abonnement client et ses détails d'abonnement (weight, features)
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { idClient, idAbonnement } = req.body;
+  const { idClient, idAbonnement,sechageReste,lavageReste,weight} = req.body;
 
   try {
     // Récupérer les détails de l'abonnement
@@ -134,19 +134,19 @@ router.put('/:id', async (req, res) => {
         idClient,
         idAbonnement,
         abonnementDetails: {
-          weight: abonnement.poids, // Utiliser le poids de l'abonnement
+          weight: weight, // Utiliser le poids de l'abonnement
           features: abonnement.features,
           lavage: {
             total: abonnement.machines, // Nombre total de séchages
             used: 0, // Initialisé à 0
             weeklyLimit :abonnement.machines,
-            reste : abonnement.machines// Limite hebdomadaire
+            reste : lavageReste// Limite hebdomadaire
           } ,// Utiliser les fonctionnalités de l'abonnement
           sechage: {
             total: abonnement.sechage, // Nombre total de séchages
             used: 0, // Initialisé à 0
             weeklyLimit :abonnement.sechage,
-            reste : abonnement.sechage// Limite hebdomadaire
+            reste : sechageReste// Limite hebdomadaire
           },
         },
       },
@@ -162,6 +162,63 @@ router.put('/:id', async (req, res) => {
     res.status(500).json({ error: 'Erreur lors de la mise à jour de l\'abonnement client' });
   }
 });
+router.put('/reabonnement/:id', async (req, res) => {
+  const { id } = req.params;
+  const { idClient, idAbonnement, sechageReste, lavageReste, weight } = req.body;
+
+  // Validation des données entrantes
+  if (!idClient || !idAbonnement || weight === undefined) {
+    return res.status(400).json({ error: 'Les champs idClient, idAbonnement, et weight sont obligatoires.' });
+  }
+
+  try {
+    // Vérification de l'existence de l'abonnement
+    const abonnement = await Subscription.findById(idAbonnement);
+    if (!abonnement) {
+      return res.status(404).json({ error: 'Abonnement non trouvé' });
+    }
+
+    // Vérification de l'existence de l'abonnement client
+    const abonnementClient = await AbonnementClient.findById(id);
+    if (!abonnementClient) {
+      return res.status(404).json({ error: 'Abonnement client non trouvé' });
+    }
+
+    // Mise à jour des détails de l'abonnement client
+    const updatedAbonnementClient = {
+      idClient,
+      idAbonnement,
+      abonnementDetails: {
+        weight: (abonnementClient.abonnementDetails.weight || 0) + weight,
+        lavage: {
+          ...abonnementClient.abonnementDetails.lavage,
+          reste: (abonnementClient.abonnementDetails.lavage?.reste || 0) + lavageReste,
+        },
+        sechage: {
+          ...abonnementClient.abonnementDetails.sechage,
+          reste: (abonnementClient.abonnementDetails.sechage?.reste || 0) + sechageReste,
+        },
+      },
+    };
+
+    // Mise à jour dans la base de données
+    const updatedAbonnement = await AbonnementClient.findByIdAndUpdate(
+      id,
+      updatedAbonnementClient,
+      { new: true }
+    );
+
+    if (!updatedAbonnement) {
+      return res.status(404).json({ error: 'Erreur lors de la mise à jour de l\'abonnement client' });
+    }
+
+    res.json(updatedAbonnement);
+  } catch (error) {
+    console.error('Erreur lors du réabonnement:', error);
+    res.status(500).json({ error: 'Erreur interne du serveur' });
+  }
+});
+
 router.put('/abonnement/:id', async (req, res) => {
   const { abonnementDetails } = req.body;
   const { total, used, weeklyLimit } = abonnementDetails.sechage;
@@ -211,27 +268,23 @@ async function validateAbonnement(abonnementId, totalWeight, machinesLavage, mac
     throw new Error(`Le poids dépasse le quota d\'abonnement. reste ${weight} kg `);
   }
 
-  if (lavage.used + machinesLavage > lavage.total) {
+  if (lavage?.total !=null && lavage?.used !=null) {
+   if (lavage.used + machinesLavage > lavage.total){ 
     throw new Error(`Quota de lavage dépassé. reste ${lavage.reste} lavage`);
   }
+}
 
-  if (sechage.used + machinesSechage > sechage.total) {
-    throw new Error(`Quota de séchage dépassé. reste ${sechage.reste} sechage`);
-  }
-
+if (sechage?.total !=null && sechage?.used !=null) {
+  if (sechage.used + machinesSechage > sechage.total){ 
+   throw new Error(`Quota de sechage dépassé. reste ${sechage.reste} sechage`);
+ }
+}
   return abonnement;
 }
 
 // Route PUT : Consommer des machines
 router.put("/abonnement/utiliser/:id", async (req, res) => {
   const { totalWeight, machinesLavage, machinesSechage } = req.body;
-
-  // Vérification des données d'entrée
-  if (!totalWeight || machinesLavage == null || machinesSechage == null) {
-    return res.status(400).json({
-      error: "Les données fournies sont incomplètes.",
-    });
-  }
 
   try {
     // Validation de l'abonnement
@@ -242,19 +295,34 @@ router.put("/abonnement/utiliser/:id", async (req, res) => {
       machinesSechage
     );
 
-    // Mise à jour des quotas
-    abonnement.abonnementDetails.weight -= totalWeight;
-    abonnement.abonnementDetails.lavage.used += machinesLavage;
-    abonnement.abonnementDetails.sechage.used += machinesSechage;
+    // Mise à jour du poids utilisé
+    if (totalWeight) {
+      abonnement.abonnementDetails.weight -= totalWeight;
+    }
 
-    // Recalcul des quotas restants
-    abonnement.abonnementDetails.lavage.reste =
-      abonnement.abonnementDetails.lavage.total -
-      abonnement.abonnementDetails.lavage.used;
+    // Mise à jour des quotas de lavage (si applicable)
+    if (abonnement.abonnementDetails.lavage) {
+      abonnement.abonnementDetails.lavage.used += machinesLavage || 0;
 
-    abonnement.abonnementDetails.sechage.reste =
-      abonnement.abonnementDetails.sechage.total -
-      abonnement.abonnementDetails.sechage.used;
+      // Recalcul des quotas restants pour le lavage
+      abonnement.abonnementDetails.lavage.reste =
+        abonnement.abonnementDetails.lavage.total != null
+          ? abonnement.abonnementDetails.lavage.total -
+            abonnement.abonnementDetails.lavage.used
+          : null;
+    }
+
+    // Mise à jour des quotas de séchage (si applicable)
+    if (abonnement.abonnementDetails.sechage) {
+      abonnement.abonnementDetails.sechage.used += machinesSechage || 0;
+
+      // Recalcul des quotas restants pour le séchage
+      abonnement.abonnementDetails.sechage.reste =
+        abonnement.abonnementDetails.sechage.total != null
+          ? abonnement.abonnementDetails.sechage.total -
+            abonnement.abonnementDetails.sechage.used
+          : null;
+    }
 
     // Sauvegarde dans la base de données
     await abonnement.save();

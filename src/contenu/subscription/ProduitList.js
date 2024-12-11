@@ -265,6 +265,8 @@ const Products = () => {
                 <td>{product.stock}</td>
                 <td>{product.description}</td>
                 <td className="action">
+                {userPrivileges?.produits?.includes("edit") &&
+                     (
                   <FontAwesomeIcon
                     onClick={() =>
                       setCurrentProduct(product) || setIsModalOpen(true)
@@ -273,6 +275,7 @@ const Products = () => {
                     data-tooltip-id="edit"
                     icon={faEdit}
                   />
+                )}
                   {userPrivileges?.produits?.includes("delete") &&
                      (
                       <FontAwesomeIcon

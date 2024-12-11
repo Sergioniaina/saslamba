@@ -67,6 +67,8 @@ const FactureForm = () => {
   const [confirmMessage, setConfirmMessage] = useState(""); // Stores the confirmation message
   const [loading, setLoading] = useState(true);
   const [reste, setReste]=useState(0);
+  const PORT = process.env.REACT_APP_BACKEND_URL;
+  // eslint-disable-next-line
   const [changeGive, setChangeGive] = useState(0);
   // const [isreste, setIsreste]=useState("");
   const confirmActionAndClose = () => {
@@ -76,7 +78,8 @@ const FactureForm = () => {
   const [companyInfo, setCompanyInfo] = useState(null);
 
   useEffect(() => {
-    fetchCompanyInfo(); // Load company info when the component mounts
+    fetchCompanyInfo();
+    // eslint-disable-next-line
   }, []);
   const location = useLocation();
 
@@ -116,7 +119,7 @@ const FactureForm = () => {
   const fetchCompanyInfo = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/company-info/list"
+        `${PORT}/api/company-info/list`
       );
       setCompanyInfo(response.data[0]); // Assuming the first entry is the company info
     } catch (error) {
@@ -137,7 +140,7 @@ const FactureForm = () => {
     totalWeight: "",
     totalPrice: "",
     reste: "",
-    serviceType: "Lavage",
+    serviceType: "Lavage + Séchage",
   });
   const [manualInput, setManualInput] = useState(0);
   const [billBreakdown, setBillBreakdown] = useState({
@@ -169,7 +172,7 @@ const FactureForm = () => {
 
   const fetchPaymentTypes = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/payement");
+      const response = await axios.get(`${PORT}/api/payement`);
 
       // Ajouter "Espèce" comme option par défaut s'il n'est pas déjà dans la liste
       const uniquePaymentTypes = Array.from(
@@ -187,7 +190,7 @@ const FactureForm = () => {
 
   const fetchCaisses = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/caisses");
+      const response = await axios.get(`${PORT}/api/caisses`);
       setCaisses(response.data);
       if (response.data.length > 0) {
         setSelectedCaisse(response.data[0]._id);
@@ -200,13 +203,14 @@ const FactureForm = () => {
   useEffect(() => {
     fetchPaymentTypes();
     fetchCaisses();
+    // eslint-disable-next-line
   }, []);
 
   const [latestFacture, setLatestFacture] = useState(null);
   const fetchLatestFacture = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/factures/last-ticket"
+        `${PORT}/api/factures/last-ticket`
       );
       setLatestFacture(response.data);
       console.log("ticket:", response.data.ticketNumber);
@@ -221,6 +225,7 @@ const FactureForm = () => {
 
     fetchLatestFacture();
  //   clickButton();
+    // eslint-disable-next-line
   }, []);
   // useEffect pour recalculer quand manualInput ou formData changent
 useEffect(() => {
@@ -308,7 +313,7 @@ const clickButton=()=>{
     try {
       const token = localStorage.getItem("token");
       //console.log("Token dans le frontend:", token);  // Affichez le token ici
-      const productsRes = await axios.get("http://localhost:5000/api/products", {
+      const productsRes = await axios.get(`${PORT}/api/products`, {
           headers: { Authorization: `Bearer ${token}` },
       });
       setProducts(productsRes.data);
@@ -324,7 +329,7 @@ const clickButton=()=>{
   const fetchAbonnementClients = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/abonnementClient"
+        `${PORT}/api/abonnementClient`
       ); // Mettez à jour l'URL selon votre API 
       setAbonnementClients(response.data);
       setLoading(false);
@@ -339,6 +344,7 @@ const clickButton=()=>{
   // Appelez cette fonction dans useEffect pour charger les abonnements au démarrage
   useEffect(() => {
     fetchAbonnementClients();
+    // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
@@ -346,7 +352,7 @@ const clickButton=()=>{
       try {
         const token = localStorage.getItem("token");
        // console.log("Token dans le frontend:", token);  // Affichez le token ici
-        const productsRes = await axios.get("http://localhost:5000/api/products", {
+        const productsRes = await axios.get(`${PORT}/api/products`, {
             headers: { Authorization: `Bearer ${token}` },
         });
         setProducts(productsRes.data);
@@ -364,13 +370,13 @@ const clickButton=()=>{
     const fetchClients = async () => {
       try {
         // Récupérer tous les clients
-        const clientsRes = await axios.get("http://localhost:5000/api/clients");
+        const clientsRes = await axios.get(`${PORT}/api/clients`);
         const allClients = clientsRes.data;
 
         if (isChoix) {
           // Récupérer les abonnements clients pour filtrer
           const abonnementClientsRes = await axios.get(
-            "http://localhost:5000/api/abonnementClient"
+            `${PORT}/api/abonnementClient`
           );
           const abonnementClients = abonnementClientsRes.data;
 
@@ -393,12 +399,12 @@ const clickButton=()=>{
 
     fetchProducts();
     fetchClients();
-  }, [isChoix]);
+  }, [isChoix,PORT]);
   useEffect(() => {
     // Fetch price types from the server using Axios
     const fetchPriceTypes = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/articles"); // Adjust the URL if needed
+        const response = await axios.get(`${PORT}/api/articles`); // Adjust the URL if needed
         setArticle(response.data);
       } catch (err) {
         setError(err.message);
@@ -407,13 +413,14 @@ const clickButton=()=>{
 
     fetchPriceTypes();
     fetchAllProducts();
-  }, []);
+    // eslint-disable-next-line
+  }, [PORT]);
 
   useEffect(() => {
     const fetchMachines = async () => {
       try {
         const machinesRes = await axios.get(
-          "http://localhost:5000/api/machines"
+          `${PORT}/api/machines`
         );
         setMachines(machinesRes.data);
       } catch (error) {
@@ -422,11 +429,11 @@ const clickButton=()=>{
     };
 
     fetchMachines();
-  }, []);
+  }, [PORT]);
   const fetchMachines = async () => {
     try {
       const machinesRes = await axios.get(
-        "http://localhost:5000/api/machines"
+        `${PORT}/api/machines`
       );
       setMachines(machinesRes.data);
     } catch (error) {
@@ -684,6 +691,7 @@ const clickButton=()=>{
       setMessage(
         "Une machine de séchage est requise pour faire juste Séchage."
       );
+      setModalInfo(true);
       return false;
     }
 
@@ -694,17 +702,18 @@ const clickButton=()=>{
       setMessage(
         "Une machine de lavage et une machine de séchage sont requises pour le service Lavage + Séchage."
       );
+      setModalInfo(true);
       return false;
     }
-
-    setError("");
     return true;
   };
   //pour la validation de capacité des machine selectionnés
   const validateMachineCapacity = () => {
+    // eslint-disable-next-line
     const totalWeight = parseFloat(formData.totalWeight);
 
     // Calculer le poids total des machines de type "Sèche-linge"
+    // eslint-disable-next-line
     const totalDryerWeight = Object.entries(machineWeights).reduce(
       (total, [machineId, weight]) => {
         const machine = machines.find((m) => m._id === machineId);
@@ -717,12 +726,13 @@ const clickButton=()=>{
     );
 
     // Vérifier si le totalWeight est inférieur au poids total des machines de séchage
-    if (totalWeight < totalDryerWeight) {
-      setMessage(
-        `Le poids total (${totalWeight} kg) est inférieur au poids total des machines de séchage (${totalDryerWeight} kg).`
-      );
-      return false;
-    }
+    // if (totalWeight < totalDryerWeight) {
+    //   setMessage(
+    //     `Le poids total (${totalWeight} kg) est inférieur au poids total des machines de séchage (${totalDryerWeight} kg).`
+    //   );
+    //   setModalInfo(true);
+    //   return false;
+    // }
 
     // Vérifier la capacité de chaque machine
     for (const [machineId, weight] of Object.entries(machineWeights)) {
@@ -761,7 +771,7 @@ const clickButton=()=>{
 
       const stocks = await Promise.all(
         Object.keys(productQuantitiesToCheck).map((productId) =>
-          axios.get(`http://localhost:5000/api/products/${productId}`)
+          axios.get(`${PORT}/api/products/${productId}`)
         )
       );
 
@@ -830,7 +840,7 @@ const clickButton=()=>{
     if (!selectedClient) {
       try {
         const newClient = await axios.post(
-          "http://localhost:5000/api/clients",
+          `${PORT}/api/clients`,
           {
             name: formData.customerName,
             contact: formData.contact,
@@ -851,15 +861,15 @@ const clickButton=()=>{
 
     if (isChoix) {
       try {
-        const response = await axios.get(`http://localhost:5000/api/abonnementClient/client/${selectedClient._id}`);
+        const response = await axios.get(`${PORT}/api/abonnementClient/client/${selectedClient._id}`);
         const abonnementClient = response.data[0]; // On suppose qu'il y a un abonnement
-  
+    
         if (!abonnementClient) {
           setMessage("Le client n'est pas inscrit à un abonnement.");
           setModalInfo(true);
           return;
         }
-  
+    
         const totalWeight = parseFloat(formData.totalWeight) || 0; // Poids total en kg
         const machinesLavage = selectedMachines.filter((machineId) => {
           const machine = machines.find((m) => m._id === machineId);
@@ -874,14 +884,46 @@ const clickButton=()=>{
         console.log(
           `Les totaux et nombre de clics - totalWeight: ${totalWeight}, machinesLavage: ${machinesLavage}, machinesSechage: ${machinesSechage}`
         );
+    
         // Mise à jour des quotas d'abonnement
-        await axios.put(`http://localhost:5000/api/abonnementClient/abonnement/utiliser/${abonnementClient._id}`, {
-          totalWeight:totalWeight,
-          machinesLavage:machinesLavage,
-          machinesSechage:machinesSechage,
+        await axios.put(`${PORT}/api/abonnementClient/abonnement/utiliser/${abonnementClient._id}`, {
+          totalWeight,
+          machinesLavage,
+          machinesSechage,
         });
-  
-        setMessage("Facture enregistrée et quotas mis à jour.");
+    
+        fetchAbonnementClients();
+    
+        // Construction du message à afficher
+        let message = "\n";
+
+        // Ajouter les informations de lavage si disponibles et valides
+        if (
+          abonnementClient.abonnementDetails?.lavage &&
+          abonnementClient.abonnementDetails.lavage.reste !== undefined &&
+          abonnementClient.abonnementDetails.lavage.used !== undefined
+        ) {
+          const lavageReste = abonnementClient.abonnementDetails.lavage.reste - machinesLavage;
+          const lavageUsed = abonnementClient.abonnementDetails.lavage.used + machinesLavage;
+          message += `- Lavages restants : ${lavageReste}\n`;
+          message += `- Lavages utilisés : ${lavageUsed}\n`;
+        }
+        
+        // Ajouter les informations de séchage si disponibles et valides
+        if (
+          abonnementClient.abonnementDetails?.sechage &&
+          abonnementClient.abonnementDetails.sechage.reste !== undefined &&
+          abonnementClient.abonnementDetails.sechage.used !== undefined
+        ) {
+          const sechageReste = abonnementClient.abonnementDetails.sechage.reste - machinesSechage;
+          const sechageUsed = abonnementClient.abonnementDetails.sechage.used + machinesSechage;
+          message += `- Séchages restants : ${sechageReste}\n`;
+          message += `- Séchages utilisés : ${sechageUsed}\n`;
+        }
+        
+        // Supprime les espaces et les nouvelles lignes inutiles
+        setMessage(message.trim());
+        
         setModalInfo(true);
       } catch (error) {
         setMessage(error.response?.data?.error || "Erreur lors de l'enregistrement.");
@@ -952,7 +994,7 @@ const clickButton=()=>{
           return;
         }
         response = await axios.put(
-          `http://localhost:5000/api/factures/${facture._id}`,
+          `${PORT}/api/factures/${facture._id}`,
           factureData,
           {
             headers: {
@@ -965,7 +1007,7 @@ const clickButton=()=>{
         toast.success("Facture modifier avec succes");
       } else {
         response = await axios.post(
-          "http://localhost:5000/api/factures",
+          `${PORT}/api/factures`,
           factureData,
           {
             headers: {
@@ -1000,7 +1042,7 @@ const clickButton=()=>{
       const montant = totalPrice <= inputAmount ? totalPrice : inputAmount;
 
       await axios.post(
-        "http://localhost:5000/api/payement",
+        `${PORT}/api/payement`,
         {
           type: paymentTypeToSubmit,
           facture: response.data._id,
@@ -1017,12 +1059,12 @@ const clickButton=()=>{
 
       if (totalPrice <= inputAmount) {
         await axios.put(
-          `http://localhost:5000/api/factures/${response.data._id}/etat`,
+          `${PORT}/api/factures/${response.data._id}/etat`,
           { estPaye: true }
         );
       } else {
         await axios.put(
-          `http://localhost:5000/api/factures/${response.data._id}/etat`,
+          `${PORT}/api/factures/${response.data._id}/etat`,
           { estPaye: false }
         );
       }
@@ -1053,7 +1095,7 @@ const clickButton=()=>{
 
         // Mise à jour du solde de la caisse
         await axios.put(
-          `http://localhost:5000/api/caisses/${selectedCaisse}/add-solde`,
+          `${PORT}/api/caisses/${selectedCaisse}/add-solde`,
           {
             solde: soldeToAdd,
             motif:"Facture payé" // Utiliser le montant calculé comme solde à ajouter
@@ -1706,7 +1748,7 @@ const clickButton=()=>{
           stock: selectedProduct.stock + stockToAdd,
         };
         await axios.put(
-          `http://localhost:5000/api/products/${selectedProduct._id}`,
+          `${PORT}/api/products/${selectedProduct._id}`,
           updatedProduct,
           {
             headers: {
@@ -2039,9 +2081,10 @@ const clickButton=()=>{
                     value={formData.serviceType}
                     onChange={onChanges}
                   >
+                    <option value="Lavage + Séchage">Lavage + Séchage</option>
                     <option value="Lavage">Lavage</option>
                     <option value="Séchage">Séchage</option>
-                    <option value="Lavage + Séchage">Lavage + Séchage</option>
+                    
                   </select>
                 </div>
                 <div className="machine-ul">

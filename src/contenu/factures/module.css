@@ -76,7 +76,8 @@
     padding: 20px;
     border-radius: 8px;
     animation: slideIn 0.4s ease;
-    height: 75vh;
+    height: auto;
+    max-height: 90vh;
     color: black;
 
     .modal-header {
@@ -99,7 +100,7 @@
       }
     }
   .factureId-table{
-    height: 38vh;
+    height: 50vh;
     overflow: auto;
     thead{
       background: rgb(48, 43, 43);

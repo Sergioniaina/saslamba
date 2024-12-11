@@ -28,17 +28,23 @@ const UserSchema = new mongoose.Schema({
 
 // Hash the password before saving
 UserSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
+  if (!this.isModified('password')) return next(); // Si le mot de passe n'est pas modifié, pas besoin de le hacher à nouveau
+  try {
+    const salt = await bcrypt.genSalt(10);  // Générer le "salt"
+    this.password = await bcrypt.hash(this.password, salt);  // Hacher le mot de passe
+    next();
+  } catch (err) {
+    return next(err);  // Si erreur, passer l'erreur au middleware suivant
+  }
 });
 
-// Compare password method
+// Méthode pour comparer le mot de passe
 UserSchema.methods.comparePassword = async function (password) {
-  const match = await bcrypt.compare(password, this.password);
-  console.log('Password match:', match); // Log pour vérifier si le mot de passe correspond
-  return match;
+  try {
+    return await bcrypt.compare(password, this.password);  // Comparer le mot de passe haché
+  } catch (err) {
+    throw new Error('Error comparing passwords');
+  }
 };
 
 module.exports = mongoose.model('User', UserSchema);

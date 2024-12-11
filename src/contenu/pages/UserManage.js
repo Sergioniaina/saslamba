@@ -41,7 +41,7 @@ const UserManagement = () => {
       setSubRole(user.subRole);
       setFormUserRole(user.role);
       setFormSubRole(user.subRole);
-      console.log("userRole :",user.role)
+      console.log("userRole :", user.role)
       if (user.role === "admin") {
         fetchUsers();
       } else if (user.role === "user") {
@@ -183,13 +183,13 @@ const UserManagement = () => {
       }
 
       setIsModalOpen(false);
-      if (userRole==="user"){
+      if (userRole === "user") {
         fetchCurrentUser();
       }
-      else{
-         fetchUsers();
+      else {
+        fetchUsers();
       }
-     
+
     } catch (error) {
       setErrorMessage("Error submitting form: " + error.message);
       console.error("Error submitting form:", error);
@@ -237,48 +237,49 @@ const UserManagement = () => {
             </div>
             <button onClick={() => setLogo(true)}>Logo</button>
           </div>
-
-          <table className="user-profile">
-            <thead>
-              <tr>
-                <th>Photo</th>
-                <th>Name</th>
-                <th>Role</th>
-                <th>subRole</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {handleSearch().map((user) => (
-                <tr key={user._id}>
-                  <td>
-                    <img
-                      src={`http://localhost:5000/${user.photo}`}
-                      alt={user.name}
-                      className="user-profile-photo"
-                    />
-                  </td>
-                  <td>{user.name}</td>
-                  <td>{user.role}</td>
-                  <td>{user.subRole}</td>
-                  <td>
-                    <button
-                      className="btn-edit"
-                      onClick={() => openModalForEditing(user)}
-                    >
-                      <FaEdit />
-                    </button>
-                    <button
-                      className="btn-delete"
-                      onClick={() => handleDelete(user._id)}
-                    >
-                      <FaTrash />
-                    </button>
-                  </td>
+          <div className="user-profiles">
+            <table className="user-profile">
+              <thead>
+                <tr>
+                  <th>Photo</th>
+                  <th>Name</th>
+                  <th>Role</th>
+                  <th>subRole</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {handleSearch().map((user) => (
+                  <tr key={user._id}>
+                    <td>
+                      <img
+                        src={`http://localhost:5000/${user.photo}`}
+                        alt={user.name}
+                        className="user-profile-photo"
+                      />
+                    </td>
+                    <td>{user.name}</td>
+                    <td>{user.role}</td>
+                    <td>{user.subRole}</td>
+                    <td>
+                      <button
+                        className="btn-edit"
+                        onClick={() => openModalForEditing(user)}
+                      >
+                        <FaEdit />
+                      </button>
+                      <button
+                        className="btn-delete"
+                        onClick={() => handleDelete(user._id)}
+                      >
+                        <FaTrash />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </>
       ) : (
         currentUser && (
@@ -315,6 +316,7 @@ const UserManagement = () => {
               </tr>
             </tbody>
           </table>
+
         )
       )}
 
@@ -337,32 +339,34 @@ const UserManagement = () => {
                 />
                 <label htmlFor="name">Nom</label>
               </div>
+              {!editingUser && (
+                <>
+                  <div className="form-group">
+                    <input
+                      type="password"
+                      id="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)} // Ajout du gestionnaire onChange
+                      placeholder=""
+                      required
+                    />
+                    <label>Mot de passe</label>
+                  </div>
 
-              <div className="form-group">
-                <input
-                  type="password"
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)} // Ajout du gestionnaire onChange
-                  placeholder=""
-                  required
-                />
-                <label>Mot de passe</label>
-              </div>
-
-              <div className="form-group">
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)} // Ajout du gestionnaire onChange
-                  required
-                />
-                <label htmlFor="confirmPassword">
-                  Confirmer le mot de passe
-                </label>
-              </div>
-
+                  <div className="form-group">
+                    <input
+                      type="password"
+                      id="confirmPassword"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)} // Ajout du gestionnaire onChange
+                      required
+                    />
+                    <label htmlFor="confirmPassword">
+                      Confirmer le mot de passe
+                    </label>
+                  </div>
+                </>
+              )}
               <div className="form-group">
                 <select
                   value={formUserRole}

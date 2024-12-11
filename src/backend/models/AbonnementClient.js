@@ -13,39 +13,37 @@ const abonnementDetail = new mongoose.Schema({
   lavage:{
     total: {
       type: Number, // Nombre total de lavage inclus dans l'abonnement
-      required: true,
+      default : null
     },
     used: {
       type: Number, // Nombre de lavage déjà utilisés
       default: 0,
-      required: true,
     },
     weeklyLimit: {
       type: Number, // Limite de lavage par semaine
-      required: true,
+      default : null
     },
     reste: {
       type: Number, // Limite de lavage par semaine
-      required: true,
+      default : null
     },
   },
  sechage: {
     total: {
       type: Number, // Nombre total de séchages inclus dans l'abonnement
-      required: true,
+      default : null
     },
     used: {
       type: Number, // Nombre de séchages déjà utilisés
       default: 0,
-      required: true,
     },
     weeklyLimit: {
       type: Number, // Limite de séchages par semaine
-      required: true,
+      default : null
     },
     reste: {
       type: Number, // Limite de séchages par semaine
-      required: true,
+      default : null
     },
   },
 });

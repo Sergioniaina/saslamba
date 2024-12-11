@@ -346,13 +346,19 @@
   .btn-delete {
     padding: 10px;
   }
-
-
+  .user-profiles {
+    margin-top: 20px;
+    height: 75vh;
+    overflow: auto;
+    thead{
+      position: sticky;
+      top: 0px;
+    }
+  }
 /* Table */
 .user-profile {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
   .user-action{
     text-align: center;
   }

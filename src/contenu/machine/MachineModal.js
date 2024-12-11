@@ -3,7 +3,7 @@ import { FaEdit, FaPlus, FaTimes } from "react-icons/fa";
 
 const MachineModal = ({ show, onClose, onSave, machine }) => {
   const [formData, setFormData] = useState({
-    type: "Machine à laver",
+    type: "",
     modelNumber: "",
     powerConsumption: "",
     weightCapacity: "",
@@ -102,6 +102,7 @@ const MachineModal = ({ show, onClose, onSave, machine }) => {
         <form onSubmit={handleSubmit} className="form">
           <div className="form1">
             <select name="type" value={formData.type} onChange={handleChange} required>
+            <option value="">Selectionner type</option>
               <option value="Machine à laver">Machine à laver</option>
               <option value="Sèche-linge">Sèche-linge</option>
             </select>

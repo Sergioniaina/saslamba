@@ -36,7 +36,6 @@ const Signup = () => {
     formData.append('name', name);
     formData.append('password', password);
     formData.append('role', role);
-  
     if (photo) {
       formData.append('photo', photo); 
     }
@@ -85,8 +84,9 @@ const Signup = () => {
             />
              <label> Password:</label>
           </div>
-          {canShowSignup && (
-          <div className="form-group">
+         {
+          canShowSignup &&(
+            <div className="form-group">
             <select value={role} onChange={(e) => setRole(e.target.value)}>
               <option value="user">User</option>
             
@@ -94,7 +94,8 @@ const Signup = () => {
             </select>
             <label>Role:</label>
           </div>
-             )}
+          )
+         } 
           <div className="form-group">
             <input
               type="file"

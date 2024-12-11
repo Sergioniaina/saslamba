@@ -91,7 +91,7 @@ const GestionCaisse = () => {
           ? `http://localhost:5000/api/caisses/${selectedCaisse}/add-solde`
           : `http://localhost:5000/api/caisses/${selectedCaisse}/remove-solde`;
 
-      const response = await axios.put(url, {
+       await axios.put(url, {
         solde,
         motif: motifFinal,
       });
@@ -120,9 +120,10 @@ const GestionCaisse = () => {
   // Filtrer l'historique selon la recherche
   const filteredHistorique = historiqueCaisse
   .filter((entry) => {
-    const matchesMotif = entry.motif
-      .toLowerCase()
-      .includes(searchMotif.toLowerCase());
+    // const matchesMotif = entry.motif
+    //   .toLowerCase()
+    //   .includes(searchMotif.toLowerCase());
+    const matchesMotif = entry.motif && entry.motif.toLowerCase().includes(searchMotif.toLowerCase());
     const matchesType = filterType ? entry.type === filterType : true;
 
     const entryDate = new Date(entry.date);
@@ -283,7 +284,7 @@ const GestionCaisse = () => {
                 <td>{entry.montant} Ar</td>
                 <td>{entry.motif}</td>
                 <td>{entry.type === "Ajout" ? "Recette" : "Dépense"}</td>
-                <td>{entry.date}</td>
+                <td>{new Date(entry.date).toLocaleString()}</td>
                 <td>
                   <button style={{color:"red"}} onClick={() => confirmDelete(entry._id)}><FaTrashAlt/></button>
                 </td>
