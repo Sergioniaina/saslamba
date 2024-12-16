@@ -180,6 +180,7 @@ const Products = () => {
 
   const handleModalSubmit = async () => {
     const stockToAdd = parseInt(quantity, 10);
+    const token = localStorage.getItem("token");
     if (!isNaN(stockToAdd) && stockToAdd > 0) {
       try {
         await axios.put(
@@ -187,6 +188,12 @@ const Products = () => {
           {
             ...selectedProduct,
             stock: selectedProduct.stock + stockToAdd,
+          },
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`, // Ajout de l'en-tête d'autorisation
+            },
           }
         );
         await fetchAllProducts();

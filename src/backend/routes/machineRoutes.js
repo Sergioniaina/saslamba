@@ -7,6 +7,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 const User = require("../models/User");
 const router = express.Router();
 const checkPermission = require('../middleware/checkPermission');
+const ProductHistory = require('../models/ProductHistorique');
 
 // Configuration de multer pour le stockage des fichiers
 const storage = multer.diskStorage({
@@ -127,7 +128,7 @@ router.post("/",authMiddleware,checkPermission('produits', 'add'), upload.single
 // Update a product
 router.put("/:id", authMiddleware, checkPermission('produits', 'edit'), upload.single("photo"), async (req, res) => {
   const { id } = req.params;
-  const { name, price, description, stock, date } = req.body;
+  const { name, price, description, stock, date, } = req.body;
   const photo = req.file ? req.file.path : null;
   const userId = req.user._id;
 
@@ -159,6 +160,15 @@ router.put("/:id", authMiddleware, checkPermission('produits', 'edit'), upload.s
     const updatedProduct = await Product.findByIdAndUpdate(id, updateData, {
       new: true,
     });
+    const productHistory = new ProductHistory({
+      product: updatedProduct._id,
+      date: new Date(),
+      stockChange: stockEntrer,
+      remainingStock: stockApres,
+      totalSpent: stockEntrer < 0 ? Math.abs(stockEntrer) * currentProduct.price : undefined, // Calcul du total dépensé si stock déduit
+      type: stockEntrer >= 0 ? "addition" : "deduction", // Définir si c'est une addition ou une déduction
+    });
+    await productHistory.save();
 
     // Enregistrer l'historique
     const newHistorique = new Historique({

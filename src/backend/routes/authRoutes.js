@@ -43,8 +43,14 @@ router.post('/signup', upload.single('photo'), async (req, res) => {
     if (!photo) {
       photo = role === 'admin' ? 'default_images/admin_default.jpg' : 'default_images/user_default.jpg';
     }
+    let subRole = null; // Par défaut pour user
+    if (role === 'admin') {
+      subRole = 'superAdmin'; // Par défaut pour admin
+    } else if (role === 'user') {
+      subRole = 'caissiere'; // Par défaut pour user
+    }
     // subRole est laissé à null par défaut
-    const user = new User({ name, password, role, subRole: null, photo });
+    const user = new User({ name, password, role, subRole, photo });
     await user.save();
 
     res.status(201).json({ message: 'User registered successfully', user });

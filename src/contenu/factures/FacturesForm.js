@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import printJS from 'print-js';
+import printJS from "print-js";
 import axios from "axios";
 import "./App.css";
 import "../css/factureForm.css";
@@ -66,7 +66,7 @@ const FactureForm = () => {
   const [confirmAction, setConfirmAction] = useState(null); // Stores the action to confirm
   const [confirmMessage, setConfirmMessage] = useState(""); // Stores the confirmation message
   const [loading, setLoading] = useState(true);
-  const [reste, setReste]=useState(0);
+  const [reste, setReste] = useState(0);
   const PORT = process.env.REACT_APP_BACKEND_URL;
   // eslint-disable-next-line
   const [changeGive, setChangeGive] = useState(0);
@@ -118,9 +118,7 @@ const FactureForm = () => {
 
   const fetchCompanyInfo = async () => {
     try {
-      const response = await axios.get(
-        `${PORT}/api/company-info/list`
-      );
+      const response = await axios.get(`${PORT}/api/company-info/list`);
       setCompanyInfo(response.data[0]); // Assuming the first entry is the company info
     } catch (error) {
       console.error("Error loading company information:", error);
@@ -209,51 +207,45 @@ const FactureForm = () => {
   const [latestFacture, setLatestFacture] = useState(null);
   const fetchLatestFacture = async () => {
     try {
-      const response = await axios.get(
-        `${PORT}/api/factures/last-ticket`
-      );
+      const response = await axios.get(`${PORT}/api/factures/last-ticket`);
       setLatestFacture(response.data);
       console.log("ticket:", response.data.ticketNumber);
     } catch (error) {
-      console.error(
-        "Erreur lors de la récupération du dernier ticket",
-        error
-      );
+      console.error("Erreur lors de la récupération du dernier ticket", error);
     }
   };
   useEffect(() => {
-
     fetchLatestFacture();
- //   clickButton();
+    //   clickButton();
     // eslint-disable-next-line
   }, []);
   // useEffect pour recalculer quand manualInput ou formData changent
-useEffect(() => {
+  useEffect(() => {
+    const remainingAmount = formData.totalPrice - manualInput;
+    const changeToGive =
+      manualInput - formData.totalPrice > 0
+        ? manualInput - formData.totalPrice
+        : 0;
+
+    setReste(remainingAmount);
+    setChangeGive(changeToGive);
+  }, [manualInput, formData]); // Dépendances : recalcul à chaque changement
+
   const remainingAmount = formData.totalPrice - manualInput;
   const changeToGive =
     manualInput - formData.totalPrice > 0
       ? manualInput - formData.totalPrice
       : 0;
 
-  setReste(remainingAmount);
-  setChangeGive(changeToGive);
-}, [manualInput, formData]); // Dépendances : recalcul à chaque changement
-
-  const remainingAmount = formData.totalPrice - manualInput;
-  const changeToGive =
-    manualInput - formData.totalPrice > 0
-      ? manualInput - formData.totalPrice
-      : 0;
-      
-const clickButton=()=>{
-  const remainingAmount = formData.totalPrice - manualInput;
-  const changeToGive =
-    manualInput - formData.totalPrice > 0
-      ? manualInput - formData.totalPrice
-      : 0;
-      setReste(remainingAmount);
-      setChangeGive(changeToGive); 
-}
+  const clickButton = () => {
+    const remainingAmount = formData.totalPrice - manualInput;
+    const changeToGive =
+      manualInput - formData.totalPrice > 0
+        ? manualInput - formData.totalPrice
+        : 0;
+    setReste(remainingAmount);
+    setChangeGive(changeToGive);
+  };
   const handleBillClick = (billValue) => {
     setBillBreakdown((prevBreakdown) => ({
       ...prevBreakdown,
@@ -267,16 +259,18 @@ const clickButton=()=>{
     const changeToGive = input > totalPrice ? input - totalPrice : 0;
     return { remainingAmount, changeToGive };
   };
-  
+
   // Exemple d'utilisation
   const handleManualInputChange = (e) => {
     const value = parseInt(e.target.value, 10) || 0;
     setManualInput(value);
-    const { remainingAmount, changeToGive } = calculateAmounts(formData.totalPrice, value);
+    const { remainingAmount, changeToGive } = calculateAmounts(
+      formData.totalPrice,
+      value
+    );
     setReste(remainingAmount);
     setChangeGive(changeToGive);
   };
-  
 
   const handlePaymentTypeChange = (e) => {
     const value = e.target.value;
@@ -314,23 +308,24 @@ const clickButton=()=>{
       const token = localStorage.getItem("token");
       //console.log("Token dans le frontend:", token);  // Affichez le token ici
       const productsRes = await axios.get(`${PORT}/api/products`, {
-          headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
       setProducts(productsRes.data);
       setLoading(false);
-  } catch (error) {
-      console.error("Erreur lors du chargement des produits:", error.response || error);
-  }
+    } catch (error) {
+      console.error(
+        "Erreur lors du chargement des produits:",
+        error.response || error
+      );
+    }
   };
-  
+
   const [abonnementClients, setAbonnementClients] = useState([]); // Déclarez un état pour les abonnements
 
   // Fonction pour charger les abonnements clients
   const fetchAbonnementClients = async () => {
     try {
-      const response = await axios.get(
-        `${PORT}/api/abonnementClient`
-      ); // Mettez à jour l'URL selon votre API 
+      const response = await axios.get(`${PORT}/api/abonnementClient`); // Mettez à jour l'URL selon votre API
       setAbonnementClients(response.data);
       setLoading(false);
     } catch (error) {
@@ -351,15 +346,18 @@ const clickButton=()=>{
     const fetchProducts = async () => {
       try {
         const token = localStorage.getItem("token");
-       // console.log("Token dans le frontend:", token);  // Affichez le token ici
+        // console.log("Token dans le frontend:", token);  // Affichez le token ici
         const productsRes = await axios.get(`${PORT}/api/products`, {
-            headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${token}` },
         });
         setProducts(productsRes.data);
         setLoading(false);
-    } catch (error) {
-        console.error("Erreur lors du chargement des produits:", error.response || error);
-    }
+      } catch (error) {
+        console.error(
+          "Erreur lors du chargement des produits:",
+          error.response || error
+        );
+      }
     };
     // useEffect(() => {
     //   // Update totalWeight whenever machineWeights changes
@@ -399,7 +397,7 @@ const clickButton=()=>{
 
     fetchProducts();
     fetchClients();
-  }, [isChoix,PORT]);
+  }, [isChoix, PORT]);
   useEffect(() => {
     // Fetch price types from the server using Axios
     const fetchPriceTypes = async () => {
@@ -419,9 +417,7 @@ const clickButton=()=>{
   useEffect(() => {
     const fetchMachines = async () => {
       try {
-        const machinesRes = await axios.get(
-          `${PORT}/api/machines`
-        );
+        const machinesRes = await axios.get(`${PORT}/api/machines`);
         setMachines(machinesRes.data);
       } catch (error) {
         console.error("Erreur lors du chargement des machines:", error);
@@ -432,9 +428,7 @@ const clickButton=()=>{
   }, [PORT]);
   const fetchMachines = async () => {
     try {
-      const machinesRes = await axios.get(
-        `${PORT}/api/machines`
-      );
+      const machinesRes = await axios.get(`${PORT}/api/machines`);
       setMachines(machinesRes.data);
     } catch (error) {
       console.error("Erreur lors du chargement des machines:", error);
@@ -522,7 +516,7 @@ const clickButton=()=>{
         //   const machine = machines.find((m) => m._id === id);
         //   return machine && machine.type === "Machine à laver";
         // }).length;
-  
+
         // const dryingMachinesCount = newSelectedMachines.filter((id) => {
         //   const machine = machines.find((m) => m._id === id);
         //   return machine && machine.type === "Sèche-linge";
@@ -532,7 +526,7 @@ const clickButton=()=>{
         // Update totalWeight in formData
         setFormData((prevFormData) => ({
           ...prevFormData,
-          totalWeight: totalWeight.toFixed(2)
+          totalWeight: totalWeight.toFixed(2),
           // machinesLavage: washingMachinesCount,
           // machinesSechage: dryingMachinesCount,
         }));
@@ -861,39 +855,44 @@ const clickButton=()=>{
 
     if (isChoix) {
       try {
-        const response = await axios.get(`${PORT}/api/abonnementClient/client/${selectedClient._id}`);
+        const response = await axios.get(
+          `${PORT}/api/abonnementClient/client/${selectedClient._id}`
+        );
         const abonnementClient = response.data[0]; // On suppose qu'il y a un abonnement
-    
+
         if (!abonnementClient) {
           setMessage("Le client n'est pas inscrit à un abonnement.");
           setModalInfo(true);
           return;
         }
-    
+
         const totalWeight = parseFloat(formData.totalWeight) || 0; // Poids total en kg
         const machinesLavage = selectedMachines.filter((machineId) => {
           const machine = machines.find((m) => m._id === machineId);
           return machine && machine.type === "Machine à laver";
         }).length;
-    
+
         const machinesSechage = selectedMachines.filter((machineId) => {
           const machine = machines.find((m) => m._id === machineId);
           return machine && machine.type === "Sèche-linge";
         }).length;
-    
+
         console.log(
           `Les totaux et nombre de clics - totalWeight: ${totalWeight}, machinesLavage: ${machinesLavage}, machinesSechage: ${machinesSechage}`
         );
-    
+
         // Mise à jour des quotas d'abonnement
-        await axios.put(`${PORT}/api/abonnementClient/abonnement/utiliser/${abonnementClient._id}`, {
-          totalWeight,
-          machinesLavage,
-          machinesSechage,
-        });
-    
+        await axios.put(
+          `${PORT}/api/abonnementClient/abonnement/utiliser/${abonnementClient._id}`,
+          {
+            totalWeight,
+            machinesLavage,
+            machinesSechage,
+          }
+        );
+
         fetchAbonnementClients();
-    
+
         // Construction du message à afficher
         let message = "\n";
 
@@ -903,30 +902,36 @@ const clickButton=()=>{
           abonnementClient.abonnementDetails.lavage.reste !== undefined &&
           abonnementClient.abonnementDetails.lavage.used !== undefined
         ) {
-          const lavageReste = abonnementClient.abonnementDetails.lavage.reste - machinesLavage;
-          const lavageUsed = abonnementClient.abonnementDetails.lavage.used + machinesLavage;
+          const lavageReste =
+            abonnementClient.abonnementDetails.lavage.reste - machinesLavage;
+          const lavageUsed =
+            abonnementClient.abonnementDetails.lavage.used + machinesLavage;
           message += `- Lavages restants : ${lavageReste}\n`;
           message += `- Lavages utilisés : ${lavageUsed}\n`;
         }
-        
+
         // Ajouter les informations de séchage si disponibles et valides
         if (
           abonnementClient.abonnementDetails?.sechage &&
           abonnementClient.abonnementDetails.sechage.reste !== undefined &&
           abonnementClient.abonnementDetails.sechage.used !== undefined
         ) {
-          const sechageReste = abonnementClient.abonnementDetails.sechage.reste - machinesSechage;
-          const sechageUsed = abonnementClient.abonnementDetails.sechage.used + machinesSechage;
+          const sechageReste =
+            abonnementClient.abonnementDetails.sechage.reste - machinesSechage;
+          const sechageUsed =
+            abonnementClient.abonnementDetails.sechage.used + machinesSechage;
           message += `- Séchages restants : ${sechageReste}\n`;
           message += `- Séchages utilisés : ${sechageUsed}\n`;
         }
-        
+
         // Supprime les espaces et les nouvelles lignes inutiles
         setMessage(message.trim());
-        
+
         setModalInfo(true);
       } catch (error) {
-        setMessage(error.response?.data?.error || "Erreur lors de l'enregistrement.");
+        setMessage(
+          error.response?.data?.error || "Erreur lors de l'enregistrement."
+        );
         setModalInfo(true);
         return;
       }
@@ -987,7 +992,6 @@ const clickButton=()=>{
     let response;
     try {
       if (isEditMode) {
-        
         if (!facture || !facture._id) {
           setMessage("La facture n'est pas disponible pour la modification.");
           setModalInfo(true);
@@ -1006,16 +1010,12 @@ const clickButton=()=>{
         // alert("Facture modifiée avec succès");
         toast.success("Facture modifier avec succes");
       } else {
-        response = await axios.post(
-          `${PORT}/api/factures`,
-          factureData,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
+        response = await axios.post(`${PORT}/api/factures`, factureData, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
         // alert("Facture créée avec succès");
         toast.success("La facture crée avec succès !");
       }
@@ -1058,15 +1058,13 @@ const clickButton=()=>{
       );
 
       if (totalPrice <= inputAmount) {
-        await axios.put(
-          `${PORT}/api/factures/${response.data._id}/etat`,
-          { estPaye: true }
-        );
+        await axios.put(`${PORT}/api/factures/${response.data._id}/etat`, {
+          estPaye: true,
+        });
       } else {
-        await axios.put(
-          `${PORT}/api/factures/${response.data._id}/etat`,
-          { estPaye: false }
-        );
+        await axios.put(`${PORT}/api/factures/${response.data._id}/etat`, {
+          estPaye: false,
+        });
       }
 
       const currentSolde = Number(caisse.solde);
@@ -1094,13 +1092,10 @@ const clickButton=()=>{
         }
 
         // Mise à jour du solde de la caisse
-        await axios.put(
-          `${PORT}/api/caisses/${selectedCaisse}/add-solde`,
-          {
-            solde: soldeToAdd,
-            motif:"Facture payé" // Utiliser le montant calculé comme solde à ajouter
-          }
-        );
+        await axios.put(`${PORT}/api/caisses/${selectedCaisse}/add-solde`, {
+          solde: soldeToAdd,
+          motif: "Facture payé", // Utiliser le montant calculé comme solde à ajouter
+        });
 
         console.log(
           `Solde ajouté avec succès : ${currentSolde} + ${soldeToAdd}`
@@ -1118,20 +1113,20 @@ const clickButton=()=>{
 
   const billetConfirm = async () => {
     setConfirmMessage("Voulez-vous enregistrer cette facture?"); // Message de confirmation
-  
+
     // Fonction interne pour gérer la soumission
     const confirmSubmit = async () => {
       try {
         let showModalInfo = false;
-  
+
         // Parcours des machines sélectionnées
         for (const machineId of selectedMachines) {
           const machine = machines.find((m) => m._id === machineId);
-          
+
           if (machine) {
             // Vérifier si la machine est une machine à laver ou un sèche-linge
             const isWashingMachine = machine.etat === "Indisponible";
-            
+
             // Condition spécifique
             if (isWashingMachine && formData.etat === "encaisser") {
               showModalInfo = true;
@@ -1140,19 +1135,18 @@ const clickButton=()=>{
             }
           }
         }
-  
+
         if (showModalInfo) {
           setModalInfo(true);
           setBillet(false); // Afficher le modal d'information si condition non remplie
           return; // Ne pas soumettre
         }
-  
+
         // Si toutes les conditions sont respectées, procéder à la soumission
         await handleSubmit(false); // Appel de la soumission
         setBillet(false); // Fermer le modal principal
         fetchAllProducts(); // Mettre à jour les données
         fetchMachines();
-  
       } catch (error) {
         // Gestion des erreurs
         console.error("Erreur lors de la soumission :", error);
@@ -1161,35 +1155,35 @@ const clickButton=()=>{
         );
       }
     };
-  
+
     // Définir l'action de confirmation après validation
     setConfirmAction(() => confirmSubmit);
-  
+
     // Rendre visible le modal de confirmation
     setIsConfirmVisible(true);
   };
-  
 
   const billetConfirmEnattente = async () => {
     setConfirmMessage("Voulez-vous faire en attente cette facture?");
-    const confirmAttente = async ()=>{
+    const confirmAttente = async () => {
       try {
         // Appel de la soumission (vérifiez bien que false signifie l'enregistrement ou la modification selon le contexte)
         await handleSubmit(true);
-  
+
         setBillet(false);
         fetchAllProducts();
         fetchMachines();
       } catch (error) {
         // Afficher un message d'erreur en cas de problème lors de la soumission
         console.error("Erreur lors de la soumission :", error);
-        setError("Échec lors de la confirmation du billet. Veuillez réessayer.");
+        setError(
+          "Échec lors de la confirmation du billet. Veuillez réessayer."
+        );
       }
-    }
+    };
     setConfirmAction(() => confirmAttente); // Fonction de soumission à exécuter après confirmation
     // Le modal de confirmation est ensuite visible
     setIsConfirmVisible(true);
-    
   };
   const handleConfirmClick = () => {
     // Vérifier l'état de la facture
@@ -1318,17 +1312,18 @@ const clickButton=()=>{
       customerName: facture.customerName || "",
       contact: facture.contact || "",
       totalWeight: facture.totalWeight || 0,
-      totalPrice: facture.totalPrice ,
-      reste: facture.reste ,
+      totalPrice: facture.totalPrice,
+      reste: facture.reste,
       serviceType: facture.serviceType || "",
       articles: facture.articles || [],
       articleDetails: facture.articleDetails || [],
+      ticketNumber: facture.ticketNumber,
     });
     setManualInput(test);
     setReste(facture.reste);
     const { changeToGive } = calculateAmounts(facture.totalPrice, test);
     setChangeGive(changeToGive);
-   
+
     // Trouver l'option correspondante à l'édition
     const selectedOptions = {};
 
@@ -1645,7 +1640,7 @@ const clickButton=()=>{
       });
     }
   }, [filteredOptions, selectedOptions, selectedMachines]);
- // Exécutez ce useEffect si les options filtrées ou les machines sélectionnées changent
+  // Exécutez ce useEffect si les options filtrées ou les machines sélectionnées changent
 
   // Fonction de changement d'option
   const handleOptionChange = (machineId, event) => {
@@ -1675,10 +1670,7 @@ const clickButton=()=>{
 
         return {
           ...prevData,
-          articles: [
-            ...updatedArticles,
-            { articleId, machineId },
-          ],
+          articles: [...updatedArticles, { articleId, machineId }],
           articleDetails: [
             ...updatedArticleDetails,
             {
@@ -1697,7 +1689,6 @@ const clickButton=()=>{
       );
     }
   };
-
 
   /*Modal Information */
   const onOk = () => {
@@ -2084,7 +2075,6 @@ const clickButton=()=>{
                     <option value="Lavage + Séchage">Lavage + Séchage</option>
                     <option value="Lavage">Lavage</option>
                     <option value="Séchage">Séchage</option>
-                    
                   </select>
                 </div>
                 <div className="machine-ul">
@@ -2268,7 +2258,7 @@ const clickButton=()=>{
                           }}
                         >
                           <span>Prix :</span>
-                          <span style={{ color: "wwhite",fontWeight:"600" }}>
+                          <span style={{ color: "wwhite", fontWeight: "600" }}>
                             {product.price} Ar
                           </span>
                           {userRole === "admin" && (
@@ -2346,13 +2336,24 @@ const clickButton=()=>{
         <div className="tick">
           <div className="ticket">
             <div className="prev-relative">
-              {latestFacture ? (
+              {/* {latestFacture ? (
                 <div>
                   <h2>
                     Ticket N° {latestFacture.ticketNumber + 1 || 1} /{" "}
                     {new Date(Date.now()).toISOString().split("T")[0]}
                   </h2>{" "}
                 </div>
+              ) : (
+                <p>Aucune facture trouvée</p> // Message si aucune facture n'est trouvée
+              )} */}
+              {latestFacture ? (
+                <h2>
+                  Ticket N°{" "}
+                  {isEditMode
+                    ? formData.ticketNumber // Mode édition : utiliser ticketNumber du formulaire
+                    : latestFacture.ticketNumber + 1 || 1} /{" "}
+                    {new Date(Date.now()).toISOString().split("T")[0]}
+                </h2>
               ) : (
                 <p>Aucune facture trouvée</p> // Message si aucune facture n'est trouvée
               )}
@@ -2413,7 +2414,8 @@ const clickButton=()=>{
                         <tr key={machineId}>
                           <td>1</td>
                           <td>
-                          N°{machine?.modelNumber} {machine?.name} ({machine?.type})
+                            N°{machine?.modelNumber} {machine?.name} (
+                            {machine?.type})
                           </td>
                           <td>{price.toFixed(2)}</td>
                           <td>
@@ -2572,7 +2574,12 @@ const clickButton=()=>{
 
         {modalInfo && <ModalInfo message={message} onOk={onOk} />}
         {billet && (
-          <div className="billetage" onClick={() =>{setBillet(false)}}>
+          <div
+            className="billetage"
+            onClick={() => {
+              setBillet(false);
+            }}
+          >
             <div
               className="billetage-content"
               onClick={(e) => e.stopPropagation()}
@@ -2663,13 +2670,11 @@ const clickButton=()=>{
                       </div>
                       <div className="reste">
                         <span> reste :</span>
-                        {
-                          isEditMode ? (
-                            <>
-                            {reste > 0 ? reste : 0} Ar
-                            </>
-                          ):(<>{remainingAmount > 0 ? remainingAmount : 0} Ar</>)
-                        }
+                        {isEditMode ? (
+                          <>{reste > 0 ? reste : 0} Ar</>
+                        ) : (
+                          <>{remainingAmount > 0 ? remainingAmount : 0} Ar</>
+                        )}
                       </div>
                       <div className="reste">
                         <span> A rendre :</span> {changeToGive} Ar
@@ -2700,7 +2705,7 @@ const clickButton=()=>{
                   src={`http://localhost:5000/${companyInfo.photo}`}
                   alt="Logo de l'entreprise"
                   style={{
-                    borderRadius:"10px",
+                    borderRadius: "10px",
                     width: "50px",
                     height: "50px",
                     backgroundRepeat: "no-repeat",
@@ -2709,16 +2714,14 @@ const clickButton=()=>{
               </div>
               <div className="company-details">
                 <div className="info">
-                
-                    <span style={{ margin: 0 }}>{companyInfo.name}</span>
-                 
+                  <span style={{ margin: 0 }}>{companyInfo.name}</span>
+
                   <span>
                     <p style={{ margin: 0 }}>{companyInfo.phone}</p>
                   </span>
                   <span>
                     <span style={{ margin: 0 }}>{companyInfo.address}</span>
                   </span>
-                
                 </div>
               </div>
             </div>
@@ -2729,19 +2732,22 @@ const clickButton=()=>{
           >
             {latestFacture ? (
               <span className="facture-num">
-                FACTURE N° {latestFacture.ticketNumber + 1 || 1}{" "}
+                FACTURE N°{" "}
+                {isEditMode
+                  ? formData.ticketNumber
+                  : latestFacture.ticketNumber + 1 || 1}{" "}
                 {/* {new Date(Date.now()).toISOString().split("T")[0]} */}
               </span>
             ) : (
               <p>Aucune facture trouvée</p> // Message si aucune facture n'est trouvée
             )}
+
             <p>Date : {new Date(Date.now()).toISOString().split("T")[0]}</p>
             <span>Doit à : {formData.customerName}</span>
             <p>Tèl : {formData.contact}</p>
             {/* {formData.etat ==="en attente" && formData.etat ==="annulée" (
               <p>etat : {formData.etat}</p>
             )} */}
-            
           </div>
         </div>
 
@@ -2804,7 +2810,8 @@ const clickButton=()=>{
                 return (
                   <tr key={machineId}>
                     <td>1</td>
-                    <td>N°{machine.modelNumber} {" "}
+                    <td>
+                      N°{machine.modelNumber}{" "}
                       {(() => {
                         const weight = machineWeights[machineId]
                           ? `(${machineWeights[machineId]} kg)`
@@ -2834,7 +2841,6 @@ const clickButton=()=>{
                           return `${weight}`; // Poids affiché pour d'autres types de machines
                         }
                       })()}
-                      
                     </td>
 
                     <td>{price.toFixed(0)}</td>
@@ -2878,10 +2884,7 @@ const clickButton=()=>{
                     <strong>
                       <span>Reste </span>
                       <span className="reste">
-                        <span>
-                          {" "}
-                          {reste > 0 ? reste : 0}
-                        </span>
+                        <span> {reste > 0 ? reste : 0}</span>
                         <span>Ar</span>
                       </span>
                     </strong>
@@ -2901,8 +2904,8 @@ const clickButton=()=>{
                 </td>
               </tr>
             </tfoot>
-          </table> 
-           {/* <span>
+          </table>
+          {/* <span>
                     <span style={{ margin: 0 }}>{factureData.estPaye}</span>
                   </span> */}
 

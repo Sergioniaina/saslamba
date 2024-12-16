@@ -10,6 +10,7 @@ const mongoose = require('mongoose');
 const Caisse = require('../models/caisse');
 const Payment = require('../models/Payement');
 const Compteur = require('../models/compteurMachine');
+const ProductHistory = require('../models/ProductHistorique');
 
 const authMiddleware = require('../middleware/authMiddleware');
 // Créer une nouvelle facture
@@ -238,10 +239,41 @@ const userId = req.user._id;
     }
 
     // Mettre à jour le stock des produits
-    for (let productId of products) {
-      const requestedQuantity = quantities[productId];
-      await Product.findByIdAndUpdate(productId, { $inc: { stock: -requestedQuantity } });
-    }
+   // Mettre à jour le stock des produits et enregistrer dans ProductHistory
+for (let productId of products) {
+  const requestedQuantity = quantities[productId];
+
+  // Récupérer le produit actuel pour ses détails
+  const product = await Product.findById(productId);
+  if (!product) {
+    throw new Error(`Produit avec ID ${productId} introuvable.`);
+  }
+
+  // Calculer le stock restant
+  const newStock = product.stock - requestedQuantity;
+
+  // Vérifier que le stock ne devient pas négatif
+  if (newStock < 0) {
+    throw new Error(`Le stock pour le produit "${product.name}" est insuffisant.`);
+  }
+
+  // Mettre à jour le stock dans la collection Product
+  await Product.findByIdAndUpdate(productId, { $inc: { stock: -requestedQuantity } });
+
+  // Ajouter une entrée dans ProductHistory
+  const productHistory = new ProductHistory({
+    product: productId,
+    date: new Date(),
+    stockChange: -requestedQuantity, // Quantité déduite
+    remainingStock: newStock,       // Stock restant après modification
+    totalSpent: requestedQuantity * product.price, // Montant total dépensé pour cette réduction
+    type: 'deduction',              // Type de modification (déduction)
+  });
+
+  await productHistory.save();
+}
+
+    
     res.status(201).json(newFacture);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -404,8 +436,31 @@ router.put('/:id',authMiddleware, async (req, res) => {
 
     // Appliquer les ajustements de stock
     for (const [productId, adjustment] of Object.entries(adjustments)) {
+      // Récupérer le produit pour obtenir les détails actuels
+      const product = await Product.findById(productId);
+      if (!product) {
+        throw new Error(`Produit ${productId} introuvable.`);
+      }
+    
+      const newStock = product.stock + adjustment;
+    
+      // Mettre à jour le stock dans la collection Product
       await Product.findByIdAndUpdate(productId, { $inc: { stock: adjustment } });
+    
+      // Enregistrer l'ajustement dans ProductHistory
+      const productHistory = new ProductHistory({
+        product: productId,
+        date: new Date(),
+        stockChange: adjustment, // Quantité ajustée (positive ou négative)
+        remainingStock: newStock, // Stock restant après ajustement
+        totalSpent: adjustment < 0 ? Math.abs(adjustment) * product.price : undefined, // Calculer les dépenses pour les réductions
+        type: adjustment > 0 ? "addition" : "deduction", // Déterminer le type d'ajustement
+      });
+    
+      await productHistory.save();
     }
+
+    
     const userId = req.user._id;
     // Mettre à jour la facture
     existingFacture.customerName = customerName;
@@ -503,7 +558,7 @@ router.patch('/:id/reste', async (req, res) => {
 });
 
 // Supprimer une facture
-router.delete('/:id',authMiddleware, async (req, res) => {
+router.delete('/:id', authMiddleware, async (req, res) => {
   const { id } = req.params;
   const userId = req.user._id;
 
@@ -514,16 +569,22 @@ router.delete('/:id',authMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'Facture non trouvée.' });
     }
 
+    // Vérifier si l'utilisateur est autorisé à supprimer cette facture
+    if (facture.userId !== userId) {
+      return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à supprimer cette facture.' });
+    }
+
     // Remettre les machines en état "Disponible"
     await Machine.updateMany({ _id: { $in: facture.machines } }, { $set: { etat: 'Disponible' } });
 
     // Supprimer la facture
     await Facture.findByIdAndDelete(id);
-     // Ajouter l'entrée dans l'historique
-     await Historique.create({
+
+    // Ajouter l'entrée dans l'historique
+    await Historique.create({
       entityType: 'Facture',
       entityId: id,
-      user:userId,
+      user: userId,
       action: 'Facture supprimée',
       details: `Facture avec ID ${id} supprimée.`,
     });
@@ -533,6 +594,7 @@ router.delete('/:id',authMiddleware, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 
 // Mettre à jour l'état de la facture (payée ou non)
 router.put('/:id/etat', async (req, res) => {

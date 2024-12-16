@@ -45,6 +45,7 @@ import FactureId from "../factures/FactureId";
 import PrivilegeManagement from "../Privilege/PrivilegeManagement ";
 import Machines from "../machine/Machines";
 import GestionCaisse from "./HistoriqueDepense";
+import ProductHistory from "./ProductH";
 
 const DropdownItem = ({ title, icon, children }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -178,6 +179,7 @@ const Home = ({ onLogout }) => {
             <Route path="/FactureId" element={<FactureId />} />
             <Route path="/privilege" element={<PrivilegeManagement />} />
             <Route path="/depense" element={<GestionCaisse />} />
+            <Route path="/productH" element={<ProductHistory />} />
             {/* <Route path="/FactureId/:id" element={<FactureId />} /> */}
             <Route
               path="/machineConsumption"
@@ -217,6 +219,12 @@ const Home = ({ onLogout }) => {
                     className="dropdown-subitem"
                   >
                     <FaHistory style={{ color: "brown" }} /> HISTORIQUE
+                  </NavLink>
+                  <NavLink
+                    to="/home/productH"
+                    className="dropdown-subitem"
+                  >
+                    <FaHistory style={{ color: "brown" }} /> SUIVIS
                   </NavLink>
                 </DropdownItem>
 

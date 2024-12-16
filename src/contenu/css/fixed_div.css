@@ -99,7 +99,7 @@
   }
 
   .dropdown-submenu.show {
-    max-height: 300px;
+    max-height: 380px;
     display: flex;
     flex-direction: column;
     transition: max-height 0.3s ease-out, padding 0.3s ease-out;
