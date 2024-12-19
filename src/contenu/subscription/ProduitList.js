@@ -188,6 +188,7 @@ const Products = () => {
           {
             ...selectedProduct,
             stock: selectedProduct.stock + stockToAdd,
+            source : "Entrer en stock",
           },
           {
             headers: {

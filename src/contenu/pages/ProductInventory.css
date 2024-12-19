@@ -7,6 +7,7 @@
     margin-bottom: 30px;
     gap: 30px;
   }
+ 
   .search-bar {
     display: flex;
     position: relative;
@@ -242,5 +243,17 @@
         background-color: #2980b9;
       }
     }
+  }
+}
+.export-button{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 1px;
+  background-color: #213245;
+  height: 45px;
+  transition: 0.2s ease;
+  &:hover{
+    background: #0c4283;
   }
 }

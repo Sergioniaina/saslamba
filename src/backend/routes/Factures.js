@@ -267,7 +267,8 @@ for (let productId of products) {
     stockChange: -requestedQuantity, // Quantité déduite
     remainingStock: newStock,       // Stock restant après modification
     totalSpent: requestedQuantity * product.price, // Montant total dépensé pour cette réduction
-    type: 'deduction',              // Type de modification (déduction)
+    type: 'deduction', 
+    source : "Facture",            // Type de modification (déduction)
   });
 
   await productHistory.save();
@@ -455,6 +456,7 @@ router.put('/:id',authMiddleware, async (req, res) => {
         remainingStock: newStock, // Stock restant après ajustement
         totalSpent: adjustment < 0 ? Math.abs(adjustment) * product.price : undefined, // Calculer les dépenses pour les réductions
         type: adjustment > 0 ? "addition" : "deduction", // Déterminer le type d'ajustement
+        source : "Facture",
       });
     
       await productHistory.save();

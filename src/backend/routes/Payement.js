@@ -57,7 +57,7 @@ router.post('/abonnement',authMiddleware, async (req, res) => {
     }
    // const montant = foundFacture.totalPrice-foundFacture.reste;
     const historique = [{
-      action: `Abonnement de de client ${clientAbonnement.name} payé`,
+      action: `Abonnement de client ${clientAbonnement.name} payé`,
       montant: montant,
       type : "Abonnement",
       user:userId,

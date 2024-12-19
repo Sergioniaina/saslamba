@@ -9,6 +9,9 @@ import {
 } from "date-fns";
 import { FaTrashAlt } from "react-icons/fa"; // Icon for deletion
 import "./MachineConsumptionHistory.css"; // SCSS import
+import ModalConfirm from "../modal/ModalConfirm";
+import * as XLSX from "xlsx";
+import { FaFileExcel } from "react-icons/fa";
 
 const MachineConsumptionHistory = () => {
   const [consumptionHistory, setConsumptionHistory] = useState([]);
@@ -16,6 +19,10 @@ const MachineConsumptionHistory = () => {
   const [totals, setTotals] = useState({});
   const [totalPerMachine, setTotalPerMachine] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
+
+  const [isConfirmVisible, setIsConfirmVisible] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null); // Stores the action to confirm
+  const [confirmMessage, setConfirmMessage] = useState(""); // Stores the confirmation message
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,7 +60,6 @@ const MachineConsumptionHistory = () => {
       { hourly: 0, daily: 0, weekly: 0, monthly: 0, yearly: 0 }
     );
   };
-  
 
   const calculateTotalPerMachine = (history) => {
     const now = new Date();
@@ -81,7 +87,6 @@ const MachineConsumptionHistory = () => {
       return acc;
     }, {});
   };
-  
 
   const deleteEntry = async (id) => {
     try {
@@ -92,6 +97,15 @@ const MachineConsumptionHistory = () => {
     } catch (error) {
       console.error("Error deleting entry:", error);
     }
+  };
+  const confirmDelete = (id) => {
+    setConfirmMessage("Voulez-vous supprimer ce Consommation?");
+    setConfirmAction(() => () => deleteEntry(id));
+    setIsConfirmVisible(true);
+  };
+  const confirmActionAndClose = () => {
+    if (confirmAction) confirmAction();
+    setIsConfirmVisible(false);
   };
 
   const filteredHistory = consumptionHistory.filter((entry) => {
@@ -124,6 +138,24 @@ const MachineConsumptionHistory = () => {
       totalKilowattHours: 0,
     }
   );
+  const exportTableToExcel = () => {
+    // Clone le tableau pour ne pas modifier l'original
+    const table = document.querySelector(".table-history").cloneNode(true);
+
+    // Supprimer les colonnes "Action" du tableau cloné
+    table.querySelectorAll("th.action, td.action").forEach((el) => el.remove());
+
+    // Convertir le tableau en fichier Excel
+    const workbook = XLSX.utils.table_to_book(table, { sheet: "Consumption" });
+
+    // Télécharger le fichier Excel
+    XLSX.writeFile(workbook, "Consumption.xlsx");
+  };
+  const confirmExcel = (id) => {
+    setConfirmMessage("Voulez-vous exporter en Excel?");
+    setConfirmAction(() => () => exportTableToExcel());
+    setIsConfirmVisible(true);
+  };
   return (
     <div className="machine-consumption-history">
       {/* Search Bar */}
@@ -134,6 +166,12 @@ const MachineConsumptionHistory = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
+        <button onClick={confirmExcel} className="export-button">
+          <FaFileExcel
+            style={{ marginRight: "8px", color: "green", fontSize: "1.2em" }}
+          />
+          Exporter en Excel
+        </button>
       </div>
 
       {/* Totals Table */}
@@ -181,7 +219,7 @@ const MachineConsumptionHistory = () => {
               const totalsByMachine = totalPerMachine[entry.machineId] || {};
               return (
                 <tr key={entry._id}>
-                  <td>{machine?.modelNumber || "Inconnu"}</td>
+                  <td>N° {machine?.modelNumber || "Inconnu"}</td>
                   <td>{new Date(entry.startTime).toLocaleString()}</td>
                   <td>
                     {entry.endTime
@@ -197,7 +235,7 @@ const MachineConsumptionHistory = () => {
                   <td>
                     {entry.endTime && ( // Show the delete button only if endTime exists
                       <button
-                        onClick={() => deleteEntry(entry._id)}
+                        onClick={() => confirmDelete(entry._id)}
                         className="btn"
                       >
                         <FaTrashAlt />
@@ -223,6 +261,13 @@ const MachineConsumptionHistory = () => {
           </tfoot>
         </table>
       </div>
+      {isConfirmVisible && (
+        <ModalConfirm
+          onConfirm={confirmActionAndClose}
+          onCancel={() => setIsConfirmVisible(false)}
+          message={confirmMessage}
+        />
+      )}
     </div>
   );
 };

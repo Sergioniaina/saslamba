@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./AbonnementForm.css";
+import printJS from "print-js";
 import {
   FaEdit,
   FaTrash,
@@ -44,6 +45,64 @@ function AbonnementForm() {
   const [confirmAction, setConfirmAction] = useState(null); // Stores the action to confirm
   const [confirmMessage, setConfirmMessage] = useState(""); // Stores the confirmation message
   const [prixPay, setPrixPay] = useState(null);
+  const [companyInfo, setCompanyInfo] = useState(null);
+  const PORT = process.env.REACT_APP_BACKEND_URL;
+  const [formData, setFormData] = useState({
+    customerName: "",
+    contact: "",
+    totalPrice: "",
+    reste: "",
+    nom: "",
+    prix: "",
+  });
+
+  useEffect(() => {
+    fetchCompanyInfo();
+    // eslint-disable-next-line
+  }, []);
+  const fetchCompanyInfo = async () => {
+    try {
+      const response = await axios.get(`${PORT}/api/company-info/list`);
+      setCompanyInfo(response.data[0]); // Assuming the first entry is the company info
+    } catch (error) {
+      console.error("Error loading company information:", error);
+    }
+  };
+
+  const [latestFacture, setLatestFacture] = useState(null);
+  const fetchLatestFacture = async () => {
+    try {
+      const response = await axios.get(
+        `${PORT}/api/factureAbonnement/last-ticket`
+      );
+      setLatestFacture(response.data);
+      console.log("ticket:", response.data.numeroFacture);
+    } catch (error) {
+      console.error("Erreur lors de la récupération du dernier ticket", error);
+    }
+  };
+  useEffect(() => {
+    fetchLatestFacture();
+    //   clickButton();
+    // eslint-disable-next-line
+  }, []);
+  const printContentAsPDF = () => {
+    printJS({
+      printable: "printable-area", // ID de l'élément à imprimer
+      type: "html", // Type de contenu à imprimer
+      documentTitle: "Facture", // Titre du document
+      targetStyles: ["*"], // Imprime tous les styles associés à l'élément
+    });
+  };
+  const facturesPrint = () => {
+    const printableArea = document.getElementById("printable-area");
+    if (printableArea) {
+      console.log("L'élément à imprimer est prêt.");
+      printContentAsPDF();
+    } else {
+      console.error("L'élément à imprimer n'a pas été trouvé.");
+    }
+  };
   const fetchPaymentTypes = async () => {
     try {
       const response = await axios.get("http://localhost:5000/api/payement");
@@ -77,7 +136,9 @@ function AbonnementForm() {
     );
 
     const token = localStorage.getItem("token");
-    const amountToPay = paymentAmount ? parseFloat(paymentAmount) : (abonnement?.prix || 0);
+    const amountToPay = paymentAmount
+      ? parseFloat(paymentAmount)
+      : abonnement?.prix || 0;
 
     console.log("Payload à envoyer :", {
       type:
@@ -135,9 +196,51 @@ function AbonnementForm() {
         );
       }
 
+      try {
+        // Récupérer le client localement via .find
+        const abonnementClient = abonnementClients.find(
+          (abonnementClient) => abonnementClient._id === idAbonnement
+        );
+
+        if (!abonnementClient || !abonnementClient.idClient) {
+          alert("Impossible de récupérer les informations du client.");
+          return;
+        }
+
+        // Création de la facture
+        const response = await axios.post(
+          "http://localhost:5000/api/factureAbonnement",
+          {
+            idClient: abonnementClient.idClient, // Récupéré via .find
+            idAbonnementClient: abonnementClient._id,
+            montant: abonnement.prix, // Montant total
+            montantDonnee: amountToPay, // Montant payé
+          }
+          // {
+          //   headers: {
+          //     Authorization: `Bearer ${token}`,
+          //     "Content-Type": "application/json",
+          //   },
+          // }
+        );
+
+        console.log("Facture enregistrée :", response.data);
+      } catch (error) {
+        console.error("Erreur lors de l'enregistrement de la facture :", error);
+        alert("Une erreur est survenue lors de la création de la facture.");
+        return; // Arrêter ici si la facture échoue
+      }
+
       alert("Paiement effectué avec succès");
       setShowPaymentModal(false);
       setSelectedCaisse("");
+      const printableArea = document.getElementById("printable-area");
+      if (printableArea) {
+        console.log("L'élément à imprimer est prêt.");
+        printContentAsPDF(); // Appel à l'impression
+      } else {
+        console.error("L'élément à imprimer n'a pas été trouvé.");
+      }
     } catch (error) {
       console.error("Erreur lors de l'enregistrement du paiement :", error);
 
@@ -339,7 +442,7 @@ function AbonnementForm() {
       if (abonnementId) {
         setIdAbonnement(abonnementId);
         console.log("ID d'abonnement pour paiement :", abonnementId);
-        setPaymentAmount(prixPay)
+        setPaymentAmount(abonnement.prix);
         setShowPaymentModal(true); // Ouvrir le modal de paiement
       } else {
         console.error("Aucun ID d'abonnement défini !");
@@ -353,6 +456,14 @@ function AbonnementForm() {
       setEditMode(false);
       setCurrentAbonnementClient(null);
       setShowModal(false);
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        customerName: selectedClient ? selectedClient.name : search,
+        contact: contact,
+        nom : abonnement.nom,
+        prix : abonnement.prix,
+        // Conservez les autres valeurs existantes
+      }));
     } catch (error) {
       console.error("Erreur lors de la gestion de l'abonnement :", error);
       toast.error("Une erreur est survenue.");
@@ -377,31 +488,33 @@ function AbonnementForm() {
       if (!abonnementClient || !abonnementClient._id) {
         throw new Error("Données de l'abonnement client invalides.");
       }
-  
+
       console.log("Données de abonnementClient :", abonnementClient);
-  
+
       // Récupération des informations liées
       const client = clients.find((c) => c._id === abonnementClient.idClient);
-      const abonnement = abonnements.find((a) => a._id === abonnementClient.idAbonnement);
-      
+      const abonnement = abonnements.find(
+        (a) => a._id === abonnementClient.idAbonnement
+      );
+
       if (!client) {
         throw new Error("Client introuvable.");
       }
-  
+
       if (!abonnement) {
         throw new Error("Abonnement introuvable.");
       }
-  
+
       console.log("Abonnement trouvé :", abonnement);
       console.log("Client trouvé :", client);
-  
+
       // Définir le prix et l'ID d'abonnement pour le paiement
 
       // Calcul des nouvelles valeurs
-      const updatedSechageReste = (abonnement.sechage || 0);
-      const updatedLavageReste = (abonnement.machines || 0);
-      const updatedPoids = (abonnement.poids || 0);
-  
+      const updatedSechageReste = abonnement.sechage || 0;
+      const updatedLavageReste = abonnement.machines || 0;
+      const updatedPoids = abonnement.poids || 0;
+
       // Mise à jour de l'abonnement client via API
       await axios.put(
         `http://localhost:5000/api/abonnementClient/reabonnement/${abonnementClient._id}`,
@@ -413,23 +526,33 @@ function AbonnementForm() {
           weight: updatedPoids,
         }
       );
-  
+
       console.log("Réabonnement mis à jour avec succès !");
-  
+
       // Recharger la liste des abonnements clients
       fetchAbonnementClients();
 
       setPaymentAmount(abonnement.prix);
       // Ouvrir la modal de paiement
       handlePay(abonnementClient);
-  
+
       toast.success("Réabonnement mis à jour avec succès !");
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        customerName: client.name,
+        contact: client.contact,
+        nom : abonnement.nom,
+        prix : abonnement.prix,
+        // Conservez les autres valeurs existantes
+      }));
     } catch (error) {
       console.error("Erreur lors du réabonnement :", error);
-      toast.error("Une erreur s'est produite lors de la mise à jour du réabonnement.");
+      toast.error(
+        "Une erreur s'est produite lors de la mise à jour du réabonnement."
+      );
     }
   };
-  
+
   useEffect(() => {
     console.log("PrixPay mis à jour à :", prixPay);
   }, [prixPay]); // Cette fonction sera appelée à chaque mise à jour de `prixPay`
@@ -477,13 +600,21 @@ function AbonnementForm() {
     setLavageReste(abonnementClient.abonnementDetails?.lavage.reste || null);
     setWeight(abonnementClient.abonnementDetails?.weight || null);
     setPrixPay(abonnement.prix);
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      customerName: client.name,
+      contact: client.contact,
+      nom : abonnement.nom,
+      prix : abonnement.prix,
+      // Conservez les autres valeurs existantes
+    }));
   };
   const handlePay = (abonnementClient) => {
     const abonnement = abonnements.find(
       (a) => a._id === abonnementClient.idAbonnement
     );
     setSelectedAbonnement(abonnementClient.idAbonnement);
-   // setCurrentAbonnementClient(abonnementClient);
+    // setCurrentAbonnementClient(abonnementClient);
     setIdAbonnement(abonnementClient._id);
     setPrixPay(abonnement.prix);
     setShowPaymentModal(true);
@@ -498,6 +629,12 @@ function AbonnementForm() {
     setSechageReste(abonnement.sechage || "");
     setLavageReste(abonnement.machines || "");
     setWeight(abonnement.poids || "");
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      nom: abonnement.nom,
+      prix: abonnement.prix,
+      // Conservez les autres valeurs existantes
+    }));
   };
 
   const handleCancel = () => {
@@ -553,6 +690,7 @@ function AbonnementForm() {
           placeholder="Rechercher par nom de client"
           className="search-input"
         />
+        <button onClick={facturesPrint}>Print-test</button>
       </div>
       <div className="client">
         {showModal && (
@@ -635,6 +773,12 @@ function AbonnementForm() {
                           onClick={() => {
                             setSearch(client.name); // Remplir l'input avec le nom sélectionné
                             setShowClientList(false); // Masquer la liste après sélection
+                            setFormData((prevFormData) => ({
+                              ...prevFormData,
+                              customerName: client.name,
+                              contact: client.contact,
+                              // Conservez les autres valeurs existantes
+                            }));
                           }}
                           style={{ cursor: "pointer" }}
                         >
@@ -919,6 +1063,78 @@ function AbonnementForm() {
         />
       )}
       <ToastContainer />
+      <div className="facturePrint" id="printable-area">
+        <div className="information">
+          {companyInfo && (
+            <div className="company-info-facture">
+              <div className="company-photo-facture">
+                {/* Affiche la photo de l'entreprise */}
+                <img
+                  src={`http://localhost:5000/${companyInfo.photo}`}
+                  alt="Logo de l'entreprise"
+                  style={{
+                    borderRadius: "10px",
+                    width: "50px",
+                    height: "50px",
+                    backgroundRepeat: "no-repeat",
+                  }}
+                />
+              </div>
+              <div className="company-details">
+                <div className="info">
+                  <span style={{ margin: 0 }}>{companyInfo.name}</span>
+
+                  <span>
+                    <p style={{ margin: 0 }}>{companyInfo.phone}</p>
+                  </span>
+                  <span>
+                    <span style={{ margin: 0 }}>{companyInfo.address}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+          <div
+            className="client-info"
+            style={{ display: "flex", flexDirection: "column" }}
+          >
+            {latestFacture ? (
+              <h2>Ticket N° {latestFacture.numeroFacture + 1 || 1}</h2>
+            ) : (
+              <p>Aucune facture trouvée</p> // Message si aucune facture n'est trouvée
+            )}
+            <p>Date : {new Date(Date.now()).toISOString().split("T")[0]}</p>
+            <span>Doit à : {formData.customerName}</span>
+
+            <p>Tèl : {formData.contact}</p>
+
+            {/* {formData.etat ==="en attente" && formData.etat ==="annulée" (
+              <p>etat : {formData.etat}</p>
+            )} */}
+          </div>
+        </div>
+        <p>Type de Service : abonnement</p>
+        <div className="dd">
+          <table>
+            <thead>
+              <tr>
+                <th>Qté</th>
+                <th>Designation</th>
+                <th>Pu</th>
+                <th>Montant</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>{formData.nom}</td>
+                <td>{formData.prix} Ar</td>
+                <td>{formData.prix} Ar</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

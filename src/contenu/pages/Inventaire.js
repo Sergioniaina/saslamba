@@ -10,6 +10,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import "./ProductInventory.css";
 import ModalConfirm from "../modal/ModalConfirm";
+import * as XLSX from "xlsx";
+import { FaFileExcel } from "react-icons/fa";
 
 const API_URL = "http://localhost:5000/api/products";
 const HISTORIQUE_URL = "http://localhost:5000/api/historique";
@@ -42,7 +44,7 @@ const ProductInventory = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get(API_URL,{
+      const response = await axios.get(API_URL, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -59,7 +61,7 @@ const ProductInventory = () => {
         (h) => h.action.toLowerCase() === "inventaire"
       );
       setHistorique(inventaireHistorique);
-  
+
       // Extract unique user IDs from the historique data
       const userIds = [
         ...new Set(inventaireHistorique.map((h) => h.user).filter(Boolean)),
@@ -69,8 +71,7 @@ const ProductInventory = () => {
       console.error("Erreur lors du chargement de l'historique", error);
     }
   };
-  
-  
+
   const fetchUsers = async (userIds) => {
     try {
       const response = await axios.get(USER_URL, {
@@ -140,7 +141,7 @@ const ProductInventory = () => {
         updates.map((update) =>
           axios.put(
             `${API_URL}/${update._id}`,
-            { stock: update.stock },
+            { stock: update.stock, source: "Inventaire" },
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -207,7 +208,7 @@ const ProductInventory = () => {
   });
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
-  
+
     if (user) {
       // Récupérer les privilèges de l'utilisateur via l'API
       axios
@@ -217,7 +218,7 @@ const ProductInventory = () => {
           },
         })
         .then((response) => {
-         // console.log("Réponse de l'API :", response.data);
+          // console.log("Réponse de l'API :", response.data);
           // Cherchez les privilèges pour le role et subRole de l'utilisateur
           const userRole = user.role;
           const userSubrole = user.subRole;
@@ -228,7 +229,7 @@ const ProductInventory = () => {
           )?.permissions;
 
           if (privileges) {
-          //console.log("Privilèges de l'utilisateur :", privileges);
+            //console.log("Privilèges de l'utilisateur :", privileges);
             setUserPrivileges(privileges);
           } else {
             console.log("Aucun privilège trouvé pour ce rôle et sous-rôle");
@@ -243,6 +244,24 @@ const ProductInventory = () => {
         });
     }
   }, []);
+  const exportTableToExcel = () => {
+    // Clone le tableau pour ne pas modifier l'original
+    const table = document.querySelector(".inventory-table").cloneNode(true);
+
+    // Supprimer les colonnes "Action" du tableau cloné
+    table.querySelectorAll("th.action, td.action").forEach((el) => el.remove());
+
+    // Convertir le tableau en fichier Excel
+    const workbook = XLSX.utils.table_to_book(table, { sheet: "Inventaire" });
+
+    // Télécharger le fichier Excel
+    XLSX.writeFile(workbook, "inventaire.xlsx");
+  };
+  const confirmExcel = (id) => {
+    setConfirmMessage("Voulez-vous exporter en Excel?");
+    setConfirmAction(() => () => exportTableToExcel());
+    setIsConfirmVisible(true);
+  };
 
   return (
     <div className="inventaire">
@@ -262,7 +281,14 @@ const ProductInventory = () => {
           />
           <FontAwesomeIcon icon={faSearch} className="search-icon" />
         </div>
+        <button onClick={confirmExcel} className="export-button">
+          <FaFileExcel
+            style={{ marginRight: "8px", color: "green", fontSize: "1.2em" }}
+          />
+          Exporter en Excel
+        </button>
       </div>
+
       <table className="inventory-table">
         <thead>
           <tr>
@@ -273,7 +299,9 @@ const ProductInventory = () => {
             <th>Quantité en Stock</th>
             <th>Stock après Inventaire</th>
             <th>Utilisateur</th>
-            {userPrivileges?.produits?.includes("delete") &&  <th className="action">Action</th>}
+            {userPrivileges?.produits?.includes("delete") && (
+              <th className="action">Action</th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -292,22 +320,23 @@ const ProductInventory = () => {
             const stockAfterInventory = parseInt(stock) + parseInt(ecart);
             return (
               <tr key={item._id}>
-                <td>{new Date(item.date).toLocaleDateString()}</td>
+                <td>{new Date(item.date).toLocaleString()}</td>
                 <td>{produit ? produit.name : "Nom non trouvé"}</td>
                 <td>{quantityReal}</td>
                 <td>{ecart}</td>
                 <td>{stock}</td>
                 <td>{stockAfterInventory}</td>
                 <td>{user}</td>
-                {userPrivileges?.produits?.includes("delete") && 
-                <td className="action">
-                  <button
-                    onClick={() => confirmDelete(item._id)}
-                    className="delete-button"
-                  >
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
-                </td>}
+                {userPrivileges?.produits?.includes("delete") && (
+                  <td className="action">
+                    <button
+                      onClick={() => confirmDelete(item._id)}
+                      className="delete-button"
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  </td>
+                )}
               </tr>
             );
           })}
@@ -414,7 +443,7 @@ const ProductInventory = () => {
           </div>
         </div>
       )}
-       {isConfirmVisible && (
+      {isConfirmVisible && (
         <ModalConfirm
           onConfirm={confirmActionAndClose}
           onCancel={() => setIsConfirmVisible(false)}

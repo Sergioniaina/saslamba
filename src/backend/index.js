@@ -27,6 +27,7 @@ const logoRoutes = require('./routes/companyInfo');
 const privilege = require('./routes/privilegeRoute');
 const historiqueCaisse = require('./routes/HistoriqueCaisse');
 const historiqueProduct = require('./routes/productHistory');
+const factureAbonnement = require('./routes/factureAbonnement');
 const path = require('path');
 const app = express();
 app.use(cors());
@@ -53,6 +54,7 @@ app.use('/api/articles', articleRoutes);
 app.use('/api/historiques', historiqueCaisse);
 app.use('/api/privileges', privilege);
 app.use('/api/product-history', historiqueProduct);
+app.use('/api/factureAbonnement', factureAbonnement);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

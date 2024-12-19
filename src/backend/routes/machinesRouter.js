@@ -375,6 +375,43 @@ router.get("/consumption", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+// PUT to update an existing consumption entry
+router.put("/consumption/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { machineId, startTime, endTime, kilowattHours } = req.body;
+
+    const updatedConsumption = await Compteur.findByIdAndUpdate(
+      id,
+      { machineId, startTime, endTime, kilowattHours },
+      { new: true }
+    );
+
+    if (!updatedConsumption) {
+      return res.status(404).json({ message: "Consumption entry not found" });
+    }
+
+    res.json(updatedConsumption);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+// DELETE to remove a consumption entry
+// router.delete("/consumption/:id", async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const deletedConsumption = await Compteur.findByIdAndDelete(id);
+
+//     if (!deletedConsumption) {
+//       return res.status(404).json({ message: "Consumption entry not found" });
+//     }
+
+//     res.status(200).json({ message: "Consumption entry deleted successfully" });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
+
 
 // Delete a machine
 router.delete("/:id", async (req, res) => {

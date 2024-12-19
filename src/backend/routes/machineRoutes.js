@@ -128,7 +128,7 @@ router.post("/",authMiddleware,checkPermission('produits', 'add'), upload.single
 // Update a product
 router.put("/:id", authMiddleware, checkPermission('produits', 'edit'), upload.single("photo"), async (req, res) => {
   const { id } = req.params;
-  const { name, price, description, stock, date, } = req.body;
+  const { name, price, description, stock, date,source } = req.body;
   const photo = req.file ? req.file.path : null;
   const userId = req.user._id;
 
@@ -167,6 +167,7 @@ router.put("/:id", authMiddleware, checkPermission('produits', 'edit'), upload.s
       remainingStock: stockApres,
       totalSpent: stockEntrer < 0 ? Math.abs(stockEntrer) * currentProduct.price : undefined, // Calcul du total dépensé si stock déduit
       type: stockEntrer >= 0 ? "addition" : "deduction", // Définir si c'est une addition ou une déduction
+      source : source,
     });
     await productHistory.save();
 
@@ -243,6 +244,16 @@ router.post("/update-stock", authMiddleware, async (req, res) => {
         // Mise à jour du stock du produit
         product.stock = stockApres;
         await product.save();
+        const productHistory = new ProductHistory({
+          product: product._id,
+          date: new Date(),
+          stockChange: stockEntrer,
+          remainingStock: stockApres,
+          totalSpent: stockEntrer < 0 ? Math.abs(stockEntrer) * product.price : undefined, // Calcul du total dépensé si stock déduit
+          type: stockEntrer >= 0 ? "addition" : "deduction", // "addition" ou "deduction"
+          source : "Entrer en stock"
+        });
+        await productHistory.save();
 
         // Enregistrement de l'historique
         const currentUser = await User.findById(userId);

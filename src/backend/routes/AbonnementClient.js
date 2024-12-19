@@ -223,7 +223,7 @@ router.put('/abonnement/:id', async (req, res) => {
   const { abonnementDetails } = req.body;
   const { total, used, weeklyLimit } = abonnementDetails.sechage;
   const { totalLavage, usedLavage, weeklyLimitLavage } = abonnementDetails.lavage;
-
+  
 
   try {
     const abonnement = await AbonnementClient.findById(req.params.id);

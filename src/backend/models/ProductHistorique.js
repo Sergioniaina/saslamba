@@ -27,6 +27,11 @@ const productHistorySchema = new mongoose.Schema({
     enum: ['deduction', 'addition'], // Type d'opération : 'deduction' ou 'addition'
     required: true,
   },
+  source:{
+    type: String,
+    required: true,
+  },
+  deleted: { type: Boolean, default: false } // Ajout de l'attribut deleted
 });
 
 const ProductHistory = mongoose.model('ProductHistory', productHistorySchema);

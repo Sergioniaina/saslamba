@@ -119,6 +119,7 @@
   table {
     width: 100%;
     border-collapse: collapse;
+    background: rgba(0, 0, 0, 0.5);
     th,
     td {
       padding: 0.8rem;

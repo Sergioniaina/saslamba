@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../css/produitH.css"; // Importation des styles SCSS
+import ModalConfirm from "../modal/ModalConfirm";
+import { FaTrashAlt } from "react-icons/fa";
 
 const ProductHistory = () => {
   const [productHistory, setProductHistory] = useState([]);
@@ -12,6 +14,10 @@ const ProductHistory = () => {
   const [totals, setTotals] = useState({ stockRemaining: 0, stockChange: 0 });
   const [timeFilter, setTimeFilter] = useState("all"); // Options: jour/semaine/mois/année
   const [selectedType, setSelectedType] = useState(""); // Filtrage par type
+
+  const [isConfirmVisible, setIsConfirmVisible] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null); // Stores the action to confirm
+  const [confirmMessage, setConfirmMessage] = useState(""); // Stores the confirmation message
 
   useEffect(() => {
     const fetchProductHistory = async () => {
@@ -27,6 +33,46 @@ const ProductHistory = () => {
     };
     fetchProductHistory();
   }, []);
+  const fetchProductHistory = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:5000/api/product-history"
+      );
+      setProductHistory(response.data);
+      setFilteredData(response.data);
+    } catch (error) {
+      console.error("Erreur lors du chargement des données : ", error);
+    }
+  };
+
+  // const handleSoftDelete = async (id) => {
+  //   try {
+  //     await axios.put(`http://localhost:5000/api/product-history/delete-flag/${id}`, {
+  //       deleted: true,
+  //     });
+  //     fetchProductHistory();
+  //   } catch (error) {
+  //     console.error("Erreur lors du soft delete : ", error);
+  //   }
+  // };
+
+  const handleHardDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/product-history/${id}`);
+      fetchProductHistory();
+    } catch (error) {
+      console.error("Erreur lors du hard delete : ", error);
+    }
+  };
+  const confirmDelete = (id) => {
+    setConfirmMessage("Voulez-vous supprimer ce Historique?");
+    setConfirmAction(() => () => handleHardDelete(id));
+    setIsConfirmVisible(true);
+  };
+  const confirmActionAndClose = () => {
+    if (confirmAction) confirmAction();
+    setIsConfirmVisible(false);
+  };
 
   const handleSearch = (e) => {
     const term = e.target.value.toLowerCase();
@@ -161,13 +207,13 @@ const ProductHistory = () => {
           onClick={() => handleViewChange("global")}
           className={viewMode === "global" ? "active" : ""}
         >
-          Historique Global
+          Historique Par produits
         </button>
         <button
           onClick={() => handleViewChange("tous")}
           className={viewMode === "tous" ? "active" : ""}
         >
-          Historique Tous Produits
+          Historique Global
         </button>
       </div>
 
@@ -228,7 +274,9 @@ const ProductHistory = () => {
               <th>Modification de Stock</th>
               <th>Stock Restant</th>
               <th>Type</th>
+              <th>Source</th>
               <th>Date</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -238,19 +286,32 @@ const ProductHistory = () => {
                   <td>{item.product.name}</td>
                   <td
                     style={{
-                      color: item.stockChange < 0 ? "red" : "white",
+                      color: item.stockChange < 0 ? "rgb(223, 102, 50)" : "rgb(0, 255, 179)",
                     }}
                   >
                     {item.stockChange}
                   </td>
                   <td>{item.remainingStock}</td>
                   <td>{item.type === "addition" ? "Ajout" : "Déduction"}</td>
-                  <td>{new Date(item.date).toLocaleDateString()}</td>
+                  <td>{item.source}</td>
+                  <td>{new Date(item.date).toLocaleString()}</td>
+                  <td>
+                    <button
+                      onClick={() => confirmDelete(item._id)}
+                      style={{
+                        backgroundColor: "red",
+                        color: "white",
+                        border: "none",
+                      }}
+                    >
+                      <FaTrashAlt />
+                    </button>
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="5" className="no-data">
+                <td colSpan="7" className="no-data">
                   Aucun historique trouvé.
                 </td>
               </tr>
@@ -259,21 +320,34 @@ const ProductHistory = () => {
           {viewMode === "tous" && (
             <tfoot>
               <tr>
-                <td colSpan="2">
+                <td style={{textAlign:"left",letterSpacing:"1px"}} colSpan="2">
                   <strong>Total Stock Restant:</strong>
                 </td>
-                <td  colSpan="3" className="totals">{totals.stockRemaining}</td>
+                <td className="totals">
+                  {totals.stockRemaining}
+                </td>
+                <td colSpan="4"></td>
               </tr>
               <tr>
-                <td colSpan="2">
-                  <strong>Total Modifications de Stock:</strong>
+                <td style={{textAlign:"left",letterSpacing:"1px"}} colSpan="1">
+                  <strong>Total Mouvements de Stock:</strong>
                 </td>
-                <td  colSpan="3" className="totals">{totals.stockChange}</td>
+                <td  className="totals">
+                  {totals.stockChange}
+                </td>
+                <td colSpan={5}></td>
               </tr>
             </tfoot>
           )}
         </table>
       </div>
+      {isConfirmVisible && (
+        <ModalConfirm
+          onConfirm={confirmActionAndClose}
+          onCancel={() => setIsConfirmVisible(false)}
+          message={confirmMessage}
+        />
+      )}
     </div>
   );
 };

@@ -1737,6 +1737,7 @@ const FactureForm = () => {
         const updatedProduct = {
           ...selectedProduct,
           stock: selectedProduct.stock + stockToAdd,
+          source : "Entrer en stock",
         };
         await axios.put(
           `${PORT}/api/products/${selectedProduct._id}`,

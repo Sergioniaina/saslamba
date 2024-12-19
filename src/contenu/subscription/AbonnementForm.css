@@ -1,6 +1,7 @@
 .abonnement-form {
   background: rgba(0, 0, 0, 0.5);
-  height: 86vh;
+  width: auto;
+  height: auto;
   display: flex;
   flex-direction: column;
   padding: 10px;
@@ -145,9 +146,10 @@
     }
   }
   .abonnement-tables {
-    height: 80vh;
+    height: 78vh;
     margin-top: 20px;
     overflow: auto;
+    margin-bottom: 25px;
   }
   .abonnement-add {
     display: flex;
@@ -162,7 +164,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.8);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -174,6 +176,8 @@
   .modal-content {
     background: rgb(29, 27, 27);
     padding: 20px;
+    padding-bottom: 60px;
+    padding-top: 40px;
     border-radius: 8px;
     max-width: 60%;
     position: relative;
@@ -356,5 +360,141 @@
         }
       }
     }
+  }
+  .facturePrint {
+    /* margin-top: 20px; */
+    display: flex;
+    text-align: center;
+    flex-direction: column;
+    justify-content: center;
+    color: black;
+    box-sizing: border-box;
+    border: 2px solid red;
+    margin-left: -6px;
+    width: 320px;
+    height: auto;
+    .name-entrprise {
+      font-weight: 600;
+    }
+
+    /* tfoot {
+      background-color: #06272c;
+
+      td {
+        height: 30px;
+      }
+
+      strong {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        letter-spacing: 1px;
+        height: 30px;
+
+        .reste {
+          height: 100%;
+          color: rgb(25, 200, 219);
+          display: flex;
+          align-items: center;
+          padding-right: 10px;
+          gap: 20px;
+        }
+
+      }
+
+      td {
+        text-align: center;
+      }
+    } */
+
+    .information {
+      display: flex;
+      box-sizing: border-box;
+      justify-content: space-between;
+
+      .company-info-facture {
+        width: 50%;
+
+        .company-details {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          span {
+            white-space: nowrap;
+          }
+
+          .info {
+            text-align: left;
+          }
+
+        }
+
+        .company-photo-facture {
+          width: 100%;
+        }
+      }
+
+      .client-info {
+        /* border: 2px solid blue; */
+        text-align: left;
+        width: 50%;
+        font-size: 10px;
+        display: flex;
+        justify-content: space-between;
+      }
+    }
+
+    th:nth-child(1),
+    td:nth-child(1) {
+      text-align: left;
+    }
+
+    th:nth-child(4),
+    td:nth-child(4) {
+      text-align: right;
+    }
+
+    td:nth-child(2) {
+      text-align: left;
+    }
+    .dd{
+      margin-top: 10px;
+      background-color: red;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    th,
+    td {
+      border: 1px solid gray;
+      box-sizing: border-box;
+    }
+
+    td {
+      font-size: x-small;
+    }
+
+    /* .logo {
+      width: 100%;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      margin-top: 20px;
+      .logo {
+        border: 3px solid black;
+        width: 100%;
+        height: 100%;
+      }
+    } */
   }
 }
