@@ -19,7 +19,7 @@ import {
 import { FaSave, FaSearch, FaTimes } from "react-icons/fa";
 import ModalConfirm from "../modal/ModalConfirm";
 import Facture from "./Facture";
-const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent }) => {
+const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }) => {
   const [factures, setFactures] = useState([]);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -294,6 +294,8 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent }) => {
   const handlePay = (facture) => {
     setSelectedFacture(facture);
     setShowPaymentModal(true);
+    //onEdit(facture);
+    // handlePays(facture);
   };
   const handlePaymentTypeChange = (e) => {
     const value = e.target.value;
@@ -301,6 +303,12 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent }) => {
     if (value !== "autre") {
       setNewPaymentType("");
     }
+  };
+
+  const confirmPayer = () => {
+    setConfirmMessage("Voulez-vous faire ce Payement?");
+    setConfirmAction(() => async () =>{await handlePaymentSubmit()});
+    setIsConfirmVisible(true);
   };
 
   const handlePaymentSubmit = async () => {
@@ -385,6 +393,11 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent }) => {
             : facture
         )
       );
+      handlePays({
+        ...selectedFacture,
+        reste: newReste,
+        estPaye: newReste === 0,
+      });
     } catch (error) {
       console.error("Erreur lors de l'enregistrement du paiement:", error);
       setError("Une erreur est survenue lors de l'enregistrement du paiement.");
@@ -732,7 +745,7 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent }) => {
               <button
                 className="save"
                 type="button"
-                onClick={handlePaymentSubmit}
+                onClick={confirmPayer}
               >
                 {" "}
                 <FaSave />

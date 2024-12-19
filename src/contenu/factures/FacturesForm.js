@@ -1279,6 +1279,117 @@ const FactureForm = () => {
   //   setQuantities(productQuantitiesObj);
   //   facturesPrint();
   // };
+  const handlePays = (facture) => {
+    if (!facture || typeof facture !== "object") {
+      setError("Facture non disponible ou mal formatée pour l'édition.");
+      return;
+    }
+
+    // Initialisation des options de sélection
+    const machineOptions = facture.machines.reduce((acc, machineId) => {
+      const articleOptions = article.flatMap((article) =>
+        article.prices
+          .filter(
+            (price) =>
+              (isWeekend && price.priceType === "weekend") ||
+              (!isWeekend && price.priceType === "normale")
+          )
+          .map((price) => ({
+            label: `${article.type} - ${price.priceType}: $${price.value}`,
+            value: `${article._id}-${article.type}-${price.priceType}-${price.value}`,
+          }))
+      );
+
+      // Associer les options d'article à la machine
+      acc[machineId] = articleOptions;
+      return acc;
+    }, {});
+
+    setFacture(facture);
+    const test = facture.totalPrice - facture.reste;
+    // Mettre à jour le formulaire et la sélection
+    setFormData({
+      customerName: facture.customerName || "",
+      contact: facture.contact || "",
+      totalWeight: facture.totalWeight || 0,
+      totalPrice: facture.totalPrice,
+      reste: facture.reste,
+      serviceType: facture.serviceType || "",
+      articles: facture.articles || [],
+      articleDetails: facture.articleDetails || [],
+      ticketNumber: facture.ticketNumber,
+    });
+    setManualInput(test);
+    setReste(facture.reste);
+    const { changeToGive } = calculateAmounts(facture.totalPrice, test);
+    setChangeGive(changeToGive);
+
+    // Trouver l'option correspondante à l'édition
+    const selectedOptions = {};
+
+    // Pour chaque machine, trouvez l'option correspondante à l'édition
+    facture.machines.forEach((machineId) => {
+      const machineArticleDetails = facture.articleDetails.filter(
+        (detail) => detail.machineId === machineId
+      );
+
+      const selectedOption =
+        machineArticleDetails.length > 0
+          ? machineOptions[machineId].find((option) =>
+              machineArticleDetails.some(
+                (detail) =>
+                  `${detail.articleId}-${detail.type}-${detail.prices[0]?.priceType}-${detail.prices[0]?.value}` ===
+                  option.value
+              )
+            )?.value || ""
+          : "";
+
+      selectedOptions[machineId] = selectedOption; // Associer l'option sélectionnée à la machine
+    });
+
+    setSelectedOptions(selectedOptions);
+    setSelectedMachines(facture.machines || []);
+    setSelectedProducts(facture.products || []);
+
+    const machineWeightsObj = facture.machineWeights.reduce((acc, item) => {
+      if (item.machineId) {
+        acc[item.machineId] = item.weight || 0;
+      }
+      return acc;
+    }, {});
+    setMachineWeights(machineWeightsObj);
+
+    const productQuantitiesObj = facture.quantities.reduce((acc, item) => {
+      if (item.productId) {
+        acc[item.productId] = item.quantity || 0;
+      }
+      return acc;
+    }, {});
+    setQuantities(productQuantitiesObj);
+    setIsEditMode(true);
+    setTimeout(() => {
+      const printableArea = document.getElementById("printable-area");
+      if (printableArea) {
+        console.log("L'élément à imprimer est prêt.");
+        printContentAsPDF();
+      } else {
+        console.error("L'élément à imprimer n'a pas été trouvé.");
+      }
+    }, 500); // Attendre 500ms (ajustez selon vos besoins)
+  };
+  // useEffect(() => {
+  //   // Vérifiez que la facture et toutes les données nécessaires sont prêtes
+  //   if (facture && isEditMode) {
+  //     const printableArea = document.getElementById("printable-area");
+  //     if (printableArea) {
+  //       console.log("L'élément à imprimer est prêt.");
+  //       printContentAsPDF();
+  //     } else {
+  //       console.error("L'élément à imprimer n'a pas été trouvé.");
+  //     }
+  //   }
+  // }, [facture, isEditMode]); // S'assurer que la facture et l'édition sont prêtes
+  
   const handleEdit = (facture) => {
     if (!facture || typeof facture !== "object") {
       setError("Facture non disponible ou mal formatée pour l'édition.");
@@ -2017,6 +2128,7 @@ const FactureForm = () => {
                 <FactureList
                   className="factures"
                   onEdit={handleEdit}
+                  handlePays={handlePays}
                   etatFilter={["encaisser", "annulée"]}
                   setCurrentView={setCurrentView}
                   setCurrent={setCurrent}
@@ -2028,6 +2140,7 @@ const FactureForm = () => {
                 <FactureList
                   className="factures"
                   onEdit={handleEdit}
+                  handlePays={handlePays}
                   // onViewDetails={handleDetails}
                   etatFilter="en attente" // Filtrer les factures "en attente"
                   setCurrentView={setCurrentView}
