@@ -44,7 +44,15 @@ const SignIn = ({ onLogin }) => {
       } else {
         localStorage.setItem("userPhoto", "");
       }
+      const caisseResponse = await axios.post(
+        "http://localhost:5000/api/caisses/open-all-closed",
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` }, // Ajout du token dans l'en-tête
+        }
+      );
 
+      console.log(caisseResponse.data.message); // Log de confirmation
       onLogin(token);
     } catch (err) {
       setError("Invalid credentials");

@@ -296,6 +296,41 @@ router.post("/:id/open", async (req, res) => {
       .json({ message: "Erreur lors de l'ouverture de la caisse", error });
   }
 });
+// Route pour ouvrir toutes les caisses fermées
+router.post("/open-all-closed", async (req, res) => {
+  try {
+    // Récupérer toutes les caisses fermées
+    const caissesFermees = await Caisse.find({ ouvert: false });
+
+    // Si aucune caisse fermée, renvoyer un message
+    if (caissesFermees.length === 0) {
+      return res.status(200).json({ message: "Toutes les caisses sont déjà ouvertes." });
+    }
+
+    // Parcourir et ouvrir chaque caisse fermée
+    for (const caisse of caissesFermees) {
+      caisse.ouvert = true;
+      caisse.dateOuverture = new Date(); // Mettre à jour la date d'ouverture
+      caisse.dateFermeture = null; // Réinitialiser la date de fermeture
+      caisse.historique.push({
+        action: "Ouverture de la caisse",
+        date: caisse.dateOuverture,
+      });
+
+      await caisse.save(); // Sauvegarder chaque caisse mise à jour
+    }
+
+    res.status(200).json({
+      message: `${caissesFermees.length} caisse(s) ont été ouvertes avec succès.`,
+      caissesOuvertes: caissesFermees,
+    });
+  } catch (error) {
+    console.error("Erreur lors de l'ouverture de toutes les caisses fermées:", error);
+    res
+      .status(500)
+      .json({ message: "Erreur lors de l'ouverture des caisses fermées", error });
+  }
+});
 
 // Route pour récupérer les caisses fermées
 router.get("/closed", async (req, res) => {

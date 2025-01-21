@@ -11,6 +11,7 @@ import {
   faInfoCircle,
   faCalendarAlt,
 } from "@fortawesome/free-solid-svg-icons";
+import ModalConfirm from "../modal/ModalConfirm";
 
 function Abonnement() {
   const [abonnements, setAbonnements] = useState([]);
@@ -21,6 +22,9 @@ function Abonnement() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
+  const [isConfirmVisible, setIsConfirmVisible] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null); // Stores the action to confirm
+  const [confirmMessage, setConfirmMessage] = useState(""); // Stores the confirmation message
   // Charger les abonnements
   useEffect(() => {
     axios
@@ -50,6 +54,16 @@ function Abonnement() {
         console.error("Erreur lors du chargement des abonnements:", error)
       );
   }, []);
+ 
+  const fetchAbonnements = () => {
+    axios
+      .get("http://localhost:5000/api/abonnements")
+      .then((response) => setAbonnements(response.data))
+      .catch((error) =>
+        console.error("Erreur lors du chargement des abonnements:", error)
+      );
+  };
+  
 
   // Ouvrir le modal pour ajouter un nouvel abonnement
   const ouvrirModalAjout = () => {
@@ -67,12 +81,20 @@ function Abonnement() {
   const supprimerAbonnement = (id) => {
     axios
       .delete(`http://localhost:5000/api/abonnements/${id}`)
-      .then(() =>
-        setAbonnements(
-          abonnements.filter((abonnement) => abonnement._id !== id)
-        )
-      )
+      .then(() => {
+        alert("Abonnement supprimé avec succès.");
+        fetchAbonnements(); // Recharger la liste après suppression
+      })
       .catch((error) => console.error("Erreur lors de la suppression:", error));
+  };
+  const confirmDelete = (id) => {
+    setConfirmMessage("Voulez-vous supprimer cet Abonnement?");
+    setConfirmAction(() => () => supprimerAbonnement(id));
+    setIsConfirmVisible(true);
+  };
+  const confirmActionAndClose = () => {
+    if (confirmAction) confirmAction();
+    setIsConfirmVisible(false);
   };
 
   // Afficher ou cacher les détails
@@ -182,7 +204,7 @@ function Abonnement() {
                     />
                     Modifier
                   </button>
-                  <button onClick={() => supprimerAbonnement(abonnement._id)}>
+                  <button onClick={() => confirmDelete(abonnement._id)}>
                     <FontAwesomeIcon icon={faTrash} style={{ color: "red" }} />
                     Supprimer
                   </button>
@@ -228,6 +250,14 @@ function Abonnement() {
           abonnementActuel={abonnementActuel}
           setAbonnements={setAbonnements}
           abonnements={abonnements}
+          fetchAbonnement={fetchAbonnements}
+        />
+      )}
+       {isConfirmVisible && (
+        <ModalConfirm
+          onConfirm={confirmActionAndClose}
+          onCancel={() => setIsConfirmVisible(false)}
+          message={confirmMessage}
         />
       )}
     </div>

@@ -5,6 +5,8 @@ import "./historique.css";
 import ModalConfirm from "../modal/ModalConfirm";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { FaFileExcel } from "react-icons/fa";
+import * as XLSX from "xlsx";
 
 const HistoriqueProducts = () => {
   const [historiqueData, setHistoriqueData] = useState([]);
@@ -155,7 +157,24 @@ const HistoriqueProducts = () => {
     if (confirmAction) confirmAction();
     setIsConfirmVisible(false);
   };
+  const exportTableToExcel = () => {
+    // Clone le tableau pour ne pas modifier l'original
+    const table = document.querySelector(".entrer-excel").cloneNode(true);
 
+    // Supprimer les colonnes "Action" du tableau cloné
+    table.querySelectorAll("th.action, td.action").forEach((el) => el.remove());
+
+    // Convertir le tableau en fichier Excel
+    const workbook = XLSX.utils.table_to_book(table, { sheet: "Entrer" });
+
+    // Télécharger le fichier Excel
+    XLSX.writeFile(workbook, "entrer.xlsx");
+  };
+  const confirmExcel = () => {
+    setConfirmMessage("Voulez-vous exporter en Excel?");
+    setConfirmAction(() => () => exportTableToExcel());
+    setIsConfirmVisible(true);
+  };
   return (
     <div className="historique-container">
       <div className="filter-container">
@@ -203,9 +222,15 @@ const HistoriqueProducts = () => {
           <label>Date fin</label>
           <FaCalendar className="icon" />
         </div>
+        <button onClick={confirmExcel} className="export-button">
+          <FaFileExcel
+            style={{ marginRight: "8px", color: "green", fontSize: "1.2em" }}
+          />
+          Exporter en Excel
+        </button>
       </div>
       <div className="table">
-        <table>
+        <table className="entrer-excel">
           <thead>
             <tr>
               <th>Produit</th>

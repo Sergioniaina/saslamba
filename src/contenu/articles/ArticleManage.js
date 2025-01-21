@@ -34,9 +34,9 @@ const ArticleManage = () => {
   // Handle form submission (add or edit article)
   const handleSubmit = async (formData) => {
     if (editingArticle) {
-      await axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/articles/${editingArticle._id}`, formData);
+      await axios.put(`${PORT}/api/articles/${editingArticle._id}`, formData);
     } else {
-      await axios.post(`${PORT}api/articles`, formData);
+      await axios.post(`${PORT}/api/articles`, formData);
     }
     const response = await axios.get(`${PORT}/api/articles`);
     setArticles(response.data);

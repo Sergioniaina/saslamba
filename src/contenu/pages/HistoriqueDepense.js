@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../css/historiqueDepense.css";
 import ModalConfirm from "../modal/ModalConfirm";
-import { FaTrashAlt } from "react-icons/fa";
-
+import { FaFileExcel, FaTrashAlt } from "react-icons/fa";
+import * as XLSX from "xlsx";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -14,12 +14,12 @@ const GestionCaisse = () => {
   const [motifs, setMotifs] = useState([]);
   const [selectedMotif, setSelectedMotif] = useState("");
   const [nouveauMotif, setNouveauMotif] = useState("");
-  const [typeAction, setTypeAction] = useState("Ajout");
+  const [typeAction, setTypeAction] = useState("Retrait");
   const [historiqueCaisse, setHistoriqueCaisse] = useState([]);
 
   // Champs de recherche
   const [searchMotif, setSearchMotif] = useState("");
-  const [filterType, setFilterType] = useState("");
+  const [filterType, setFilterType] = useState("Retrait");
   const [startDate, setStartDate] = useState(""); // Date de début
   const [endDate, setEndDate] = useState(""); // Date de fin
   
@@ -70,8 +70,7 @@ const GestionCaisse = () => {
   };
   
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
 
     if (!selectedCaisse || (!selectedMotif && !nouveauMotif) || solde <= 0) {
       alert("Veuillez remplir tous les champs correctement.");
@@ -96,7 +95,7 @@ const GestionCaisse = () => {
         motif: motifFinal,
       });
 
-      alert(`${typeAction} effectué avec succès.`);
+    //  alert(`${typeAction} effectué avec succès.`);
       const newHistorique = {
         caisse: selectedCaisse,
         montant: solde,
@@ -116,7 +115,30 @@ const GestionCaisse = () => {
       alert("Une erreur est survenue. Veuillez réessayer.");
     }
   };
+  const confirmSubmit = (e) => {
+    e.preventDefault();
+    setConfirmMessage("Voulez-vous faire cette Depense?");
+    setConfirmAction(() => async() =>{await handleSubmit()});
+    setIsConfirmVisible(true);
+  };
+  const exportTableToExcel = () => {
+    // Clone le tableau pour ne pas modifier l'original
+    const table = document.querySelector(".historique-depense").cloneNode(true);
 
+    // Supprimer les colonnes "Action" du tableau cloné
+    table.querySelectorAll("th.action, td.action").forEach((el) => el.remove());
+
+    // Convertir le tableau en fichier Excel
+    const workbook = XLSX.utils.table_to_book(table, { sheet: "Depense" });
+
+    // Télécharger le fichier Excel
+    XLSX.writeFile(workbook, "depense.xlsx");
+  };
+  const confirmExcel = () => {
+    setConfirmMessage("Voulez-vous exporter en Excel?");
+    setConfirmAction(() => () => exportTableToExcel());
+    setIsConfirmVisible(true);
+  };
   // Filtrer l'historique selon la recherche
   const filteredHistorique = historiqueCaisse
   .filter((entry) => {
@@ -146,7 +168,7 @@ const GestionCaisse = () => {
 
   return (
     <div className="gestion-caisse">
-      <form onSubmit={handleSubmit} className="form">
+      <form onSubmit={confirmSubmit} className="form">
         {/* Sélection de la caisse */}
         <div className="form-group">
           <select
@@ -214,8 +236,8 @@ const GestionCaisse = () => {
             value={typeAction}
             onChange={(e) => setTypeAction(e.target.value)}
           >
+              <option value="Retrait">Retrait</option>
             <option value="Ajout">Ajout</option>
-            <option value="Retrait">Retrait</option>
           </select>
           <label>Action :</label>
         </div>
@@ -243,8 +265,8 @@ const GestionCaisse = () => {
             onChange={(e) => setFilterType(e.target.value)}
           >
             <option value="">-- Filtrer par type --</option>
-            <option value="Ajout">Recette</option>
             <option value="Retrait">Dépense</option>
+            <option value="Ajout">Recette</option>
           </select>
           <label>Type</label>
         </div>
@@ -264,11 +286,17 @@ const GestionCaisse = () => {
         />
         <label>Date Fin</label>
         </div>
+        <button onClick={confirmExcel} className="export-button">
+          <FaFileExcel
+            style={{ marginRight: "8px", color: "green", fontSize: "1.2em" }}
+          />
+          Exporter en Excel
+        </button>
       </div>
 
       {/* Tableau des historiques filtrés */}
       <div className="historique-caisse">
-        <table>
+        <table className="historique-depense">
           <thead>
             <tr>
               <th>Montant</th>

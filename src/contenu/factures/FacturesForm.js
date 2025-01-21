@@ -1027,6 +1027,7 @@ const FactureForm = () => {
       if (printableArea) {
         console.log("L'élément à imprimer est prêt.");
         printContentAsPDF(); // Appel à l'impression
+       // window.location.reload(); 
       } else {
         console.error("L'élément à imprimer n'a pas été trouvé.");
       }
@@ -1104,6 +1105,18 @@ const FactureForm = () => {
 
       setPreview(false);
       handleCancel(); // Masquer la prévisualisation après la soumission
+      //window.location.reload();
+      setFormData({
+        customerName: "",
+        contact: "",
+        etat: "",
+        articles: [],
+        articleDetails: [],
+        totalWeight: "",
+        totalPrice: "",
+        reste: "",
+        serviceType: "Lavage + Séchage",
+      }); // Réinitialisation des données du formulaire
     } catch (error) {
       setError(
         `Erreur lors de l'enregistrement de la facture: ${error.message}`
@@ -1496,7 +1509,7 @@ const FactureForm = () => {
     setMachineWeights({});
     setIsEditMode(false);
     fetchLatestFacture();
-    // setManualInput();
+    setManualInput(0);
     // setReste();
   };
 
@@ -2927,9 +2940,9 @@ const FactureForm = () => {
                     <td>
                       N°{machine.modelNumber}{" "}
                       {(() => {
-                        const weight = machineWeights[machineId]
-                          ? `(${machineWeights[machineId]} kg)`
-                          : ""; // Poids toujours affiché
+                        // const weight = machineWeights[machineId]
+                        //   ? `(${machineWeights[machineId]} kg)`
+                        //   : ""; // Poids toujours affiché
 
                         // Articles uniquement pour Machine à laver
                         const articleTypes =
@@ -2948,12 +2961,13 @@ const FactureForm = () => {
 
                         // Construire la sortie selon le type
                         if (machine?.type === "Machine à laver") {
-                          return `Lavage ${weight} ${articleTypesDisplay}`;
+                          return `Lavage  ${articleTypesDisplay}`;
                         } else if (machine?.type === "Sèche-linge") {
-                          return `Séchage ${weight}`;
-                        } else {
+                          return `Séchage `;
+                        } 
+                        /*else {
                           return `${weight}`; // Poids affiché pour d'autres types de machines
-                        }
+                        }*/
                       })()}
                     </td>
 

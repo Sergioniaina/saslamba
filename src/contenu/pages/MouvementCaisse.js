@@ -3,12 +3,14 @@ import axios from "axios";
 import "./mouvementCaisse.css";
 import {
   FaCalendarDay,
+  FaFileExcel,
   FaMoneyBillWave,
   FaSearch,
   FaTrash,
 } from "react-icons/fa";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
+import * as XLSX from "xlsx";
 import {
   startOfWeek,
   endOfWeek,
@@ -18,6 +20,7 @@ import {
   endOfYear,
   isWithinInterval,
 } from "date-fns";
+import ModalConfirm from "../modal/ModalConfirm";
 
 const MouvementCaisseList = () => {
   const [mouvements, setMouvements] = useState([]);
@@ -30,6 +33,10 @@ const MouvementCaisseList = () => {
   const [mouvementsJour, setMouvementsJour] = useState([]);
   const [period, setPeriod] = useState("annee");
   const [userRole, setUserRole] = useState("user");
+  
+  const [isConfirmVisible, setIsConfirmVisible] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null); // Stores the action to confirm
+  const [confirmMessage, setConfirmMessage] = useState(""); // Stores the confirmation message
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user")); // Fetch user from local storage
     if (user) {
@@ -119,7 +126,11 @@ const MouvementCaisseList = () => {
       );
     }
   };
-
+  const confirmDelete = (id) => {
+    setConfirmMessage("Voulez-vous supprimer ce mouvement?");
+    setConfirmAction(() => () => handleDelete(id));
+    setIsConfirmVisible(true);
+  };
   const handleDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:5000/api/mouvements/${id}`);
@@ -152,6 +163,29 @@ const MouvementCaisseList = () => {
     currentView === "caisse"
       ? calculateTotals(filteredMouvements)
       : calculateTotals(mouvementsJour);
+
+  const exportTableToExcel = () => {
+    // Clone le tableau pour ne pas modifier l'original
+    const table = document.querySelector(".mouvements-table").cloneNode(true);
+
+    // Supprimer les colonnes "Action" du tableau cloné
+    table.querySelectorAll("th.action, td.action").forEach((el) => el.remove());
+
+    // Convertir le tableau en fichier Excel
+    const workbook = XLSX.utils.table_to_book(table, { sheet: "Mouvements" });
+
+    // Télécharger le fichier Excel
+    XLSX.writeFile(workbook, "mouvements.xlsx");
+  };
+  const confirmExcel = () => {
+    setConfirmMessage("Voulez-vous exporter en Excel?");
+    setConfirmAction(() => () => exportTableToExcel());
+    setIsConfirmVisible(true);
+  };
+  const confirmActionAndClose = () => {
+    if (confirmAction) confirmAction();
+    setIsConfirmVisible(false);
+  };
 
   return (
     <div className="mcaisse">
@@ -217,6 +251,12 @@ const MouvementCaisseList = () => {
             <option value="mois">Mois</option>
             <option value="annee">Année</option>
           </select>
+          <button onClick={confirmExcel} className="export-button">
+          <FaFileExcel
+            style={{ marginRight: "8px", color: "green", fontSize: "1.2em" }}
+          />
+          Exporter en Excel
+        </button>
         </div>
       )}
       <div className="mouv-table">
@@ -252,7 +292,7 @@ const MouvementCaisseList = () => {
                       <td className="action td">
                         <FaTrash
                           className="icon-delete"
-                          onClick={() => handleDelete(mouvement._id)}
+                          onClick={() => confirmDelete(mouvement._id)}
                         />
                       </td>
                     )}
@@ -280,6 +320,13 @@ const MouvementCaisseList = () => {
           </tfoot>
         </table>
       </div>
+      {isConfirmVisible && (
+        <ModalConfirm
+          onConfirm={confirmActionAndClose}
+          onCancel={() => setIsConfirmVisible(false)}
+          message={confirmMessage}
+        />
+      )}
     </div>
   );
 };

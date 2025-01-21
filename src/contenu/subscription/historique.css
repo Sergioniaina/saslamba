@@ -26,7 +26,7 @@
     box-sizing: border-box;
     
     .input,.date{
-      width: 22%;
+      width: 17%;
       box-sizing: border-box;
       display: flex;
       align-items: center;

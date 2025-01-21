@@ -13,6 +13,7 @@ function ModalAbonnement({
   abonnementActuel,
   setAbonnements,
   abonnements,
+  fetchAbonnement,
 }) {
   const [formData, setFormData] = useState({
     nom: abonnementActuel ? abonnementActuel.nom : "",
@@ -60,6 +61,7 @@ function ModalAbonnement({
           );
           setAbonnements(updatedAbonnements);
           setModalOpen(false);
+          fetchAbonnement();
         })
         .catch((error) =>
           console.error("Erreur lors de la modification:", error)
@@ -71,6 +73,7 @@ function ModalAbonnement({
         .then((response) => {
           setAbonnements([...abonnements, response.data]);
           setModalOpen(false);
+          fetchAbonnement();
         })
         .catch((error) => console.error("Erreur lors de la création:", error));
       setModalOpen(false);

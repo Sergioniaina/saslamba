@@ -5,6 +5,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Tooltip } from "react-tooltip";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { FaFileExcel } from "react-icons/fa";
+import * as XLSX from "xlsx";
 import {
   faEdit,
   faTrash,
@@ -28,7 +30,7 @@ const Products = () => {
   const [isConfirmVisible, setIsConfirmVisible] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null); // Stores the action to confirm
   const [confirmMessage, setConfirmMessage] = useState(""); // Stores the confirmation message
-   // eslint-disable-next-line
+  // eslint-disable-next-line
   const [user, setUser] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([]); // For filtered products
   const [selectedType, setSelectedType] = useState("");
@@ -54,22 +56,25 @@ const Products = () => {
           // Cherchez les privilèges pour le role et subRole de l'utilisateur
           const userRole = user.role;
           const userSubrole = user.subRole;
-          
+
           // Trouvez les privilèges de l'utilisateur
           const privileges = response.data.find(
             (item) => item.role === userRole && item.subRole === userSubrole
           )?.permissions;
-  
+
           if (privileges) {
             console.log("Privilèges de l'utilisateur :", privileges);
             setUserPrivileges(privileges);
           } else {
             console.log("Aucun privilège trouvé pour ce rôle et sous-rôle");
-            setUserPrivileges([]);  // Si aucun privilège n'est trouvé
+            setUserPrivileges([]); // Si aucun privilège n'est trouvé
           }
         })
         .catch((error) => {
-          console.error("Erreur lors de la récupération des privilèges :", error);
+          console.error(
+            "Erreur lors de la récupération des privilèges :",
+            error
+          );
         });
     }
   }, []);
@@ -188,7 +193,7 @@ const Products = () => {
           {
             ...selectedProduct,
             stock: selectedProduct.stock + stockToAdd,
-            source : "Entrer en stock",
+            source: "Entrer en stock",
           },
           {
             headers: {
@@ -211,6 +216,24 @@ const Products = () => {
   const handleAddButtonClick = () => {
     setCurrentProduct(null);
     setIsModalOpen(true);
+  };
+  const exportTableToExcel = () => {
+    // Clone le tableau pour ne pas modifier l'original
+    const table = document.querySelector(".products-table").cloneNode(true);
+
+    // Supprimer les colonnes "Action" du tableau cloné
+    table.querySelectorAll("th.actions, td.actions","th.image, td.image").forEach((el) => el.remove());
+
+    // Convertir le tableau en fichier Excel
+    const workbook = XLSX.utils.table_to_book(table, { sheet: "Stock" });
+
+    // Télécharger le fichier Excel
+    XLSX.writeFile(workbook, "stock.xlsx");
+  };
+  const confirmExcel = () => {
+    setConfirmMessage("Voulez-vous exporter en Excel?");
+    setConfirmAction(() => () => exportTableToExcel());
+    setIsConfirmVisible(true);
   };
 
   return (
@@ -241,6 +264,12 @@ const Products = () => {
           </select>
           <button onClick={handleAddButtonClick} className="add-button">
             <FontAwesomeIcon icon={faPlus} /> Ajouter un Produit
+          </button>
+          <button onClick={confirmExcel} className="export-button">
+            <FaFileExcel
+              style={{ marginRight: "8px", color: "green", fontSize: "1.2em" }}
+            />
+            Exporter en Excel
           </button>
         </div>
       </div>
@@ -273,26 +302,24 @@ const Products = () => {
                 <td>{product.stock}</td>
                 <td>{product.description}</td>
                 <td className="action">
-                {userPrivileges?.produits?.includes("edit") &&
-                     (
-                  <FontAwesomeIcon
-                    onClick={() =>
-                      setCurrentProduct(product) || setIsModalOpen(true)
-                    }
-                    className="edit-button"
-                    data-tooltip-id="edit"
-                    icon={faEdit}
-                  />
-                )}
-                  {userPrivileges?.produits?.includes("delete") &&
-                     (
-                      <FontAwesomeIcon
-                        onClick={() => confirmDelete(product._id)}
-                        className="delete-button icon"
-                        data-tooltip-id="delete"
-                        icon={faTrash}
-                      />
-                    )}
+                  {userPrivileges?.produits?.includes("edit") && (
+                    <FontAwesomeIcon
+                      onClick={() =>
+                        setCurrentProduct(product) || setIsModalOpen(true)
+                      }
+                      className="edit-button"
+                      data-tooltip-id="edit"
+                      icon={faEdit}
+                    />
+                  )}
+                  {userPrivileges?.produits?.includes("delete") && (
+                    <FontAwesomeIcon
+                      onClick={() => confirmDelete(product._id)}
+                      className="delete-button icon"
+                      data-tooltip-id="delete"
+                      icon={faTrash}
+                    />
+                  )}
                   <FontAwesomeIcon
                     onClick={() => handleAddStock(product)}
                     className="stock-button icon"

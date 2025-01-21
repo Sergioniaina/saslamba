@@ -14,6 +14,7 @@ import {
   FaSave,
 } from "react-icons/fa";
 import "./Caisse.css";
+import ModalConfirm from "../modal/ModalConfirm";
 
 const Caisse = () => {
   const [caisses, setCaisses] = useState([]);
@@ -24,6 +25,10 @@ const Caisse = () => {
   const [newSolde, setNewSolde] = useState("");
   const [error, setError] = useState("");
   const [showClosedCaisses, setShowClosedCaisses] = useState(false); // Nouvel état pour afficher/masquer les caisses fermées
+
+  const [isConfirmVisible, setIsConfirmVisible] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null); // Stores the action to confirm
+  const [confirmMessage, setConfirmMessage] = useState(""); // Stores the confirmation message
 
   useEffect(() => {
     fetchCaisses();
@@ -58,8 +63,22 @@ const Caisse = () => {
       console.error("Erreur lors de la suppression de la caisse", error);
     }
   };
+  const confirmRemoveCaisse = (id) => {
+    setConfirmMessage("Voulez-vous Supprimer ce Caisse?");
+    setConfirmAction(() => () => handleDeleteCaisse(id));
+    setIsConfirmVisible(true);
+  };
+  const confirmSubmitForm = () => {
+    setConfirmMessage(
+      caisseToEdit
+        ? "Voulez-vous vraiment modifier cette caisse ?"
+        : "Voulez-vous vraiment ajouter cette caisse ?"
+    );
+    setConfirmAction(() => handleSubmitConfirmed);
+    setIsConfirmVisible(true);
+  };
 
-  const handleSubmit = async () => {
+  const handleSubmitConfirmed = async () => {
     try {
       if (caisseToEdit) {
         await axios.put(
@@ -89,7 +108,7 @@ const Caisse = () => {
     }
 
     try {
-      const updatedCaisse = { solde: amount, motif:"Recette" };
+      const updatedCaisse = { solde: amount, motif: "Recette" };
       await axios.put(
         `http://localhost:5000/api/caisses/${caisse._id}/add-solde`,
         updatedCaisse
@@ -97,11 +116,25 @@ const Caisse = () => {
       fetchCaisses();
       setNewSolde("");
       setEditingSolde(null);
-      console.log("l ajout de :",amount)
+      console.log("l ajout de :", amount);
       setError("");
     } catch (error) {
       console.error("Erreur lors de l'ajout de solde", error);
     }
+  };
+  const confirmAjoutSolde = (caisse) => {
+    setConfirmMessage("Voulez-vous Ajouter du Solde?");
+    setConfirmAction(() => async () => {
+      await handleAddSolde(caisse);
+    });
+    setIsConfirmVisible(true);
+  };
+  const confirmRemoveSolde = (caisse) => {
+    setConfirmMessage("Voulez-vous Retirer du solde?");
+    setConfirmAction(() => async () => {
+      await handleRemoveSolde(caisse);
+    });
+    setIsConfirmVisible(true);
   };
 
   const handleRemoveSolde = async (caisse) => {
@@ -138,11 +171,22 @@ const Caisse = () => {
 
   const handleCloseCaisse = async (caisse) => {
     try {
-      await axios.post(`http://localhost:5000/api/caisses/${caisse._id}/closes`);
+      await axios.post(
+        `http://localhost:5000/api/caisses/${caisse._id}/closes`
+      );
       fetchCaisses();
     } catch (error) {
       console.error("Erreur lors de la fermeture de la caisse", error);
     }
+  };
+  const confirmCloseCaisse = (caisse) => {
+    setConfirmMessage("Voulez-vous fermer ce Caisse?");
+    setConfirmAction(() => () => handleCloseCaisse(caisse));
+    setIsConfirmVisible(true);
+  };
+  const confirmActionAndClose = () => {
+    if (confirmAction) confirmAction();
+    setIsConfirmVisible(false);
   };
 
   const handleOpenCaisse = async (caisse) => {
@@ -152,6 +196,11 @@ const Caisse = () => {
     } catch (error) {
       console.error("Erreur lors de l'ouverture de la caisse", error);
     }
+  };
+  const confirmOpenCaisse = (caisse) => {
+    setConfirmMessage("Voulez-vous Ouvrir ce Caisse?");
+    setConfirmAction(() => () => handleOpenCaisse(caisse));
+    setIsConfirmVisible(true);
   };
 
   const toggleShowClosedCaisses = () => {
@@ -199,9 +248,9 @@ const Caisse = () => {
                       />
                       <button
                         className="btn-submit"
-                        onClick={() => handleAddSolde(caisse)}
+                        onClick={() => confirmAjoutSolde(caisse)}
                       >
-                        <FaCheck /> Valider
+                        <FaCheck /> Ajouter
                       </button>
                       <button
                         className="btn-cancel"
@@ -211,7 +260,7 @@ const Caisse = () => {
                       </button>
                       <button
                         className="btn-remove"
-                        onClick={() => handleRemoveSolde(caisse)}
+                        onClick={() => confirmRemoveSolde(caisse)}
                       >
                         <FaMinus /> Retirer
                       </button>
@@ -223,7 +272,7 @@ const Caisse = () => {
                         className="btn-edit-solde"
                         onClick={() => setEditingSolde(caisse._id)}
                       >
-                        <FaPlus /> Modifier
+                        <FaPlus /> Retirer / Ajouter
                       </button>
                     </div>
                   )}
@@ -243,21 +292,21 @@ const Caisse = () => {
                   </button>
                   <button
                     className="btn-delete"
-                    onClick={() => handleDeleteCaisse(caisse._id)}
+                    onClick={() => confirmRemoveCaisse(caisse._id)}
                   >
                     <FaTrash />
                   </button>
                   {caisse.dateFermeture === null ? (
                     <button
                       className="btn-close"
-                      onClick={() => handleCloseCaisse(caisse)}
+                      onClick={() => confirmCloseCaisse(caisse)}
                     >
                       <FaLock /> Fermer
                     </button>
                   ) : (
                     <button
                       className="btn-open"
-                      onClick={() => handleOpenCaisse(caisse)}
+                      onClick={() => confirmOpenCaisse(caisse)}
                     >
                       <FaUnlock /> Ouvrir
                     </button>
@@ -270,7 +319,10 @@ const Caisse = () => {
 
       {showModal && (
         <div className="modal-caisse" onClick={() => setShowModal(false)}>
-          <div className="modal-content-caisse" onClick={(e)=>e.stopPropagation()}>
+          <div
+            className="modal-content-caisse"
+            onClick={(e) => e.stopPropagation()}
+          >
             <span className="close" onClick={() => setShowModal(false)}>
               <FaTimes />
             </span>
@@ -315,19 +367,27 @@ const Caisse = () => {
               <label>Caisse solde</label>
             </div>
             <div className="modal-button">
-            <button className="btn-submit" onClick={handleSubmit}>
-               
-             {caisseToEdit ? <FaEdit/> :  <FaSave/>}
-              {caisseToEdit ? "Modifier" : "Ajouter"}
-            </button>
-            <button className="btn-cancel" onClick={() => setShowModal(false)}>
-              <FaTimes/>
-              Annuler
-            </button>
+              <button className="btn-submit" onClick={confirmSubmitForm}>
+                {caisseToEdit ? <FaEdit /> : <FaSave />}
+                {caisseToEdit ? "Modifier" : "Ajouter"}
+              </button>
+              <button
+                className="btn-cancel"
+                onClick={() => setShowModal(false)}
+              >
+                <FaTimes />
+                Annuler
+              </button>
             </div>
-           
           </div>
         </div>
+      )}
+      {isConfirmVisible && (
+        <ModalConfirm
+          onConfirm={confirmActionAndClose}
+          onCancel={() => setIsConfirmVisible(false)}
+          message={confirmMessage}
+        />
       )}
     </div>
   );

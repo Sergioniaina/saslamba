@@ -13,6 +13,59 @@
    display: flex;
    justify-content: space-between;
     transition: 0.3s ease;
+    .filter-groupes{
+      position: relative;
+      label {
+        position: absolute;
+        top: 50%;
+        left: 0.5rem;
+        transform: translateY(-50%);
+        font-size: 1rem;
+        color: #aaa;
+        pointer-events: none;
+        transition: 0.3s ease all;
+      }
+
+      input,select{
+        width: 100%;
+        margin: 0px;
+        padding: 15px;
+        font-size: 1rem;
+        border: 3px solid #ccc;
+        border-radius: 4px;
+        background: black;
+        outline: none;
+        transition: 0.3s ease all;
+        color: white;
+        &:focus,
+        &:valid {
+          border-color: gray;
+          background: rgba(0, 0, 0, 0.3);
+          border: 3px solid gray;
+        }
+
+        &:focus + label,
+        &:valid + label {
+          top: 0;
+          font-size: 0.8rem;
+          color: #007bff;
+          background:  rgba(0, 0, 0, 0.8);
+          font-weight: 600;
+          padding: 8px;
+        }
+      }
+      select{
+        padding: 15px;
+        background-color: black!;
+        color: white;
+        option{
+          background: rgb(48, 43, 43);
+          color: white;
+        }
+      }
+    
+
+}
     button {
         background-color: #4caf50;
         color: white;
@@ -55,7 +108,7 @@
     }
     .filter-groupe{
         position: relative;
-        width: 15%;
+        width: 13%;
         label {
           position: absolute;
           top: 50%;
@@ -109,7 +162,7 @@
   }
   .table-h{
     height: auto;
-    max-height: 68vh;
+    max-height: 64vh;
     overflow: auto;
   }
   thead{
