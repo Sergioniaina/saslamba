@@ -1,0 +1,26 @@
+.facture-machine{
+    padding-top: 20px;
+    .facture_machine{
+        max-height: 76vh;
+        overflow: auto;
+        button{
+            background: green;
+        }
+        thead{
+            position: sticky;
+            top: 0px;
+        }
+        tfoot{
+            position: sticky;
+            bottom: 0px;
+            background: black;
+            letter-spacing: 1px;
+            font-weight: 600;
+            color: white;
+            .total_chiffre{
+                background: rgb(79, 65, 65);
+                color: rgb(25, 218, 154);
+            }
+        }
+    }
+}

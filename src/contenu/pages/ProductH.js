@@ -66,22 +66,21 @@ const ProductHistory = () => {
   const handleSearch = (e) => {
     const term = e.target.value.toLowerCase();
     setSearchTerm(term);
-    applyFilters(term, startDate, endDate, selectedType, selectedSource);
+    applyFilters(term , searchTerms, startDate, endDate, selectedType, selectedSource);
   };
   const handleSearchs = (e) => {
-    const term = e.target.value; // Conserve le format d'origine
-    setSearchTerms(term); // Met à jour l'affichage dans <select>
-
-    const lowerCaseTerm = term.toLowerCase(); // Convertit en minuscule pour les filtres
+    const term = e.target.value;
+    setSearchTerms(term); // Met à jour la valeur dans le select
+  
+    // Applique les filtres avec le terme de recherche actuel
     applyFilters(
-      lowerCaseTerm, // Passe la valeur en minuscule
+      term , searchTerm, // Utilise le terme tel quel, qu'il soit minuscule ou pas, selon le contexte
       startDate,
       endDate,
       selectedType,
       selectedSource
     );
   };
-
   const handleDateFilter = (type, value) => {
     if (type === "start") setStartDate(value);
     if (type === "end") setEndDate(value);
@@ -139,7 +138,7 @@ const ProductHistory = () => {
     const type = e.target.value;
     setSelectedType(type);
     applyFilters(
-      searchTerm || searchTerms.toLowerCase(),
+      searchTerm || searchTerms,
       startDate,
       endDate,
       type,
@@ -151,43 +150,46 @@ const ProductHistory = () => {
     const source = e.target.value;
     setSelectedSource(source);
     applyFilters(
-      searchTerm || searchTerms.toLowerCase(),
+      searchTerm || searchTerms,
       startDate,
       endDate,
       selectedType,
       source
     ); // Appliquer le filtre par source
   };
-
-  const applyFilters = (searchTerm, start, end, type, source) => {
+  const applyFilters = (searchTerm, searchTerms,start, end, type, source) => {
     let filtered = [...productHistory];
-
+  
     filtered = filtered.filter((item) => {
-      const matchesName = item.product.name.toLowerCase().includes(searchTerm);
-      const matchesStartDate = start
-        ? new Date(item.date) >= new Date(start)
-        : true;
+      const matchesName = item.product.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesNames = item.product.name === searchTerms;  // Recherche exacte dans le cas du select
+  
+      const matchesStartDate = start ? new Date(item.date) >= new Date(start) : true;
       const matchesEndDate = end ? new Date(item.date) <= new Date(end) : true;
       const matchesType = type ? item.type === type : true;
       const matchesSource = source ? item.source === source : true;
+  
       return (
-        matchesName &&
+        (matchesNames || matchesName)&&
+        (matchesNames || matchesName) &&
         matchesStartDate &&
         matchesEndDate &&
         matchesType &&
         matchesSource
       );
     });
-
+  
     if (viewMode === "tous") {
       filtered = aggregateProductHistory(filtered);
     }
-
+  
     setFilteredData(filtered);
     if (viewMode === "tous") {
       calculateTotals(filtered);
     }
   };
+  
+  
 
   const aggregateProductHistory = (history) => {
     const aggregated = {};

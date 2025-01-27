@@ -103,7 +103,7 @@ router.put('/:id', async (req, res) => {
 // DELETE : Supprimer une facture
 router.delete('/:id', async (req, res) => {
   try {
-    const facture = await Facture.findByIdAndDelete(req.params.id);
+    const facture = await FactureAbonnement.findByIdAndDelete(req.params.id);
 
     if (!facture) {
       return res.status(404).json({ error: 'Facture non trouvée' });

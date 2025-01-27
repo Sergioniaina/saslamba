@@ -247,7 +247,7 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
   const handleDelete = async (id) => {
     try {
       // Supprimer la facture en utilisant axios
-      await axios.delete(`${PORT}/api/factures/${id}`, {
+      await axios.delete(`http://localhost:5000/api/factures/${id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
 
@@ -268,18 +268,16 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
 
   const handleCancel = async (id) => {
     const token = localStorage.getItem("token");
+    const url = `${PORT}/api/factures/cancel/${id}`;
+    console.log("URL appelée :", url);
+  
     try {
-      await axios.post(
-        `${PORT}/api/factures/cancel/${id}`,
-        null,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      // Mettre à jour l'état des factures en mémoire
+      await axios.post(url, null, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
       setFactures(
         factures.map((facture) =>
           facture._id === id ? { ...facture, etat: "annulée" } : facture
@@ -290,6 +288,7 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
       setError("Une erreur est survenue lors de l'annulation de la facture.");
     }
   };
+  
 
   const handlePay = (facture) => {
     setSelectedFacture(facture);

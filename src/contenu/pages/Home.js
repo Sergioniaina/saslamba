@@ -46,6 +46,7 @@ import PrivilegeManagement from "../Privilege/PrivilegeManagement ";
 import Machines from "../machine/Machines";
 import GestionCaisse from "./HistoriqueDepense";
 import ProductHistory from "./ProductH";
+import FactureMachine from "../factures/FactureMachine";
 
 const DropdownItem = ({ title, icon, children }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -180,6 +181,7 @@ const Home = ({ onLogout }) => {
             <Route path="/privilege" element={<PrivilegeManagement />} />
             <Route path="/depense" element={<GestionCaisse />} />
             <Route path="/productH" element={<ProductHistory />} />
+            <Route path="/machineCompte" element={<FactureMachine />} />
             {/* <Route path="/FactureId/:id" element={<FactureId />} /> */}
             <Route
               path="/machineConsumption"
@@ -255,6 +257,12 @@ const Home = ({ onLogout }) => {
                 >
                   <NavLink to="/home/machine" className="dropdown-subitem">
                     <FaPlus style={{ color: "#2196F3" }} /> AJOUT
+                  </NavLink>
+                  <NavLink
+                    to="/home/machineCompte"
+                    className="dropdown-subitem"
+                  >
+                    <FaHistory style={{ color: "#2196F3" }} /> MACHINES
                   </NavLink>
                   <NavLink
                     to="/home/machineConsumption"

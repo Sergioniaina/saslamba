@@ -11,10 +11,12 @@ const Caisse = require('../models/caisse');
 const Payment = require('../models/Payement');
 const Compteur = require('../models/compteurMachine');
 const ProductHistory = require('../models/ProductHistorique');
+const HistoriqueCaisse = require('../models/HistoriqueCaisse'); 
 
 const authMiddleware = require('../middleware/authMiddleware');
 // Créer une nouvelle facture
 // routes/factures.js
+
 
 router.post('/',authMiddleware, async (req, res) => {
   const { customerName,contact, machines, products, articles, totalWeight, totalPrice,reste, serviceType, quantities, articleDetails, etat, machineWeights } = req.body;
@@ -472,7 +474,7 @@ router.put('/:id',authMiddleware, async (req, res) => {
     existingFacture.articles = filteredArticles;
     existingFacture.totalWeight = totalWeight;
     existingFacture.totalPrice = totalPrice;
-    existingFacture.reste = reste,
+    existingFacture.reste = reste;
     existingFacture.serviceType = serviceType;
     existingFacture.etat = etat;
     existingFacture.machineWeights = selectedMachines.map(machine => ({
@@ -571,10 +573,10 @@ router.delete('/:id', authMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'Facture non trouvée.' });
     }
 
-    // Vérifier si l'utilisateur est autorisé à supprimer cette facture
-    if (facture.userId !== userId) {
-      return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à supprimer cette facture.' });
-    }
+    // // Vérifier si l'utilisateur est autorisé à supprimer cette facture
+    // if (facture.userId !== userId) {
+    //   return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à supprimer cette facture.' });
+    // }
 
     // Remettre les machines en état "Disponible"
     await Machine.updateMany({ _id: { $in: facture.machines } }, { $set: { etat: 'Disponible' } });
@@ -624,6 +626,50 @@ router.put('/:id/etat', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+router.get('/details', async (req, res) => {
+  try {
+    //const factures = await Facture.find({ etat: "encaisser" })
+    const factures = await Facture.find()
+      .populate({
+        path: 'machines',
+        model: 'Machine',
+        select: 'modelNumber type etat',
+      })
+      .lean();
+
+    // Structurer les données et compter les occurrences des machines
+    const detailedFactures = factures.flatMap(facture => {
+      // Créer une map pour compter les machines
+      const machineCount = facture.machines.reduce((acc, machine) => {
+        acc[machine._id] = (acc[machine._id] || 0) + 1; // Compter les occurrences de chaque machine
+        return acc;
+      }, {});
+
+      return facture.machines.map(machine => {
+        return {
+          factureId: facture._id,
+          reference: facture.reference,
+          client : facture.customerName,
+          date: facture.createdAt,
+          machineId: machine._id,
+          machineModelNumber: machine.modelNumber,
+          machineType: machine.type,
+          machineEtat: machine.etat,
+          ticketNumber: facture.ticketNumber,
+          nombreMachine: machineCount[machine._id], // Nombre d'occurrences pour cette machine
+        };
+      });
+    });
+
+    res.json(detailedFactures);
+  } catch (error) {
+    console.error("Erreur dans /factures-details : ", error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+
 
 // Obtenir toutes les factures
 router.get('/', async (req, res) => {
@@ -634,6 +680,20 @@ router.get('/', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+// Route pour récupérer toutes les factures, avec détails des machines
+router.get("/", async (req, res) => {
+  try {
+    const factures = await Facture.find()
+      .populate('machines', 'modelNumber'); // Peuple le champ 'machines' avec 'modelNumber'
+
+    res.json(factures);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+
+});
+
+
 // Exemple d'implémentation dans le backend Express
 router.get("/last-ticket", async (req, res) => {
   try {
@@ -655,75 +715,129 @@ router.get("/last-ticket", async (req, res) => {
 
 router.post('/cancel/:id', authMiddleware, async (req, res) => {
   const factureId = req.params.id;
+  console.log("ID reçu pour annulation :", factureId);
 
   try {
     // 1. Récupérer la facture
     const facture = await Facture.findById(factureId);
     if (!facture) {
+      console.log("Facture non trouvée :", factureId);
       return res.status(404).json({ error: "Facture non trouvée." });
     }
+
     if (facture.etat === 'annulée') {
       return res.status(400).json({ error: "Cette facture est déjà annulée." });
     }
-    await Machine.updateMany({ _id: { $in: facture.machines } }, { $set: { etat: 'Disponible' } });
 
-    // 2. Restaurer les produits dans le stock
+    // 2. Mettre à jour les machines pour les rendre disponibles
+    await Machine.updateMany(
+      { _id: { $in: facture.machines } },
+      { $set: { etat: 'Disponible' } }
+    );
+
+    // 3. Restaurer les produits dans le stock
     for (let product of facture.quantities) {
       const { productId, quantity } = product;
+    
+      // Récupérer les détails du produit avant la mise à jour
+      const productDetails = await Product.findById(productId);
+      const currentStock = productDetails.stock; // Stock actuel avant restauration
+    
+    //  console.log(`Produit ID: ${productId}, Stock actuel: ${currentStock}, Quantité à restaurer: ${quantity}`);
+    
+      // Restaurer le stock utilisé
+      const newStock = currentStock + quantity;
+    
+      // Mettre à jour le stock
       await Product.findByIdAndUpdate(productId, {
-        $inc: { stock: quantity } // Incrémenter le stock
+        $inc: { stock: quantity }
+      });
+   //   console.log(`Produit ID: ${productId}, Nouveau stock après restauration: ${newStock}, Quantité restaurée: ${quantity}`);
+    
+      // Enregistrer l'historique du produit
+      await ProductHistory.create({
+        product: productId,
+        date: new Date(),
+        stockChange: quantity, // Quantité restaurée
+        remainingStock: newStock,
+        type: "addition", // Type d'ajustement
+        source: "Facture",
       });
     }
+    
 
-    // 3. Mettre à jour l'état de la facture
+    // 4. Mettre à jour l'état de la facture
     facture.etat = 'annulée';
     await facture.save();
 
-    // 4. Récupérer les paiements associés à la facture
+    // 5. Récupérer les paiements associés à la facture
     const payments = await Payment.find({ facture: facture._id });
-    
+
     for (let payment of payments) {
       for (let historique of payment.historique) {
-        // 5. Récupérer la caisse associée et mettre à jour son solde
+        // 1. Récupérer la caisse associée
         const caisse = await Caisse.findById(historique.caisse);
         if (!caisse) {
           return res.status(404).json({ error: "Caisse non trouvée." });
         }
-
-        // Restaurer le montant dans la caisse (ajouter au solde)
-        const updatedCaisse = await Caisse.findOneAndUpdate(
-          { _id: caisse._id }, 
-          { $inc: { solde: -historique.montant } },  // Soustraction du montant
-          { new: true }  // Retourner la caisse mise à jour
+    
+        // 2. Restaurer le montant dans la caisse
+        const montantRestauré = -historique.montant; // Montant négatif pour indiquer le retrait
+        await Caisse.findOneAndUpdate(
+          { _id: caisse._id },
+          { $inc: { solde: montantRestauré } }, // Ajouter le montant restauré (négatif)
+          { new: true }
         );
-
-        // Debug: Vérifiez le nouveau solde après mise à jour
-        console.log(`Après mise à jour, caisse.solde = ${updatedCaisse.solde}`);
+    
+      //  console.log(`Après mise à jour, caisse.solde = ${updatedCaisse.solde}`);
+    
+        // 3. Ajouter à l'historique global de la caisse
+        await HistoriqueCaisse.create({
+          caisse: caisse._id,
+          type: "Ajout",
+          action: "Annulation de paiement",
+          montant: montantRestauré, // Montant négatif
+          date: new Date(),
+          motif: "Facture Restauré",
+        });
+    
+        // 4. Mettre à jour l'historique interne de la caisse
+        caisse.historique.push({
+          action: `Retrait de ${Math.abs(montantRestauré)} du solde`,
+          type: "Ajout",
+          montant: montantRestauré, // Montant négatif
+          date: new Date(),
+        });
+    
         await caisse.save();
-
-        // 6. Mettre à jour l'historique pour refléter l'annulation
-        historique.action = 'Annulation de paiement';
+    
+        // 5. Mettre à jour l'historique du paiement
+        historique.action = "Annulation de paiement";
+        historique.date = new Date();
         await payment.save();
       }
     }
+    
 
-    // 7. Enregistrer l'historique pour la facture annulée
-    const userId = req.user._id;
+    // 7. Enregistrer l'historique pour l'annulation de la facture
     await Historique.create({
       entityType: 'Facture',
       entityId: facture._id,
       action: 'Facture annulée et paiements restaurés',
-      user: userId,
-      details: `Annulation de la facture avec retour des montants de paiement dans la caisse.`
+      user: req.user._id,
+      details: `Annulation de la facture avec retour des montants de paiement dans la caisse.`,
+      date: new Date()
     });
 
-    res.status(200).json({ message: 'Facture annulée, paiements restaurés et stocks mis à jour.', facture });
+    res.status(200).json({
+      message: 'Facture annulée, paiements restaurés, stocks et machines mis à jour.',
+      facture
+    });
   } catch (error) {
+    console.error("Erreur lors de l'annulation de la facture :", error.message);
     res.status(500).json({ error: error.message });
   }
 });
-
-
 // Obtenir les détails d'une facture
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
