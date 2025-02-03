@@ -96,6 +96,12 @@ const Sidebar = ({
           </span>
           <span>Machines</span>
         </NavLink>
+        {/* <NavLink className="li" to="/home/app">
+          <span>
+            <FaTools style={{color:'white'}} className="icon" />
+          </span>
+          <span>App</span>
+        </NavLink> */}
         <NavLink  className="li" to="/home/dashboard">
           <span>
             <FaHome style={{color:'blue'}} className="icon" />

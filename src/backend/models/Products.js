@@ -10,6 +10,12 @@ const productSchema = new mongoose.Schema({
     required: true,
     min: 0,
   },
+  stockAlerte: {
+    type: Number,
+    required: true,
+    min: 0,
+    default: 5, // Valeur par défaut (modifiable selon ton besoin)
+  },
   photo: {
     type: String, // Stocke le chemin de la photo
     required: false,

@@ -222,7 +222,9 @@ const Products = () => {
     const table = document.querySelector(".products-table").cloneNode(true);
 
     // Supprimer les colonnes "Action" du tableau cloné
-    table.querySelectorAll("th.actions, td.actions","th.image, td.image").forEach((el) => el.remove());
+    table
+      .querySelectorAll("th.actions, td.actions", "th.image, td.image")
+      .forEach((el) => el.remove());
 
     // Convertir le tableau en fichier Excel
     const workbook = XLSX.utils.table_to_book(table, { sheet: "Stock" });
@@ -281,6 +283,7 @@ const Products = () => {
               <th>Nom</th>
               <th>Prix</th>
               <th>Stock</th>
+              <th>StockAlerte</th>
               <th>Description</th>
               <th className="action">Actions</th>
             </tr>
@@ -299,7 +302,15 @@ const Products = () => {
                 </td>
                 <td>{product.name}</td>
                 <td>{product.price} Ar</td>
-                <td>{product.stock}</td>
+                <td
+                  style={{
+                    backgroundColor: product.stock <= product.stockAlerte ? "red" : "transparent",
+                    color: product.stock <= product.stockAlerte ? "white" : "white",
+                  }}
+                >
+                  {product.stock}
+                </td>
+                <td>{product.stockAlerte}</td>
                 <td>{product.description}</td>
                 <td className="action">
                   {userPrivileges?.produits?.includes("edit") && (

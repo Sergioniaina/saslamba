@@ -41,9 +41,27 @@ const Navbar = ({
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false); // State for logout confirmation modal
   const [companyInfo, setCompanyInfo] = useState(null);
+  // eslint-disable-next-line 
+  const [backgroundImage, setBackgroundImage] = useState(bg10);
   useEffect(() => {
     fetchCompanyInfo(); // Load company info when the component mounts
+    loadPreferences();
+     // eslint-disable-next-line 
   }, []);
+  const loadPreferences = () => {
+    const savedTheme = localStorage.getItem("theme");
+    const savedBackground = localStorage.getItem("backgroundImage");
+
+    if (savedTheme) {
+      setTheme(savedTheme);
+      applyTheme(savedTheme);
+    }
+
+    if (savedBackground) {
+      setBackgroundImage(savedBackground);
+      changeBackground(savedBackground);
+    }
+  };
 
   const fetchCompanyInfo = async () => {
     try {
@@ -77,18 +95,14 @@ const Navbar = ({
     bg11,
   ];
 
-  const defaultBackgroundImage = bg10;
   const changeBackground = (image) => {
     document.body.style.backgroundImage = `url(${image})`;
     document.body.style.backgroundSize = "100% 100%";
     document.body.style.backgroundRepeat = "no-repeat";
     document.body.style.backgroundAttachment = "fixed";
+    setBackgroundImage(image);
+    localStorage.setItem("backgroundImage", image); // Sauvegarder dans localStorage
   };
-
-  useEffect(() => {
-    changeBackground(defaultBackgroundImage);
-  }, [defaultBackgroundImage]);
-
   useEffect(() => {
     const fetchUnpaidInvoices = async () => {
       try {
@@ -112,6 +126,7 @@ const Navbar = ({
   const applyTheme = (theme) => {
     document.documentElement.className = "";
     document.documentElement.classList.add(`${theme}-theme`);
+    localStorage.setItem("theme", theme); // Sauvegarder dans localStorage
   };
 
   useEffect(() => {
@@ -177,33 +192,29 @@ const Navbar = ({
       <div className="profile">
         {unpaidInvoices > 0 && (
           <div className="profiles" data-tooltip-id="notification">
-          <div
-          
-            className="cloche"
-            style={{
-              position: "relative",
-              display: "inline-block",
-              marginRight: "10px",
-            }}
-            onClick={toggleModal}
-          >
-            <FaBell size={30} color="#555" />
-            <span
-           
+            <div
+              className="cloche"
               style={{
-                position: "absolute",
-                top: "-8px",
-                right: "-8px",
-                color: "white",
-                borderRadius: "50%",
-                padding: "5px",
-                fontSize: "13px",
+                position: "relative",
+                display: "inline-block",
+                marginRight: "10px",
               }}
+              onClick={toggleModal}
             >
-             
-            </span>
-          </div>
-          <span className="unpaid">{unpaidInvoices}</span> 
+              <FaBell size={30} color="#555" />
+              <span
+                style={{
+                  position: "absolute",
+                  top: "-8px",
+                  right: "-8px",
+                  color: "white",
+                  borderRadius: "50%",
+                  padding: "5px",
+                  fontSize: "13px",
+                }}
+              ></span>
+            </div>
+            <span className="unpaid">{unpaidInvoices}</span>
           </div>
         )}
         <button
@@ -237,7 +248,10 @@ const Navbar = ({
 
       {isModalOpen && (
         <div className="modal-overlay-nav" onClick={toggleModal}>
-          <div className="modal-content-nav" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="modal-content-nav"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="table-navbar">
               <table>
                 <thead>

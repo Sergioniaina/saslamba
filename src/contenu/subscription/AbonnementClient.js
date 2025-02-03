@@ -1099,7 +1099,7 @@ function AbonnementForm() {
             style={{ display: "flex", flexDirection: "column" }}
           >
             {latestFacture ? (
-              <h2>Ticket N° {latestFacture.numeroFacture + 1 || 1}</h2>
+              <h2>abonnement N° {latestFacture.numeroFacture + 1 || 1}</h2>
             ) : (
               <p>Aucune facture trouvée</p> // Message si aucune facture n'est trouvée
             )}

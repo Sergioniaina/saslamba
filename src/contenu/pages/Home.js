@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from "react";
 import "../css/home.css";
 import "../css/fixed_div.css";
-import { Navigate, NavLink, Route, Routes } from "react-router-dom";
+import {
+  Navigate,
+  NavLink,
+  Route,
+  Routes,
+  useNavigate,
+} from "react-router-dom";
 import ClientPages from "../../connexion/pages/ClientPages";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -28,11 +34,13 @@ import {
   FaClipboardList,
   FaCog,
   FaExchangeAlt,
+  FaEye,
   FaHistory,
   FaPlus,
   FaPlusSquare,
   FaSignOutAlt,
   FaTasks,
+  FaTimes,
   FaTools,
   FaUserFriends,
   FaUserTie,
@@ -47,6 +55,9 @@ import Machines from "../machine/Machines";
 import GestionCaisse from "./HistoriqueDepense";
 import ProductHistory from "./ProductH";
 import FactureMachine from "../factures/FactureMachine";
+import axios from "axios";
+
+// import App from "./App";
 
 const DropdownItem = ({ title, icon, children }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -77,6 +88,38 @@ const Home = ({ onLogout }) => {
   const [isSidebarLeft, setSidebarLeft] = useState(true);
   const [hideParam, setHideParam] = useState(false);
   const [isFixedDivVisible, setFixedDivVisible] = useState(false);
+  const [lowStockProducts, setLowStockProducts] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+  const navigate = useNavigate();
+  const fetchProducts = async () => {
+    try {
+      const token = localStorage.getItem("token"); // Récupération du token
+      const response = await axios.get("http://localhost:5000/api/products", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const products = response.data;
+
+      // Filtrer les produits en alerte de stock
+      const filteredProducts = products.filter(
+        (product) => product.stock <= product.stockAlerte
+      );
+
+      setLowStockProducts(filteredProducts);
+      setIsModalOpen(filteredProducts.length > 0); // Ouvrir le modal si alerte
+    } catch (err) {
+      setError(err.response ? err.response.data.error : "Erreur serveur");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fixedDiv = document.querySelector(".fixed-div");
@@ -165,7 +208,7 @@ const Home = ({ onLogout }) => {
             <Route path="/abonement" element={<SubscriptionManager />} />
             <Route path="/abonnements" element={<AbonnementForm />} />
             <Route path="/machine" element={<MachineList />} />
-            <Route path="/machines" element={<Machines/>} />
+            <Route path="/machines" element={<Machines />} />
             <Route path="/about" element={<ClientPages />} />
             <Route path="/historique" element={<Historique />} />
             <Route path="/produit" element={<Products />} />
@@ -174,6 +217,8 @@ const Home = ({ onLogout }) => {
             <Route path="/caissemouvement" element={<MouvementCaisseList />} />
             <Route path="/article" element={<ArticleManage />} />
             <Route path="/produitentrer" element={<ProductStockForm />} />
+            <Route path="/alerte" element={<ProductStockForm />} />
+            <Route path="/stock-alert" element={<ProductStockForm />} />
             <Route path="/historiqueStock" element={<HistoriqueProducts />} />
             <Route path="/paymentHistorique" element={<PaymentList />} />
             <Route path="/caisseTable" element={<CaisseTable />} />
@@ -182,6 +227,7 @@ const Home = ({ onLogout }) => {
             <Route path="/depense" element={<GestionCaisse />} />
             <Route path="/productH" element={<ProductHistory />} />
             <Route path="/machineCompte" element={<FactureMachine />} />
+            {/* <Route path="/app" element={<App />} /> */}
             {/* <Route path="/FactureId/:id" element={<FactureId />} /> */}
             <Route
               path="/machineConsumption"
@@ -222,10 +268,7 @@ const Home = ({ onLogout }) => {
                   >
                     <FaHistory style={{ color: "brown" }} /> HISTORIQUE
                   </NavLink>
-                  <NavLink
-                    to="/home/productH"
-                    className="dropdown-subitem"
-                  >
+                  <NavLink to="/home/productH" className="dropdown-subitem">
                     <FaHistory style={{ color: "brown" }} /> SUIVIS
                   </NavLink>
                 </DropdownItem>
@@ -301,6 +344,33 @@ const Home = ({ onLogout }) => {
           </div>
         )}
       </div>
+      {isModalOpen && (
+        <div className="modal-alerte" onClick={()=>setIsModalOpen(false)}>
+          <div className="modal-content-alerte" onClick={(e)=>e.stopPropagation()}>
+            <h2>⚠️ Alerte Stock Bas</h2>
+            <p>
+              Il y a <strong>{lowStockProducts.length}</strong> produits en
+              stock critique.
+            </p>
+            <div className="buttons">
+              <button className="fermer" onClick={() => setIsModalOpen(false)}>
+                {" "}
+                <FaTimes size={18} /> OK
+              </button>
+              <button
+                className="details"
+                onClick={() => {
+                  navigate("/home/alerte");
+                  setIsModalOpen(false);
+                }}
+              >
+                <FaEye size={18} /> Voir Détails
+              </button>
+
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

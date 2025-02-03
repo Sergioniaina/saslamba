@@ -21,7 +21,7 @@ const checkPermission = (resource, action) => {
         const privileges = await Privilege.findOne({ role, subRole });
   
         console.log("Utilisateur connecté - Rôle:", role, "Sous-rôle:", subRole);
-        console.log("Privilèges de l'utilisateur connecté:", privileges);
+        // console.log("Privilèges de l'utilisateur connecté:", privileges);
   
         // Vérifiez si la Map des permissions contient la ressource et l'action
         const resourcePermissions = privileges?.permissions?.get(resource);

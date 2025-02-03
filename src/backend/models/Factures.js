@@ -50,7 +50,7 @@ const factureSchema = new mongoose.Schema({
   },
   serviceType: {
     type: String,
-    enum: ['Lavage', 'Séchage', 'Lavage + Séchage'],
+    enum: ['Lavage', 'Séchage', 'Lavage + Séchage','produit'],
     required: true,
   },
   machineWeights: [{

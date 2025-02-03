@@ -70,7 +70,7 @@ router.get("/search", async (req, res) => {
 
 // Create or update a product with photo upload
 router.post("/",authMiddleware,checkPermission('produits', 'add'), upload.single("photo"), async (req, res) => {
-  const { name, price, description, date, stock } = req.body;
+  const { name, price, description, date, stock, stockAlerte} = req.body;
   const photo = req.file ? req.file.path : null; // Si la photo est téléchargée
   const userId = req.user._id;
   try {
@@ -101,6 +101,7 @@ router.post("/",authMiddleware,checkPermission('produits', 'add'), upload.single
         description,
         date,
         stock: stock || 1,
+        stockAlerte: stockAlerte || 5, 
         photo, // Ajout de la photo
       });
       await newProduct.save();
@@ -128,7 +129,7 @@ router.post("/",authMiddleware,checkPermission('produits', 'add'), upload.single
 // Update a product
 router.put("/:id", authMiddleware, checkPermission('produits', 'edit'), upload.single("photo"), async (req, res) => {
   const { id } = req.params;
-  const { name, price, description, stock, date,source } = req.body;
+  const { name, price, description, stock, date,stockAlerte} = req.body;
   const photo = req.file ? req.file.path : null;
   const userId = req.user._id;
 
@@ -148,6 +149,7 @@ router.put("/:id", authMiddleware, checkPermission('produits', 'edit'), upload.s
       description,
       stock: parseInt(stock, 10),
       date,
+      stockAlerte: stockAlerte ? parseInt(stockAlerte, 10) : currentProduct.stockAlerte,
       photo: photo || currentProduct.photo,
     };
 
@@ -167,7 +169,7 @@ router.put("/:id", authMiddleware, checkPermission('produits', 'edit'), upload.s
       remainingStock: stockApres,
       totalSpent: stockEntrer < 0 ? Math.abs(stockEntrer) * currentProduct.price : undefined, // Calcul du total dépensé si stock déduit
       type: stockEntrer >= 0 ? "addition" : "deduction", // Définir si c'est une addition ou une déduction
-      source : source,
+      source : "modification",
     });
     await productHistory.save();
 

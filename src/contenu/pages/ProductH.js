@@ -9,27 +9,22 @@ const ProductHistory = () => {
   const [productHistory, setProductHistory] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchTerms, setSearchTerms] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [viewMode, setViewMode] = useState("global"); // Modes: "global" ou "tous"
   const [totals, setTotals] = useState({ stockRemaining: 0, stockChange: 0 });
   const [timeFilter, setTimeFilter] = useState("all"); // Options: jour/semaine/mois/année
   const [selectedType, setSelectedType] = useState(""); // Filtrage par type
-  const [isConfirmVisible, setIsConfirmVisible] = useState(false);
-  const [confirmAction, setConfirmAction] = useState(null); // Stores the action to confirm
-  const [confirmMessage, setConfirmMessage] = useState(""); // Stores the confirmation message
-  const [sources, setSources] = useState([]); // Pour stocker les sources disponibles
   const [selectedSource, setSelectedSource] = useState(""); // Pour stocker la source sélectionnée
-
-  const [produit, setProduit] = useState([]);
+  const [sources, setSources] = useState([]);
+  const [isConfirmVisible, setIsConfirmVisible] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null); 
+  const [confirmMessage, setConfirmMessage] = useState(""); 
 
   useEffect(() => {
     const fetchProductHistory = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:5000/api/product-history"
-        );
+        const response = await axios.get("http://localhost:5000/api/product-history");
         setProductHistory(response.data);
         setFilteredData(response.data);
       } catch (error) {
@@ -40,59 +35,34 @@ const ProductHistory = () => {
   }, []);
   const fetchProductHistory = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/product-history"
-      );
+      const response = await axios.get("http://localhost:5000/api/product-history");
       setProductHistory(response.data);
       setFilteredData(response.data);
     } catch (error) {
       console.error("Erreur lors du chargement des données : ", error);
     }
   };
-
   useEffect(() => {
-    const uniqueSources = [
-      ...new Set(productHistory.map((item) => item.source)),
-    ];
-    setSources(uniqueSources); // Stocker les sources uniques
-  }, [productHistory]);
-  useEffect(() => {
-    const uniqueSources = [
-      ...new Set(productHistory.map((item) => item.product.name)),
-    ];
-    setProduit(uniqueSources); // Stocker les sources uniques
+    const uniqueSources = [...new Set(productHistory.map((item) => item.source))];
+    setSources(uniqueSources); 
   }, [productHistory]);
 
+  // Fonction de recherche par nom de produit
   const handleSearch = (e) => {
     const term = e.target.value.toLowerCase();
     setSearchTerm(term);
-    applyFilters(term , searchTerms, startDate, endDate, selectedType, selectedSource);
+    applyFilters(term, startDate, endDate, selectedType, selectedSource);  // Utilisez 'term' ici au lieu de 'searchTerm'
   };
-  const handleSearchs = (e) => {
-    const term = e.target.value;
-    setSearchTerms(term); // Met à jour la valeur dans le select
   
-    // Applique les filtres avec le terme de recherche actuel
-    applyFilters(
-      term , searchTerm, // Utilise le terme tel quel, qu'il soit minuscule ou pas, selon le contexte
-      startDate,
-      endDate,
-      selectedType,
-      selectedSource
-    );
-  };
+
+  // Filtrage par date
   const handleDateFilter = (type, value) => {
     if (type === "start") setStartDate(value);
     if (type === "end") setEndDate(value);
-    applyFilters(
-      searchTerm || searchTerms,
-      type === "start" ? value : startDate,
-      type === "end" ? value : endDate,
-      selectedType,
-      selectedSource
-    );
+    applyFilters(searchTerm, startDate, endDate, selectedType, selectedSource);
   };
 
+  // Filtrage par période (jour, semaine, mois, année)
   const handleTimeFilterChange = (value) => {
     setTimeFilter(value);
     const now = new Date();
@@ -102,21 +72,21 @@ const ProductHistory = () => {
       case "day":
         start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         end = new Date(start);
-        end.setDate(start.getDate() + 2);
+        end.setDate(start.getDate() + 1);
         break;
       case "week":
         start = new Date(now);
         start.setDate(now.getDate() - now.getDay()); // Début de la semaine
         end = new Date(start);
-        end.setDate(start.getDate() + 8);
+        end.setDate(start.getDate() + 7);
         break;
       case "month":
-        start = new Date(now.getFullYear(), now.getMonth(), 1); // Début du mois
-        end = new Date(start.getFullYear(), start.getMonth() + 1, 1); // Début du mois suivant
+        start = new Date(now.getFullYear(), now.getMonth(), 1);
+        end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
         break;
       case "year":
-        start = new Date(now.getFullYear(), 0, 1); // Début de l'année
-        end = new Date(now.getFullYear() + 1, 0, 1); // Début de l'année suivante
+        start = new Date(now.getFullYear(), 0, 1);
+        end = new Date(now.getFullYear() + 1, 0, 1);
         break;
       default:
         start = "";
@@ -125,53 +95,43 @@ const ProductHistory = () => {
 
     setStartDate(start ? start.toISOString().split("T")[0] : "");
     setEndDate(end ? end.toISOString().split("T")[0] : "");
-    applyFilters(
-      searchTerm,
-      start ? start.toISOString() : "",
-      end ? end.toISOString() : "",
-      selectedType,
-      selectedSource
-    );
+    applyFilters(searchTerm, start ? start.toISOString() : "", end ? end.toISOString() : "", selectedType, selectedSource);
   };
 
+  // Filtrage par type
   const handleTypeFilter = (e) => {
     const type = e.target.value;
     setSelectedType(type);
-    applyFilters(
-      searchTerm || searchTerms,
-      startDate,
-      endDate,
-      type,
-      selectedSource
-    );
+    applyFilters(searchTerm, startDate, endDate, type, selectedSource);
   };
 
+  // Filtrage par source
   const handleSourceFilter = (e) => {
     const source = e.target.value;
     setSelectedSource(source);
-    applyFilters(
-      searchTerm || searchTerms,
-      startDate,
-      endDate,
-      selectedType,
-      source
-    ); // Appliquer le filtre par source
+    applyFilters(searchTerm, startDate, endDate, selectedType, source);
   };
-  const applyFilters = (searchTerm, searchTerms,start, end, type, source) => {
+
+  // Applique tous les filtres combinés
+  const applyFilters = (searchTerm, start, end, type, source) => {
     let filtered = [...productHistory];
   
+    // Filtrage par nom de produit
     filtered = filtered.filter((item) => {
+      // Recherche partielle pour la barre de recherche
       const matchesName = item.product.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesNames = item.product.name === searchTerms;  // Recherche exacte dans le cas du select
+      // Recherche exacte dans le cas du select
+      //const matchesExactName = item.product.name === searchTerms;  
   
       const matchesStartDate = start ? new Date(item.date) >= new Date(start) : true;
       const matchesEndDate = end ? new Date(item.date) <= new Date(end) : true;
       const matchesType = type ? item.type === type : true;
       const matchesSource = source ? item.source === source : true;
   
+      // Modifiez la condition pour que l'un ou l'autre soit suffisant : 
+      // soit on fait une recherche partielle (matchesName) soit une recherche exacte (matchesExactName)
       return (
-        (matchesNames || matchesName)&&
-        (matchesNames || matchesName) &&
+        matchesName &&
         matchesStartDate &&
         matchesEndDate &&
         matchesType &&
@@ -179,6 +139,7 @@ const ProductHistory = () => {
       );
     });
   
+    // Appliquer les autres agrégations si nécessaire
     if (viewMode === "tous") {
       filtered = aggregateProductHistory(filtered);
     }
@@ -189,8 +150,8 @@ const ProductHistory = () => {
     }
   };
   
-  
 
+  // Agrégat des données par produit
   const aggregateProductHistory = (history) => {
     const aggregated = {};
 
@@ -200,7 +161,7 @@ const ProductHistory = () => {
           ...item,
           stockChange: item.stockChange,
           remainingStock: item.remainingStock,
-          lastUpdated: item.date, // Ajouter la date pour trier par la plus récente
+          lastUpdated: item.date,
           sources: {
             [item.source]: {
               stockChange: item.stockChange,
@@ -210,15 +171,12 @@ const ProductHistory = () => {
         };
       } else {
         const product = aggregated[item.product._id];
-        product.stockChange += item.stockChange; // Ajouter les modifications de stock
-
-        // Comparer les dates et garder le dernier remainingStock
+        product.stockChange += item.stockChange;
         if (new Date(item.date) > new Date(product.lastUpdated)) {
           product.remainingStock = item.remainingStock;
-          product.lastUpdated = item.date; // Mettre à jour la dernière date
+          product.lastUpdated = item.date;
         }
 
-        // Agréger les sources
         if (!product.sources[item.source]) {
           product.sources[item.source] = {
             stockChange: item.stockChange,
@@ -234,6 +192,7 @@ const ProductHistory = () => {
     return Object.values(aggregated);
   };
 
+  // Calcul des totaux pour les stocks
   const calculateTotals = (filtered) => {
     const totalStockChange = filtered.reduce(
       (sum, item) => sum + (Number(item.stockChange) || 0),
@@ -249,6 +208,7 @@ const ProductHistory = () => {
     });
   };
 
+  // Modification de la vue (global ou détaillée)
   const handleViewChange = (mode) => {
     setViewMode(mode);
     if (mode === "tous") {
@@ -380,7 +340,7 @@ const ProductHistory = () => {
           </select>
           <label>Type:</label>
         </div>
-        <div className="filter-groupe">
+        {/* <div className="filter-groupe">
           <select value={searchTerms} onChange={handleSearchs}>
             <option value="">Toutes les produits</option>
             {produit.map((source, index) => (
@@ -390,7 +350,7 @@ const ProductHistory = () => {
             ))}
           </select>
           <label>Produit(s):</label>
-        </div>
+        </div> */}
       </div>
       <div className="table-h">
         <table className="suivis">

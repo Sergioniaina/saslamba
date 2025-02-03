@@ -8,6 +8,7 @@ const ProductModal = ({ show, onClose, onSave, product }) => {
     price: "",
     description: "",
     stock: 1,
+    stockAlerte: 5,
     photo: null,
   });
 
@@ -21,6 +22,7 @@ const ProductModal = ({ show, onClose, onSave, product }) => {
         price: product.price || "",
         description: product.description || "",
         stock: product.stock || 1,
+        stockAlerte: product.stockAlerte || 5,
         photo: product.photo || null,
       });
       setFileDetails(
@@ -34,6 +36,7 @@ const ProductModal = ({ show, onClose, onSave, product }) => {
         description: "",
         date: "",
         stock: 1,
+        stockAlerte: 5,
         photo: null,
       });
       setFileDetails(null);
@@ -140,6 +143,18 @@ const ProductModal = ({ show, onClose, onSave, product }) => {
             />
             <label>Stock</label>
           </div>
+          <div className="form-group">
+            <input
+              type="number"
+              name="stockAlerte"
+              placeholder=" "
+              value={formData.stockAlerte}
+              onChange={handleChange}
+              min="1"
+              required
+            />
+            <label>Stock Alerte</label>
+          </div>
 
           <input
             type="file"
@@ -185,8 +200,6 @@ const ProductModal = ({ show, onClose, onSave, product }) => {
             Cancel
           </button>
           </div>
-
-        
         </form>
       </div>
     </div>

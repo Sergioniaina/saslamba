@@ -54,8 +54,13 @@ const FactureForm = () => {
   const [quantities, setQuantities] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
   const [searchM, setSearchT] = useState("");
-  const [currentView, setCurrentView] = useState("machines");
-  const [current, setCurrent] = useState("client");
+  const [currentView, setCurrentView] = useState(
+    // localStorage.getItem("currentView") || 
+    "machines" // Load currentView from localStorage
+  );
+  const [current, setCurrent] = useState(
+    // localStorage.getItem("current" ||
+     "client");
   const inputRefs = useRef({});
   const inputRefss = useRef({});
   const [showClientList, setShowClientList] = useState(false);
@@ -68,6 +73,10 @@ const FactureForm = () => {
   const [loading, setLoading] = useState(true);
   const [reste, setReste] = useState(0);
   const PORT = process.env.REACT_APP_BACKEND_URL;
+  // useEffect(() => {
+  //   localStorage.setItem("currentView", currentView); // Save currentView to localStorage
+  //   localStorage.setItem("current", current);
+  // }, [currentView, current]);
   // eslint-disable-next-line
   const [changeGive, setChangeGive] = useState(0);
   // const [isreste, setIsreste]=useState("");
@@ -138,7 +147,7 @@ const FactureForm = () => {
     totalWeight: "",
     totalPrice: "",
     reste: "",
-    serviceType: "Lavage + Séchage",
+    serviceType: "Lavage",
   });
   const [manualInput, setManualInput] = useState(0);
   const [billBreakdown, setBillBreakdown] = useState({
@@ -660,6 +669,16 @@ const FactureForm = () => {
         machines.find((m) => m._id === machineId)?.type === "Sèche-linge"
     );
     const { serviceType } = formData;
+    if (serviceType === "produit") {
+      if (!selectedProducts || selectedProducts.length === 0) {
+        setMessage(
+          "Vous devez sélectionner au moins un produit pour ce service."
+        );
+        setModalInfo(true);
+        return false;
+      }
+      return true; // Validation réussie si au moins un produit est sélectionné
+    }
 
     if (serviceType === "Lavage" && !hasLavageMachine) {
       setMessage("une machine lavage requis pour lavage");
@@ -1008,7 +1027,9 @@ const FactureForm = () => {
           }
         );
         // alert("Facture modifiée avec succès");
-        toast.success("Facture modifier avec succes");
+        // setCurrent(current)
+        // setCurrentView(currentView)
+      //  toast.success("Facture modifier avec succes");
       } else {
         response = await axios.post(`${PORT}/api/factures`, factureData, {
           headers: {
@@ -1017,17 +1038,17 @@ const FactureForm = () => {
           },
         });
         // alert("Facture créée avec succès");
+         setCurrent(current);
+         setCurrentView(currentView);
         toast.success("La facture crée avec succès !");
       }
 
       console.log("Données de la facture envoyées :", response.data._id);
-      //generatePDF(factureData);
-      // printDirectToXprinter(factureData);
-      const printableArea = document.getElementById("printable-area");
+     const printableArea = document.getElementById("printable-area");
       if (printableArea) {
         console.log("L'élément à imprimer est prêt.");
         printContentAsPDF(); // Appel à l'impression
-       // window.location.reload(); 
+       
       } else {
         console.error("L'élément à imprimer n'a pas été trouvé.");
       }
@@ -1115,7 +1136,7 @@ const FactureForm = () => {
         totalWeight: "",
         totalPrice: "",
         reste: "",
-        serviceType: "Lavage + Séchage",
+        serviceType: "Lavage",
       }); // Réinitialisation des données du formulaire
     } catch (error) {
       setError(
@@ -1198,17 +1219,37 @@ const FactureForm = () => {
     // Le modal de confirmation est ensuite visible
     setIsConfirmVisible(true);
   };
-  const handleConfirmClick = () => {
-    // Vérifier l'état de la facture
-    if (formData.etat === "en attente") {
-      // Appeler la fonction appropriée pour "en attente"
-      billetConfirmEnattente();
-    } else {
-      // Appeler la fonction pour les autres états
-      billetConfirm();
+  const handleConfirmClick = async () => {
+    try {
+      if (formData.etat === "en attente") {
+        // Appeler la fonction pour "en attente"
+        await billetConfirmEnattente();
+        setCurrent("client");
+        setCurrentView("machines")
+      } else {
+        // Appeler la fonction pour les autres états
+        await billetConfirm();
+        if (isEditMode){
+          setCurrent("client");
+          setCurrentView("machines")
+        }
+        else {
+          setCurrent(current);
+          setCurrentView(current)
+        }
+      }
+      // setCurrentView("machines")
+      // setCurrent("client")
+      // Rafraîchir seulement FactureFor
+
+      // Optionnel : afficher un message de confirmation
+    } catch (error) {
+      console.error("Erreur lors de la confirmation :", error);
+      alert("Une erreur s'est produite.");
     }
   };
 
+  
   // const handleDetails = (facture) => {
   //   if (!facture || typeof facture !== "object") {
   //     setError("Facture non disponible ou mal formatée pour l'édition.");
@@ -1402,7 +1443,7 @@ const FactureForm = () => {
   //     }
   //   }
   // }, [facture, isEditMode]); // S'assurer que la facture et l'édition sont prêtes
-  
+
   const handleEdit = (facture) => {
     if (!facture || typeof facture !== "object") {
       setError("Facture non disponible ou mal formatée pour l'édition.");
@@ -1861,7 +1902,7 @@ const FactureForm = () => {
         const updatedProduct = {
           ...selectedProduct,
           stock: selectedProduct.stock + stockToAdd,
-          source : "Entrer en stock",
+          source: "Entrer en stock",
         };
         await axios.put(
           `${PORT}/api/products/${selectedProduct._id}`,
@@ -2145,6 +2186,8 @@ const FactureForm = () => {
                   etatFilter={["encaisser", "annulée"]}
                   setCurrentView={setCurrentView}
                   setCurrent={setCurrent}
+                  // Utilisez la clé pour forcer le rerender
+                  // Passez la méthode au composant
                 />
               </div>
             )}
@@ -2199,9 +2242,10 @@ const FactureForm = () => {
                     value={formData.serviceType}
                     onChange={onChanges}
                   >
-                    <option value="Lavage + Séchage">Lavage + Séchage</option>
                     <option value="Lavage">Lavage</option>
+                    <option value="Lavage + Séchage">Lavage + Séchage</option>
                     <option value="Séchage">Séchage</option>
+                    {/* <option value="produit">Produit(s)</option> */}
                   </select>
                 </div>
                 <div className="machine-ul">
@@ -2478,8 +2522,8 @@ const FactureForm = () => {
                   Ticket N°{" "}
                   {isEditMode
                     ? formData.ticketNumber // Mode édition : utiliser ticketNumber du formulaire
-                    : latestFacture.ticketNumber + 1 || 1} /{" "}
-                    {new Date(Date.now()).toISOString().split("T")[0]}
+                    : latestFacture.ticketNumber + 1 || 1}{" "}
+                  / {new Date(Date.now()).toISOString().split("T")[0]}
                 </h2>
               ) : (
                 <p>Aucune facture trouvée</p> // Message si aucune facture n'est trouvée
@@ -2964,7 +3008,7 @@ const FactureForm = () => {
                           return `Lavage  ${articleTypesDisplay}`;
                         } else if (machine?.type === "Sèche-linge") {
                           return `Séchage `;
-                        } 
+                        }
                         /*else {
                           return `${weight}`; // Poids affiché pour d'autres types de machines
                         }*/

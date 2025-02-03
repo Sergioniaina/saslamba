@@ -47,6 +47,9 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
   const [user, setUser] = useState("");
   const PORT = process.env.REACT_APP_BACKEND_URL;
   const factureRefs = useRef({});
+  useEffect(() => {
+    console.log("FactureForm monté ou rechargé !");
+  }, []);
   // Obtenir l'ID depuis l'URL
   const searchParams = new URLSearchParams(location.search);
   const highlightedId = searchParams.get("id");

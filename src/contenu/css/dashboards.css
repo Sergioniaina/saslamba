@@ -1,6 +1,6 @@
 /* Main container for the dashboard */
 .dashboard-container {
-  background: rgba(0, 0, 0, 0.6);
+  /* background: rgba(0, 0, 0, 0.6); */
   margin: 0 auto;
   display: flex;
   flex-direction: column;

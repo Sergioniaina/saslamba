@@ -85,7 +85,7 @@ router.post('/',authMiddleware, async (req, res) => {
     // Vérifier les machines requises selon le service
     const hasLavageMachine = selectedMachines.some(machine => machine.type === 'Machine à laver');
     const hasSéchageMachine = selectedMachines.some(machine => machine.type === 'Sèche-linge');
-
+   
     if (serviceType === 'Lavage' && !hasLavageMachine) {
       return res.status(400).json({ error: 'Une machine de lavage est requise pour le service de Lavage.' });
     }
@@ -357,41 +357,34 @@ router.put('/:id',authMiddleware, async (req, res) => {
     }).filter(detail => detail !== null);
     
     // Vérifier les machines disponibles et la capacité
-    for (let machineId of machines) {
-      const machine = await Machine.findById(machineId);
-      // if (!machine || machine.etat !== 'Disponible') {
-      //   return res.status(400).json({ error: `Machine ${machineId} non disponible ou non trouvée.` });
-      // }
-      
-      const weightForMachine = parseFloat(machineWeights[machineId]) || 0;
-      if (weightForMachine > machine.weightCapacity) {
-        return res.status(400).json({ error: `Poids pour la machine ${machineId} dépasse sa capacité.` });
+    if (serviceType !== 'produit') {
+      for (let machineId of machines) {
+        const machine = await Machine.findById(machineId);
+        const weightForMachine = parseFloat(machineWeights[machineId]) || 0;
+        if (weightForMachine > machine.weightCapacity) {
+          return res.status(400).json({ error: `Poids pour la machine ${machineId} dépasse sa capacité.` });
+        }
+
+        totalWeightAssigned += weightForMachine;
+        selectedMachines.push(machine);
       }
+
+      // Vérifier les machines requises selon le service
+      const hasLavageMachine = selectedMachines.some(machine => machine.type === 'Machine à laver');
+      const hasSéchageMachine = selectedMachines.some(machine => machine.type === 'Sèche-linge');
       
-      totalWeightAssigned += weightForMachine;
-      selectedMachines.push(machine);
+      if (serviceType === 'Lavage' && !hasLavageMachine) {
+        return res.status(400).json({ error: 'Une machine de lavage est requise pour le service de Lavage.' });
+      }
+
+      if (serviceType === 'Séchage' && !hasSéchageMachine) {
+        return res.status(400).json({ error: 'Une machine de séchage est requise pour le service de Séchage.' });
+      }
+
+      if (serviceType === 'Lavage + Séchage' && (!hasLavageMachine || !hasSéchageMachine)) {
+        return res.status(400).json({ error: 'Une machine de lavage et une machine de séchage sont requises pour le service Lavage + Séchage.' });
+      }
     }
-
-    // // Vérifier si la somme des poids est correcte
-    // if (totalWeightAssigned !== parseFloat(totalWeight)) {
-    //   return res.status(400).json({ error: 'Le poids total ne correspond pas à la somme des poids des machines.' });
-    // }
-    // Vérifier les machines requises selon le service
-    const hasLavageMachine = selectedMachines.some(machine => machine.type === 'Machine à laver');
-    const hasSéchageMachine = selectedMachines.some(machine => machine.type === 'Sèche-linge');
-
-    if (serviceType === 'Lavage' && !hasLavageMachine) {
-      return res.status(400).json({ error: 'Une machine de lavage est requise pour le service de Lavage.' });
-    }
-
-    if (serviceType === 'Séchage' && !hasSéchageMachine) {
-      return res.status(400).json({ error: 'Une machine de séchage est requise pour le service de Séchage.' });
-    }
-
-    if (serviceType === 'Lavage + Séchage' && (!hasLavageMachine || !hasSéchageMachine)) {
-      return res.status(400).json({ error: 'Une machine de lavage et une machine de séchage sont requises pour le service Lavage + Séchage.' });
-    }
-
     // Vérifier la disponibilité des produits et calculer le prix
     for (let productId of products) {
       const product = await Product.findById(productId);

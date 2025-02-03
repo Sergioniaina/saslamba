@@ -55,7 +55,7 @@
     padding: 2px;
     padding-top: 5px;
     padding-right: 5px;
-    background: rgba(0, 0, 0, 0.5);
+    /* background: rgba(0, 0, 0, 0.5); */
 
     select {
       background: rgb(9, 21, 33) !important;
@@ -338,7 +338,7 @@
       height: 89vh;
       padding: 5px;
       width: 100%;
-      background: rgba(64, 67, 69, 0.4);
+      background: rgba(0, 0, 0, 0.4);
       /* Style de base pour le conteneur principal */
       font-family: Arial, sans-serif;
 

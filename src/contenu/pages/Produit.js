@@ -11,6 +11,7 @@ import {
   faSearch,
 } from "@fortawesome/free-solid-svg-icons";
 import ModalConfirm from "../modal/ModalConfirm";
+import { useLocation } from "react-router-dom";
 
 const ProductStockForm = () => {
   const [products, setProducts] = useState([]);
@@ -20,6 +21,7 @@ const ProductStockForm = () => {
   const [isConfirmVisible, setIsConfirmVisible] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null); // Stores the action to confirm
   const [confirmMessage, setConfirmMessage] = useState(""); // Stores the confirmation message
+  const location = useLocation(); 
   const confirmActionAndClose = () => {
     if (confirmAction) confirmAction();
     setIsConfirmVisible(false);
@@ -48,13 +50,19 @@ const ProductStockForm = () => {
         const response = await axios.get("http://localhost:5000/api/products", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setProducts(response.data);
+        if (location.pathname === "/home/alerte") {
+          const lowStock = response.data.filter((product) => product.stock <= product.stockAlerte);
+          setProducts(lowStock);
+        } else {
+          // Sinon, on affiche tous les produits
+          setProducts(response.data);
+        }
       } catch (error) {
         console.error("Error fetching products", error);
       }
     };
     fetchProducts();
-  }, []);
+  }, [location]);
   const fetchProducts = async () => {
     const token = localStorage.getItem("token");
     try {
@@ -164,7 +172,14 @@ const ProductStockForm = () => {
             {filteredProducts.map((product) => (
               <tr key={product._id}>
                 <td>{product.name}</td>
-                <td>{product.stock}</td>
+                <td
+                  style={{
+                    backgroundColor: product.stock <= product.stockAlerte ? "red" : "transparent",
+                    color: product.stock <= product.stockAlerte ? "white" : "white",
+                  }}
+                >
+                  {product.stock}
+                </td>
                 <td>
                   {selectedProducts.includes(product) ? (
                     <input
