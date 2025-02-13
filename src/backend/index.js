@@ -1,15 +1,10 @@
 // backend/index.js
-const mongoose = require('mongoose');
-require('dotenv').config();
-
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('Error connecting to MongoDB:', err));
+require('dotenv').config();  // Ajoutez cette ligne en haut de votre fichier
 
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const db = require('./db');
+const connectDb = require('./db'); // Importez la fonction de connexion à la DB
 const productsRoutes = require('./routes/machineRoutes');
 const machinesRoutes = require('./routes/machinesRouter');
 const abonnement = require('./routes/abonnementsRoutes');
@@ -29,7 +24,13 @@ const historiqueCaisse = require('./routes/HistoriqueCaisse');
 const historiqueProduct = require('./routes/productHistory');
 const factureAbonnement = require('./routes/factureAbonnement');
 const path = require('path');
+
 const app = express();
+
+// Connectez-vous à la base de données MongoDB
+connectDb(); // Appel unique à la fonction de connexion
+
+// Middleware
 app.use(cors());
 app.use(bodyParser.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -37,6 +38,8 @@ app.use('/logo', express.static(path.join(__dirname, 'logo')));
 app.use('/uploadUser', express.static(path.join(__dirname, 'uploadUser')));
 app.use('/default_images', express.static(path.join(__dirname, 'default_images')));
 app.use('/machine', express.static(path.join(__dirname, 'machine')));
+
+// Routes API
 app.use('/api/products', productsRoutes);
 app.use('/api/machines', machinesRoutes);
 app.use('/api/subscriptions', abonnement);
