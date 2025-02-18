@@ -39,6 +39,10 @@ router.post('/signup', upload.single('photo'), async (req, res) => {
   let photo = req.file ? req.file.path : null;
 
   try {
+    const existingUser = await User.findOne({ name });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Cet utilisateur existe déjà' });
+    }
     // Définir une image par défaut si aucune photo n'est fournie
     if (!photo) {
       photo = role === 'admin' ? 'default_images/admin_default.jpg' : 'default_images/user_default.jpg';

@@ -4,13 +4,16 @@ import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser,faUserPlus, faSignInAlt } from '@fortawesome/free-solid-svg-icons';
 import '../css/signUp.css';
+import ModalInfo from '../../contenu/modal/ModalInfo';
 
 const Signup = () => {
+  const [modalInfo, setModalInfo] = useState(false);
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('user'); // Par défaut, le rôle est 'user'
   const [photo, setPhoto] = useState(null); // Pour stocker la photo
-  const [error, setError] = useState(''); // Pour afficher les erreurs
+  const [message, setMessage] = useState("");
+  // const [error, setError] = useState(''); // Pour afficher les erreurs
   const navigate = useNavigate();
   const [canShowSignup, setCanShowSignup] = useState(true);
 
@@ -37,25 +40,33 @@ const Signup = () => {
     formData.append('password', password);
     formData.append('role', role);
     if (photo) {
-      formData.append('photo', photo); 
+      formData.append('photo', photo);
     }
   
     try {
-       await axios.post('http://localhost:5000/api/auth/signup', formData, {
+      await axios.post('http://localhost:5000/api/auth/signup', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
       navigate('/signin');
     } catch (error) {
-      setError('Error registering user');
-      console.error(error);
+      if (error.response && error.response.status === 400) {
+        setMessage('Cet utilisateur existe déjà.');
+        setModalInfo(true)
+      } else {
+        setMessage('Erreur lors de l\'inscription.');
+        setModalInfo(true)
+      }
     }
   };
+  
   const signin =()=>{
     navigate('/signin');
   }
-
+  const onOk = () => {
+    setModalInfo(false);
+  };
   return (
     <div className='signup'>
       <div className="login-afara"></div>
@@ -111,7 +122,8 @@ const Signup = () => {
             <FontAwesomeIcon icon={faSignInAlt} /> se connecter
           </button>
         </form>
-        {error && <div className="error">{error}</div>}
+        {/* {error && <div className="error">{error}</div>} */}
+        {modalInfo && <ModalInfo message={message} onOk={onOk} />}
       </div>
     </div>
   );

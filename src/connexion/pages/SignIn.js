@@ -55,7 +55,7 @@ const SignIn = ({ onLogin }) => {
       console.log(caisseResponse.data.message); // Log de confirmation
       onLogin(token);
     } catch (err) {
-      setError("Invalid credentials");
+      setError("Invalid information");
     }
   };
 
