@@ -4,16 +4,24 @@
   display: flex;
   flex-direction: column;
   gap: 30px;
+  background: linear-gradient(135deg, rgba(30, 30, 30,0.7), rgba(29, 28, 28, 0.7));
   .form {
     width: 100%;
     display: flex;
     margin: 0 auto;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
+    gap: 10px;
     button {
+      flex: 1 1 calc(10% - 10px);
+      min-width: 200px;
+      max-width: 100%;
       background-color: #28a745;
       color: white;
       padding: 10px 20px;
+      height: 45px;
+      margin-right: 0px;
       border: none;
       border-radius: 5px;
       cursor: pointer;
@@ -23,6 +31,9 @@
       }
     }
     .form-group {
+      flex: 1 1 calc(10% - 10px);
+      min-width: 200px;
+      max-width: 100%;
       position: relative;
       display: flex;
       align-items: center;
@@ -61,7 +72,7 @@
             top: 0px;
             font-size: 12px;
             color: white;
-            background: black;
+            background: linear-gradient(135deg, rgba(30, 30, 30,0.7), rgba(29, 28, 28, 0.7));
             padding: 5px;
             font-weight: 600;
           }
@@ -88,6 +99,7 @@
   .historique-caisse {
     height: 65vh;
     overflow: auto;
+    flex: 1 1 auto;
     h2 {
       text-align: center;
       margin-bottom: 15px;
@@ -121,5 +133,10 @@
         background-color: #e1f1e6;
       } */
     }
+  }
+}
+@media (max-width: 650px) {
+  .gestion-caisse {
+    overflow: auto;
   }
 }

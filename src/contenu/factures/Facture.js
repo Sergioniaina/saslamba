@@ -3,16 +3,18 @@ import '../css/factureSelected.css';
 import axios from 'axios';
 
 function Facture({ selectedFacture, onCancel }) {
+  const PORT = process.env.REACT_APP_BACKEND_URL;
   const [companyInfo, setCompanyInfo] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchCompanyInfo(); // Load company info when the component mounts
+     // eslint-disable-next-line
   }, []);
 
   const fetchCompanyInfo = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/company-info/list");
+      const response = await axios.get(`${PORT}/api/company-info/list`);
       setCompanyInfo(response.data[0]); // Assuming the first entry is the company info
     } catch (error) {
       setError("Impossible de charger les informations de l'entreprise.");
@@ -38,7 +40,7 @@ function Facture({ selectedFacture, onCancel }) {
                   <div className="company-info-factureId">
                     <div className="company-photo-factureId">
                       <img
-                        src={`http://localhost:5000/${companyInfo.photo}`}
+                        src={`${PORT}/${companyInfo.photo}`}
                         alt="Logo de l'entreprise"
                         style={{
                           borderRadius: "10px",

@@ -102,10 +102,10 @@
   justify-content: center;
   align-items: center;
   z-index: 999;
+  animation: modalFadeIn 0.3s ease;
 
   .modal-content-caisse {
-    background-color: white;
-    padding: 20px;
+    background: linear-gradient(135deg, rgb(30, 30, 30), rgb(71, 68, 68));
     border-radius: 5px;
     display: flex;
     align-items: center;
@@ -115,7 +115,8 @@
     width: 80%;
     max-width: 500px;
     position: relative;
-    color: black;
+    color: white;
+    padding-bottom: 20px;
     .modal-button {
       display: flex;
       justify-content: space-between;
@@ -161,14 +162,16 @@
         font-size: 16px;
         height: 30px;
         border: 3px solid gray;
+        background: transparent;
+        color: white;
         &:focus {
           border-color: #4caf50;
-          border: 3px solid blue;
+          border: 3px solid wheat;
         }
 
         &:valid {
           border-color: #4caf50;
-          border: 3px solid blue;
+          border: 3px solid gray;
         }
       }
 
@@ -177,10 +180,16 @@
       input:not(:placeholder-shown) + label {
         top: 0;
         font-size: 12px;
-        color: #4caf50;
-        background: white;
-        padding: 5px;
+        color: white;
+        background: linear-gradient(135deg, rgb(30, 30, 30), rgb(71, 68, 68));
+        padding-left: 5px;
+        padding-right: 5px;
+        padding-bottom: 2px;
+        border-radius: 5px;
         left: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
     }
 

@@ -17,6 +17,7 @@ import "./Caisse.css";
 import ModalConfirm from "../modal/ModalConfirm";
 
 const Caisse = () => {
+  const PORT = process.env.REACT_APP_BACKEND_URL;
   const [caisses, setCaisses] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [caisseToEdit, setCaisseToEdit] = useState(null);
@@ -32,11 +33,12 @@ const Caisse = () => {
 
   useEffect(() => {
     fetchCaisses();
+    // eslint-disable-next-line
   }, []);
 
   const fetchCaisses = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/caisses");
+      const response = await axios.get(`${PORT}/api/caisses`);
       setCaisses(response.data);
     } catch (error) {
       console.error("Erreur lors de la récupération des caisses", error);
@@ -57,7 +59,7 @@ const Caisse = () => {
 
   const handleDeleteCaisse = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/caisses/${id}`);
+      await axios.delete(`${PORT}/api/caisses/${id}`);
       fetchCaisses();
     } catch (error) {
       console.error("Erreur lors de la suppression de la caisse", error);
@@ -82,11 +84,11 @@ const Caisse = () => {
     try {
       if (caisseToEdit) {
         await axios.put(
-          `http://localhost:5000/api/caisses/${caisseToEdit._id}`,
+          `${PORT}/api/caisses/${caisseToEdit._id}`,
           formData
         );
       } else {
-        await axios.post("http://localhost:5000/api/caisses", formData);
+        await axios.post(`${PORT}/api/caisses`, formData);
       }
       fetchCaisses();
       setShowModal(false);
@@ -110,7 +112,7 @@ const Caisse = () => {
     try {
       const updatedCaisse = { solde: amount, motif: "Recette" };
       await axios.put(
-        `http://localhost:5000/api/caisses/${caisse._id}/add-solde`,
+        `${PORT}/api/caisses/${caisse._id}/add-solde`,
         updatedCaisse
       );
       fetchCaisses();
@@ -157,7 +159,7 @@ const Caisse = () => {
     try {
       const updatedCaisse = { solde: amount, motif: "Depense" };
       await axios.put(
-        `http://localhost:5000/api/caisses/${caisse._id}/remove-solde`,
+        `${PORT}/api/caisses/${caisse._id}/remove-solde`,
         updatedCaisse
       );
       fetchCaisses();
@@ -172,7 +174,7 @@ const Caisse = () => {
   const handleCloseCaisse = async (caisse) => {
     try {
       await axios.post(
-        `http://localhost:5000/api/caisses/${caisse._id}/closes`
+        `${PORT}/api/caisses/${caisse._id}/closes`
       );
       fetchCaisses();
     } catch (error) {
@@ -191,7 +193,7 @@ const Caisse = () => {
 
   const handleOpenCaisse = async (caisse) => {
     try {
-      await axios.post(`http://localhost:5000/api/caisses/${caisse._id}/open`);
+      await axios.post(`${PORT}/api/caisses/${caisse._id}/open`);
       fetchCaisses();
     } catch (error) {
       console.error("Erreur lors de l'ouverture de la caisse", error);

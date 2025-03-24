@@ -7,11 +7,12 @@ const SubscriptionManager = () => {
   const [selectedSubscription, setSelectedSubscription] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState(''); // État pour le terme de recherche
+  const PORT = process.env.REACT_APP_BACKEND_URL;
 
   // Fetch subscriptions from the server
   const fetchSubscriptions = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/subscriptions');
+      const response = await axios.get(`${PORT}/api/subscriptions`);
       setSubscriptions(response.data);
       if (selectedSubscription) {
         const updatedSubscription = response.data.find(sub => sub._id === selectedSubscription._id);
@@ -25,14 +26,14 @@ const SubscriptionManager = () => {
   useEffect(() => {
     fetchSubscriptions();
     // eslint-disable-next-line
-  }, []);
+  }, [PORT]);
 
   const handleSaveSubscription = async (subscription) => {
     try {
       if (subscription._id) {
-        await axios.put(`http://localhost:5000/api/subscriptions/${subscription._id}`, subscription);
+        await axios.put(`${PORT}/api/subscriptions/${subscription._id}`, subscription);
       } else {
-        await axios.post('http://localhost:5000/api/subscriptions', subscription);
+        await axios.post(`${PORT}/api/subscriptions`, subscription);
       }
       await fetchSubscriptions();
       setIsModalOpen(false);
@@ -43,7 +44,7 @@ const SubscriptionManager = () => {
 
   const handleDeleteSubscription = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/subscriptions/${id}`);
+      await axios.delete(`${PORT}/api/subscriptions/${id}`);
       await fetchSubscriptions();
       setSelectedSubscription(null);
     } catch (error) {

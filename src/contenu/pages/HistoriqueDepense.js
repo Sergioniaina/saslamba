@@ -8,6 +8,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const GestionCaisse = () => {
+  const PORT = process.env.REACT_APP_BACKEND_URL;
   const [caisses, setCaisses] = useState([]);
   const [selectedCaisse, setSelectedCaisse] = useState("");
   const [solde, setSolde] = useState(0);
@@ -32,12 +33,12 @@ const GestionCaisse = () => {
     const fetchData = async () => {
       try {
         const caisseResponse = await axios.get(
-          "http://localhost:5000/api/caisses"
+          `${PORT}/api/caisses`
         );
         setCaisses(caisseResponse.data);
 
         const motifsResponse = await axios.get(
-          "http://localhost:5000/api/historiques"
+          `${PORT}/api/historiques`
         );
         const distinctMotifs = [
           ...new Set(motifsResponse.data.map((item) => item.motif)),
@@ -45,7 +46,7 @@ const GestionCaisse = () => {
         setMotifs(distinctMotifs);
 
         const historiqueResponse = await axios.get(
-          "http://localhost:5000/api/historiques"
+          `${PORT}/api/historiques`
         );
         setHistoriqueCaisse(historiqueResponse.data);
       } catch (error) {
@@ -54,10 +55,10 @@ const GestionCaisse = () => {
     };
 
     fetchData();
-  }, []);
+  }, [PORT]);
   const deleteEntry = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/historiques/${id}`);
+      await axios.delete(`${PORT}/api/historiques/${id}`);
       toast.success("Entrée supprimée avec succès.");
       // Mettre à jour l'état pour retirer l'entrée supprimée
       setHistoriqueCaisse((prevHistorique) =>
@@ -87,8 +88,8 @@ const GestionCaisse = () => {
 
       const url =
         typeAction === "Ajout"
-          ? `http://localhost:5000/api/caisses/${selectedCaisse}/add-solde`
-          : `http://localhost:5000/api/caisses/${selectedCaisse}/remove-solde`;
+          ? `${PORT}/api/caisses/${selectedCaisse}/add-solde`
+          : `${PORT}/api/caisses/${selectedCaisse}/remove-solde`;
 
        await axios.put(url, {
         solde,

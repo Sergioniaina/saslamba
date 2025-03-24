@@ -144,10 +144,12 @@
     display: flex;
     gap: 40px;
     justify-content: center;
+    flex-wrap: wrap;
     /* Individual graph card */
     .graph-card {
-      flex: 1 1 500px;
-      max-width: 580px;
+      flex: 1 1 300px;
+      max-width: 100%;
+      min-width: 200px;
       background-color: rgba(42, 39, 39, 0.8);
       padding: 20px;
       border-radius: 8px;

@@ -64,6 +64,7 @@
   align-items: center;
   animation: fadeIn 0.3s ease;
   overflow: auto;
+  z-index: 999;
 
   &.show {
     display: flex;

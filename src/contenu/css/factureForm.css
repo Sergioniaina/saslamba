@@ -1,9 +1,15 @@
 .facture-form1 {
   width: auto;
   height: auto;
-
+  margin-left: 15px;
   .machine-etat {
-    background: linear-gradient(90deg, rgb(54, 201, 54), rgb(231, 184, 184), #789ee4, white);
+    background: linear-gradient(
+      90deg,
+      rgb(54, 201, 54),
+      rgb(231, 184, 184),
+      #789ee4,
+      white
+    );
     /* Couleurs initiales du dégradé */
     background-size: 300% 300%;
     /* Étend le dégradé pour une animation fluide */
@@ -72,7 +78,8 @@
       box-sizing: border-box;
       height: 100%;
       flex-grow: 1;
-
+      /* border: 2px solid green; */
+      height: 89vh;
       .navigation-buttons .active {
         width: 40%;
         font-size: medium;
@@ -85,7 +92,6 @@
         box-sizing: border-box;
         display: flex;
         justify-content: space-between;
-
         .div-bt-gauche {
           height: 40px;
           flex-grow: 1;
@@ -118,7 +124,6 @@
           justify-content: center;
           gap: 10px;
           align-items: center;
-
           .icon {
             font-size: large;
           }
@@ -150,10 +155,10 @@
     } */
     .tick {
       /* border: 2px solid white; */
-      min-width: 430px;
-
-      /* max-width: 800px;  */
-      /* width: 45%;  */
+      border-radius: 10px;
+      min-width: 28vw;
+      transition: transform 0.3s ease-in-out;
+      overflow: auto;
       .d {
         height: 64vh;
         overflow-y: auto;
@@ -226,7 +231,6 @@
         /* Allow items to wrap to the next line */
         justify-content: center;
         /* Center items horizontally */
-        /* border: 2px solid yellow; */
         box-sizing: border-box;
         padding: 5px;
         overflow-y: auto;
@@ -234,7 +238,6 @@
         height: 100%;
         gap: 10px;
         /* Space between items */
-        padding-right: 5px;
         /* Optional: padding inside the container */
         box-sizing: border-box;
         /* Include padding and border in element's total width and height */
@@ -242,7 +245,13 @@
         .name-product {
           text-align: center;
           text-justify: auto;
-          background: linear-gradient(90deg, rgb(54, 201, 54), rgb(231, 184, 184), #789ee4, white);
+          background: linear-gradient(
+            90deg,
+            rgb(54, 201, 54),
+            rgb(231, 184, 184),
+            #789ee4,
+            white
+          );
           /* Couleurs initiales du dégradé */
           background-size: 300% 300%;
           /* Étend le dégradé pour une animation fluide */
@@ -280,7 +289,16 @@
         height: 240px;
         /* Fixed height */
         padding: 10px;
-
+        transition: 0.3s;
+        background: linear-gradient(
+          90deg,
+          rgba(0, 0, 0, 0.6),
+          rgba(18, 77, 122, 0.2),
+          rgba(0, 0, 0, 0.6),
+          rgba(24, 73, 75, 0.3)
+        );
+        background-size: 300% 300%;
+        animation: gradient-animations 6s ease infinite;
         .machine-but {
           display: flex;
           align-items: center;
@@ -289,6 +307,12 @@
           height: 30px;
           border-radius: 3px;
           background: rgb(6, 105, 69);
+          transition: 0.2s;
+          &:hover{
+            width: 37px;
+            height: 32px;
+            background: rgb(2, 162, 101);
+          }
         }
 
         .input-offert {
@@ -317,10 +341,7 @@
       }
 
       .produit-list.selected {
-        background: rgba(0,
-            0,
-            0,
-            0.8);
+        background: rgba(0, 0, 0, 0.8);
         /* Change background to green when selected */
         border-color: #fff;
         /* You can also change the border color */
@@ -332,16 +353,18 @@
       flex-direction: column;
       align-items: center;
       right: 8px;
-      box-shadow: 0px 0px 10px black;
       border-radius: 10px;
       box-sizing: border-box;
-      height: 89vh;
+      height: 88vh;
       padding: 5px;
       width: 100%;
       background: rgba(0, 0, 0, 0.4);
+      box-sizing: border-box;
+      min-width: 28vw;
+      animation: FadeIn 0.4s ease;
+      border: 2px solid rgb(63, 61, 61);
       /* Style de base pour le conteneur principal */
       font-family: Arial, sans-serif;
-
       .offert {
         background: rgb(168, 112, 6);
       }
@@ -464,8 +487,11 @@
       .machine-input {
         display: flex;
         justify-content: space-between;
+        box-sizing: border-box;
         padding: 10px;
-
+        button {
+          margin: 2px;
+        }
         input {
           background-color: transparent;
           outline: none;
@@ -474,7 +500,6 @@
           text-align: center;
           border: 3px solid gray;
           border-radius: 36px;
-          height: 35px;
           width: 210px;
         }
 
@@ -531,6 +556,16 @@
         /* Include padding and border in element's total width and height */
         height: 260px;
         /* Fixed height */
+        transition: 0.3s;
+        background: linear-gradient(
+          90deg,
+          rgba(0, 0, 0, 0.6),
+          rgba(18, 77, 122, 0.2),
+          rgba(0, 0, 0, 0.6),
+          rgba(24, 73, 75, 0.3)
+        );
+        background-size: 300% 300%;
+        animation: gradient-animations 6s ease infinite;
 
         select {
           height: 30px;
@@ -549,7 +584,6 @@
         background-color: rgba(0, 0, 0, 0.7);
         height: 285px;
         transition: 0.2s ease;
-
       }
 
       .facturePrint-btn {
@@ -561,7 +595,6 @@
         gap: 10px;
         border: 3px solid gray;
         width: 20%;
-
         .icon {
           color: rgb(255, 152, 0);
         }
@@ -584,7 +617,7 @@
         justify-content: center;
         /* Centre les éléments horizontalement */
         border-radius: 5px;
-        width: 20%;
+        width: 200px;
         height: 40px;
         /* Gardez la même hauteur */
         gap: 10px;
@@ -662,7 +695,7 @@
         display: flex;
         align-items: center;
         justify-content: space-evenly;
-
+        transition: 0.3s;
         input {
           width: 100%;
         }
@@ -753,16 +786,13 @@
       border: none;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      width: 700px;
       animation: slideIn 0.4s ease;
-
+      /* animation: fadIn 0.4s ease; */
       .summary-container {
         display: flex;
         flex-direction: column;
         justify-content: space-between;
         width: 45%;
-
         button {
           width: 100%;
           height: 45px;
@@ -771,11 +801,13 @@
         input {
           padding: 10px;
           height: 25px;
-          width: 93%;
+          width: 96%;
           border: 3px solid gray;
           text-align: center;
           color: white;
+          outline: none;
           background: transparent;
+          padding-right: 0px;
         }
       }
     }
@@ -788,18 +820,17 @@
 
     .billets {
       display: flex;
-
       .reste {
         letter-spacing: 1px;
         height: 45px;
-        width: 100%;
+        width: 98%;
+        padding-right: 0px;
         border: 3px solid gray;
         text-align: center;
         position: relative;
         display: flex;
         align-items: center;
         justify-content: center;
-
         span {
           position: absolute;
           left: 10px;
@@ -809,14 +840,12 @@
 
       .billets-container {
         display: flex;
-
         .bill-buttons-container {
           display: flex;
-
           flex-wrap: wrap;
           gap: 30px;
           flex: 1;
-
+        
           .bill-button {
             flex: 1 1 calc(33.333% - 10px);
             min-width: 80px;
@@ -830,6 +859,7 @@
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s ease;
+            margin-right: 0px;
 
             &:hover {
               background-color: #1a2b3d;
@@ -874,8 +904,8 @@
         color: white;
         border: 3px solid gray;
 
-        &:focus+label,
-        &:valid+label {
+        &:focus + label,
+        &:valid + label {
           transform: translateY(2px);
           font-size: 15px;
           color: green;
@@ -891,10 +921,12 @@
         color: #888;
         transition: all 0.3s ease;
 
-        .input-totalPrice:focus+&,
-        .input-totalPrice:valid+& {
+        .input-totalPrice:focus + &,
+        .input-totalPrice:valid + & {
           top: -10px;
           font-size: 15px;
+          padding-left: 5px;
+          padding-right: 5px;
           color: rgb(14, 237, 245);
           background: rgba(9, 21, 33, 0.8);
         }
@@ -935,7 +967,6 @@
           padding-right: 10px;
           gap: 20px;
         }
-
       }
 
       td {
@@ -963,7 +994,6 @@
           .info {
             text-align: left;
           }
-
         }
 
         .company-photo-facture {
@@ -972,7 +1002,6 @@
       }
 
       .client-info {
-        /* border: 2px solid blue; */
         text-align: left;
         width: 50%;
         font-size: 10px;
@@ -1049,7 +1078,17 @@
     /* Shrinks back to this size */
   }
 }
-
+@keyframes gradient-animations {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
 @keyframes finalGrow {
   0% {
     padding: 20px;
@@ -1123,9 +1162,7 @@
 
       &:focus,
       &:not(:placeholder-shown) {
-        border: 3px solid blue;
-
-        &+label {
+        & + label {
           top: 0px;
           font-size: 12px;
           color: #09890e;
@@ -1169,3 +1206,101 @@
     transform: translateY(0);
   }
 }
+@keyframes slideTop {
+  from {
+    transform: translateY(-50px);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+@media (max-width: 1000px) {
+  .tick {
+    display: none;
+  }
+  .tick.show {
+    animation: modalFadeIn 0.3s ease;
+    /* animation: slideIn 0.4s ease; */
+    display: block;
+    display: flex;
+    position: fixed;
+    align-items: center;
+    justify-content: center;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 5px;
+    .ticket {
+      width: 50vw;
+      min-width: 380px;
+      box-shadow: 0px 0px 5px wheat;
+      border: none;
+      height: 86vh;
+    }
+  }
+}
+@media (max-width: 1000px) {
+  .facture-gauche {
+    width: 100%;
+    right: 0px;
+    left: 0px;
+  }
+}
+@media (max-width: 750px) {
+  .facture-gauche {
+    .navigation-buttons {
+      overflow-x: auto;
+      border-bottom: 4px solid gray;
+    }
+  }
+}
+@media (max-width: 600px) {
+  .facture-gauche {
+    .client,
+    .machine-input {
+      overflow-x: auto;
+    }
+  }
+}
+@media (max-width: 600px) {
+  .facture-form{
+    height: 91vh !important;
+  }
+}
+@media (max-width: 500px) {
+ .modal-stock{
+    width: 75% !important;
+  }
+  .facture-form1 .facture-form .produit-list{
+    min-width: 185px !important;
+  }
+}
+.toggle-button-modal {
+  position: fixed;
+  top: 20px;
+  background-color: green;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 5px;
+  justify-content: center;
+  align-items: center;
+  width: 30vw;
+  right: 32%;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0px 0px 5px black;
+  display: none;
+  z-index: 100;
+}
+@media (max-width: 1000px) {
+  .toggle-button-modal {
+    display: block;
+    display: flex;
+    gap: 10px;
+  }
+}
+

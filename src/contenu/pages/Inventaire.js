@@ -12,10 +12,11 @@ import "./ProductInventory.css";
 import ModalConfirm from "../modal/ModalConfirm";
 import * as XLSX from "xlsx";
 import { FaFileExcel } from "react-icons/fa";
+const PORT = process.env.REACT_APP_BACKEND_URL;
 
-const API_URL = "http://localhost:5000/api/products";
-const HISTORIQUE_URL = "http://localhost:5000/api/historique";
-const USER_URL = "http://localhost:5000/api/auth/get"; // Nouvel endpoint pour récupérer les utilisateurs
+const API_URL = `${PORT}/api/products`;
+const HISTORIQUE_URL = `${PORT}/api/historique`;
+const USER_URL = `${PORT}/api/auth/get`; // Nouvel endpoint pour récupérer les utilisateurs
 
 const ProductInventory = () => {
   const [products, setProducts] = useState([]);
@@ -212,7 +213,7 @@ const ProductInventory = () => {
     if (user) {
       // Récupérer les privilèges de l'utilisateur via l'API
       axios
-        .get("http://localhost:5000/api/privileges", {
+        .get(`${PORT}/api/privileges`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -288,7 +289,7 @@ const ProductInventory = () => {
           Exporter en Excel
         </button>
       </div>
-
+      <div className="iventaire-t">
       <table className="inventory-table">
         <thead>
           <tr>
@@ -342,6 +343,7 @@ const ProductInventory = () => {
           })}
         </tbody>
       </table>
+      </div>
 
       {showModal && (
         <div className="modal-inventaire" onClick={() => setShowModal(false)}>

@@ -13,12 +13,14 @@ import {
   faPlus,
   faSearch,
   faBoxOpen,
+  faEllipsisV,
 } from "@fortawesome/free-solid-svg-icons";
 import "../css/Products.css";
 import { FaSave, FaTimes } from "react-icons/fa";
 import ModalConfirm from "../modal/ModalConfirm";
 
 const Products = () => {
+  const PORT = process.env.REACT_APP_BACKEND_URL;
   const [products, setProducts] = useState([]);
   const [currentProduct, setCurrentProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -36,9 +38,16 @@ const Products = () => {
   const [selectedType, setSelectedType] = useState("");
   const [uniqueTypes, setUniqueTypes] = useState([]);
   const [userPrivileges, setUserPrivileges] = useState(null);
+  const [openMenuId, setOpenMenuId] = useState(null); // Stocke l'ID du menu ouvert
+  // Fonction pour basculer l'affichage du menu
+  const toggleMenu = (e, id) => {
+    e.stopPropagation(); // Empêche la propagation de l'événement
+    setOpenMenuId(openMenuId === id ? null : id); // Ferme si déjà ouvert, sinon ouvre
+  };
 
   useEffect(() => {
     fetchAllProducts();
+    // eslint-disable-next-line
   }, []);
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -46,7 +55,7 @@ const Products = () => {
     if (user) {
       // Récupérer les privilèges de l'utilisateur via l'API
       axios
-        .get("http://localhost:5000/api/privileges", {
+        .get(`${PORT}/api/privileges`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -77,7 +86,7 @@ const Products = () => {
           );
         });
     }
-  }, []);
+  }, [PORT]);
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     setUser(user);
@@ -86,7 +95,7 @@ const Products = () => {
   const fetchAllProducts = async () => {
     try {
       const token = localStorage.getItem("token");
-      const result = await axios.get("http://localhost:5000/api/products", {
+      const result = await axios.get(`${PORT}/api/products`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProducts(result.data);
@@ -120,7 +129,7 @@ const Products = () => {
       if (currentProduct?._id) {
         // Mise à jour du produit
         await axios.put(
-          `http://localhost:5000/api/products/${currentProduct._id}`,
+          `${PORT}/api/products/${currentProduct._id}`,
           formData,
           {
             headers: {
@@ -131,16 +140,12 @@ const Products = () => {
         );
       } else {
         // Ajout d'un nouveau produit
-        const result = await axios.post(
-          "http://localhost:5000/api/products",
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-              Authorization: `Bearer ${token}`, // Ajout de l'en-tête d'autorisation
-            },
-          }
-        );
+        const result = await axios.post(`${PORT}/api/products`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`, // Ajout de l'en-tête d'autorisation
+          },
+        });
         setCurrentProduct(result.data);
       }
 
@@ -157,7 +162,7 @@ const Products = () => {
 
   const handleDeleteProduct = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/products/${id}`, {
+      await axios.delete(`${PORT}/api/products/${id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       setCurrentProduct(currentProduct?._id === id ? null : currentProduct);
@@ -183,13 +188,14 @@ const Products = () => {
     setTimeout(() => inputRef.current?.focus(), 0);
   };
 
-  const handleModalSubmit = async () => {
+  const handleModalSubmit = async (e) => {
+    e.preventDefault();
     const stockToAdd = parseInt(quantity, 10);
     const token = localStorage.getItem("token");
     if (!isNaN(stockToAdd) && stockToAdd > 0) {
       try {
         await axios.put(
-          `http://localhost:5000/api/products/${selectedProduct._id}`,
+          `${PORT}/api/products/${selectedProduct._id}`,
           {
             ...selectedProduct,
             stock: selectedProduct.stock + stockToAdd,
@@ -264,9 +270,11 @@ const Products = () => {
               </option>
             ))}
           </select>
-          <button onClick={handleAddButtonClick} className="add-button">
-            <FontAwesomeIcon icon={faPlus} /> Ajouter un Produit
-          </button>
+          {userPrivileges?.produits?.includes("add") && (
+            <button onClick={handleAddButtonClick} className="add-button">
+              <FontAwesomeIcon icon={faPlus} /> Ajouter un Produit
+            </button>
+          )}
           <button onClick={confirmExcel} className="export-button">
             <FaFileExcel
               style={{ marginRight: "8px", color: "green", fontSize: "1.2em" }}
@@ -294,7 +302,7 @@ const Products = () => {
                 <td>
                   {product.photo && (
                     <img
-                      src={`http://localhost:5000/${product.photo}`}
+                      src={`${PORT}/${product.photo}`}
                       alt={product.name}
                       className="product-image"
                     />
@@ -304,8 +312,12 @@ const Products = () => {
                 <td>{product.price} Ar</td>
                 <td
                   style={{
-                    backgroundColor: product.stock <= product.stockAlerte ? "red" : "transparent",
-                    color: product.stock <= product.stockAlerte ? "white" : "white",
+                    backgroundColor:
+                      product.stock <= product.stockAlerte
+                        ? "red"
+                        : "transparent",
+                    color:
+                      product.stock <= product.stockAlerte ? "white" : "white",
                   }}
                 >
                   {product.stock}
@@ -313,30 +325,44 @@ const Products = () => {
                 <td>{product.stockAlerte}</td>
                 <td>{product.description}</td>
                 <td className="action">
+                  <button
+                    className="dropdown-btn"
+                    type="button"
+                    onClick={(e) => toggleMenu(e, product._id)}
+                  >
+                    <FontAwesomeIcon icon={faEllipsisV} />
+                  </button>
+                  <div className={`menu-action ${openMenuId === product._id ? "show" : ""}`}>
                   {userPrivileges?.produits?.includes("edit") && (
-                    <FontAwesomeIcon
-                      onClick={() =>
-                        setCurrentProduct(product) || setIsModalOpen(true)
-                      }
-                      className="edit-button"
+                    <button  onClick={() =>
+                      setCurrentProduct(product) || setIsModalOpen(true)
+                    }>
+                      <FontAwesomeIcon
+                      className="edit-button icon"
                       data-tooltip-id="edit"
                       icon={faEdit}
                     />
+                    </button>
                   )}
                   {userPrivileges?.produits?.includes("delete") && (
-                    <FontAwesomeIcon
+                    <button>
+                      <FontAwesomeIcon
                       onClick={() => confirmDelete(product._id)}
                       className="delete-button icon"
                       data-tooltip-id="delete"
                       icon={faTrash}
                     />
+                    </button>
                   )}
+                  <button>
                   <FontAwesomeIcon
                     onClick={() => handleAddStock(product)}
                     className="stock-button icon"
                     data-tooltip-id="ajouter-stock"
                     icon={faBoxOpen}
                   />
+                  </button>
+                  </div>
                 </td>
               </tr>
             ))}

@@ -41,6 +41,7 @@ const Navbar = ({
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false); // State for logout confirmation modal
   const [companyInfo, setCompanyInfo] = useState(null);
+  const PORT = process.env.REACT_APP_BACKEND_URL;
   // eslint-disable-next-line 
   const [backgroundImage, setBackgroundImage] = useState(bg10);
   useEffect(() => {
@@ -66,7 +67,7 @@ const Navbar = ({
   const fetchCompanyInfo = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/company-info/list"
+        `${PORT}/api/company-info/list`
       );
       setCompanyInfo(response.data[0]); // Assuming the first entry is the company info
     } catch (error) {
@@ -106,7 +107,7 @@ const Navbar = ({
   useEffect(() => {
     const fetchUnpaidInvoices = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/factures");
+        const response = await axios.get(`${PORT}/api/factures`);
         const unpaid = response.data.filter(
           (facture) => facture.reste > 0 && facture.etat !== "annulée"
         );
@@ -117,7 +118,7 @@ const Navbar = ({
       }
     };
     fetchUnpaidInvoices();
-  }, []);
+  }, [PORT]);
 
   const visibles = () => {
     setVisible(!visible);
@@ -157,6 +158,57 @@ const Navbar = ({
     onLogout();
     setIsLogoutConfirmOpen(false);
   };
+  const [globalTime, setGlobalTime] = useState(0);
+  const [showNotification, setShowNotification] = useState(false);
+
+  // Fonction pour récupérer le temps global depuis le backend
+  const fetchGlobalTime = async () => {
+    try {
+      const response = await axios.get(`${PORT}/api/globaltime`);
+      console.log('Temps global récupéré:', response.data.time); // Afficher dans la console
+      setGlobalTime(response.data.time);
+    } catch (error) {
+      console.error("Erreur lors de la récupération du temps global:", error);
+    }
+  };
+
+  // Récupérer le temps toutes les 10 secondes
+  useEffect(() => {
+    fetchGlobalTime(); // Appel initial
+    const intervalId = setInterval(fetchGlobalTime, 10000); // Mise à jour toutes les 10 secondes
+
+    return () => clearInterval(intervalId); // Nettoyage à la désactivation
+    // eslint-disable-next-line 
+  }, []);
+  useEffect(() => {
+    let showTimeoutId, hideTimeoutId;
+
+    // Fonction pour afficher la notification pendant 3 secondes
+    const showAndHideNotification = () => {
+      setShowNotification(true); // Afficher
+      hideTimeoutId = setTimeout(() => {
+        setShowNotification(false); // Cacher après 3 secondes
+      }, 3000);
+    };
+    // if (globalTime <= 2 && globalTime > 0) {
+      if (globalTime <= 0) {
+      // Si globalTime <= 5, naviguer directement vers /reabonnement
+      navigate('/reabonnement', { replace: true });
+    }
+    if (globalTime <= 5 && globalTime > 0) {
+      showAndHideNotification(); // Afficher immédiatement la première fois
+
+      // Réafficher toutes les 5 secondes
+      showTimeoutId = setInterval(showAndHideNotification, 10000);
+    }
+
+    // Nettoyage des timeouts et interval quand globalTime change ou composant se démonte
+    return () => {
+      clearTimeout(hideTimeoutId);
+      clearInterval(showTimeoutId);
+    };
+    // eslint-disable-next-line
+  }, [globalTime]); // Dépendance sur globalTime
 
   return (
     <div className="navbar">
@@ -176,7 +228,7 @@ const Navbar = ({
               <img
                 alt="Logo de l'entreprise"
                 className="img"
-                src={`http://localhost:5000/${companyInfo.photo}`}
+                src={`${PORT}/${companyInfo.photo}`}
               />
             </div>
             <span>{companyInfo.name}</span>
@@ -197,26 +249,21 @@ const Navbar = ({
               style={{
                 position: "relative",
                 display: "inline-block",
-                marginRight: "10px",
               }}
               onClick={toggleModal}
             >
-              <FaBell size={30} color="#555" />
-              <span
-                style={{
-                  position: "absolute",
-                  top: "-8px",
-                  right: "-8px",
-                  color: "white",
-                  borderRadius: "50%",
-                  padding: "5px",
-                  fontSize: "13px",
-                }}
-              ></span>
+              <FaBell  className="fabell" color="#555" />
             </div>
             <span className="unpaid">{unpaidInvoices}</span>
           </div>
         )}
+         <button
+          data-tooltip-id="theme"
+          className="button button-visibility"
+          onClick={visibles}
+        >
+          {visible ? <FaEyeSlash className="slash" /> : <FaEye className="eye" />}
+        </button>
         <button
           data-tooltip-id="logout"
           className="button button-logout"
@@ -224,13 +271,7 @@ const Navbar = ({
         >
           <FaSignOutAlt />
         </button>
-        <button
-          data-tooltip-id="theme"
-          className="button button-visibility"
-          onClick={visibles}
-        >
-          {visible ? <FaEyeSlash /> : <FaEye />}
-        </button>
+       
         <button
           data-tooltip-id="setting"
           className="button button-settings"
@@ -294,9 +335,6 @@ const Navbar = ({
       {isSettingsModalOpen && (
         <div className="modal-image" onClick={toggleSettingsModal}>
           <div className="modal-image1" onClick={(e) => e.stopPropagation()}>
-            <button className="btn-fermer" onClick={toggleSettingsModal}>
-              ❌
-            </button>
             <div id="image-grid" className="image-grid">
               {backgroundImages.map((image, index) => (
                 <img
@@ -340,6 +378,11 @@ const Navbar = ({
         content="Setting"
         place="left"
       />
+     {showNotification && (
+        <div className="notification-bar">
+          Il reste {globalTime} jours{globalTime > 1 ? 's' : ''} pour vous réabonner !
+        </div>
+      )}
     </div>
   );
 };

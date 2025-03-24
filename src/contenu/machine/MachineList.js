@@ -10,6 +10,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { toast, ToastContainer } from "react-toastify";
 
 import { useNavigate } from "react-router-dom";
+import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const FactureModal = ({ factures, onClose, setFacture }) => {
   const navigate = useNavigate();
@@ -20,39 +22,44 @@ const FactureModal = ({ factures, onClose, setFacture }) => {
     const url = `${baseURL}?id=${factureId}&view=${view}`;
     navigate(url); // Naviguer vers l'URL
   };
-  
+
   return (
     <div className="modal-machine-facture" onClick={onClose}>
-      <div className="modal-content-machine-facture" onClick={(e)=>e.stopPropagation()}>
-        <div className="titre-facture"><h2>{setFacture ? "Factures en attente":"Factures Associés"}</h2></div>
+      <div
+        className="modal-content-machine-facture"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="titre-facture">
+          <h2>{setFacture ? "Factures en attente" : "Factures Associés"}</h2>
+        </div>
         <div className="table-form-view">
-        <table className="factures-table">
-          <thead>
-            <tr>
-              <th>Nom du client</th>
-              <th>Référence</th>
-              <th>Numéro de ticket</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {factures.map((facture) => (
-              <tr key={facture._id}>
-                <td>{facture.customerName}</td>
-                <td>{facture.reference}</td>
-                <td>{facture.ticketNumber}</td>
-                <td>
-                  <button
-                    onClick={() => handleViewFacture(facture._id)}
-                    className="btn-view"
-                  >
-                    Voir
-                  </button>
-                </td>
+          <table className="factures-table">
+            <thead>
+              <tr>
+                <th>Nom du client</th>
+                <th>Référence</th>
+                <th>Numéro de ticket</th>
+                <th>Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {factures.map((facture) => (
+                <tr key={facture._id}>
+                  <td>{facture.customerName}</td>
+                  <td>{facture.reference}</td>
+                  <td>{facture.ticketNumber}</td>
+                  <td>
+                    <button
+                      onClick={() => handleViewFacture(facture._id)}
+                      className="btn-view"
+                    >
+                      Voir
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
         {/* <button onClick={onClose}>Fermer</button> */}
       </div>
@@ -61,6 +68,7 @@ const FactureModal = ({ factures, onClose, setFacture }) => {
 };
 
 const MachineList = () => {
+  const PORT = process.env.REACT_APP_BACKEND_URL;
   const [showModal, setShowModal] = useState(false); // Affichage de la modale
   const [modalContent, setModalContent] = useState([]); // Contenu des factures
   const [machines, setMachines] = useState([]);
@@ -70,11 +78,17 @@ const MachineList = () => {
   const [error, setError] = useState("");
   const [creatorName, setCreatorName] = useState(""); // Nom du créateur de la machine
   const [isDetailsVisible, setIsDetailsVisible] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState(null); // Stocke l'ID du menu ouvert
+// Fonction pour basculer l'affichage du menu
+  const toggleMenu = (e, id) => {
+    e.stopPropagation(); // Empêche la propagation de l'événement
+    setOpenMenuId(openMenuId === id ? null : id); // Ferme si déjà ouvert, sinon ouvre
+  };
 
   const [isConfirmVisible, setIsConfirmVisible] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null); // Stores the action to confirm
   const [confirmMessage, setConfirmMessage] = useState(""); // Stores the confirmation message
-  const [setFacture, setSetFacture]=useState(false);
+  const [setFacture, setSetFacture] = useState(false);
   const confirmActionAndClose = () => {
     if (confirmAction) confirmAction();
     setIsConfirmVisible(false);
@@ -82,14 +96,13 @@ const MachineList = () => {
   useEffect(() => {
     fetchMachines();
     // eslint-disable-next-line
-  }, [searchQuery]);
+  }, [searchQuery, PORT]);
 
   const fetchMachines = async () => {
     try {
-      const result = await axios.get(
-        "http://localhost:5000/api/machines/search",
-        { params: { modelNumber: searchQuery } }
-      );
+      const result = await axios.get(`${PORT}/api/machines/search`, {
+        params: { modelNumber: searchQuery },
+      });
       setMachines(result.data);
     } catch (error) {
       console.error("Erreur lors de la récupération des machines :", error);
@@ -100,7 +113,7 @@ const MachineList = () => {
     try {
       // Récupération de l'historique pour trouver l'ID de l'utilisateur créateur
       const historiqueResponse = await axios.get(
-        `http://localhost:5000/api/historique?entityId=${machineId}`
+        `${PORT}/api/historique?entityId=${machineId}`
       );
 
       // Vérification que le tableau n'est pas vide avant d'accéder aux propriétés
@@ -115,7 +128,7 @@ const MachineList = () => {
         if (userId) {
           // Récupération du nom de l'utilisateur créateur avec son ID
           const userResponse = await axios.get(
-            `http://localhost:5000/api/auth/get/${userId}`
+            `${PORT}/api/auth/get/${userId}`
           );
           setCreatorName(userResponse.data.name);
           console.log("Nom de l'utilisateur:", userResponse.data.name);
@@ -161,18 +174,14 @@ const MachineList = () => {
       }
 
       if (machine._id) {
-        await axios.put(
-          `http://localhost:5000/api/machines/${machine._id}`,
-          machineData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        await axios.put(`${PORT}/api/machines/${machine._id}`, machineData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        });
       } else {
-        await axios.post("http://localhost:5000/api/machines", machineData, {
+        await axios.post(`${PORT}/api/machines`, machineData, {
           headers: {
             "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${token}`,
@@ -216,7 +225,7 @@ const MachineList = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/machines/${id}`);
+      await axios.delete(`${PORT}/api/machines/${id}`);
       fetchMachines();
       setSelectedMachine(null);
     } catch (error) {
@@ -235,9 +244,7 @@ const MachineList = () => {
   };
   const handleStart = async (machineId) => {
     try {
-      await axios.patch(
-        `http://localhost:5000/api/machines/${machineId}/indisponible`
-      );
+      await axios.patch(`${PORT}/api/machines/${machineId}/indisponible`);
 
       toast.success("Machine demarré et mise à l'état Indisponible");
       fetchMachines(); // Recharger la liste des machines
@@ -258,9 +265,7 @@ const MachineList = () => {
   const fetchAndFilterFactures = async (machineId) => {
     try {
       // Récupérer toutes les factures depuis l'API
-      const { data: factures } = await axios.get(
-        "http://localhost:5000/api/factures"
-      );
+      const { data: factures } = await axios.get(`${PORT}/api/factures`);
 
       // Filtrer les factures avec etat = "en attente" et associées à la machine
       return factures.filter(
@@ -275,15 +280,10 @@ const MachineList = () => {
   const fetchAndFilterFacturess = async (machineId) => {
     try {
       // Récupérer toutes les factures depuis l'API
-      const { data: factures } = await axios.get(
-        "http://localhost:5000/api/factures"
-      );
+      const { data: factures } = await axios.get(`${PORT}/api/factures`);
 
       // Filtrer les factures avec etat = "en attente" et associées à la machine
-      return factures.filter(
-        (facture) =>
-         facture.machines.includes(machineId)
-      );
+      return factures.filter((facture) => facture.machines.includes(machineId));
     } catch (error) {
       console.error("Erreur lors de la récupération des factures :", error);
       return [];
@@ -292,9 +292,7 @@ const MachineList = () => {
 
   const handleRelease = async (machineId) => {
     try {
-      await axios.patch(
-        `http://localhost:5000/api/machines/${machineId}/liberer`
-      );
+      await axios.patch(`${PORT}/api/machines/${machineId}/liberer`);
 
       const factures = await fetchAndFilterFactures(machineId);
       toast.success("Machine libérée");
@@ -310,22 +308,22 @@ const MachineList = () => {
       toast.error("Erreur lors de la libération de la machine");
     }
   };
-  
+
   const voirFacture = async (machineId) => {
     // try {
     //   await axios.patch(
-    //     `http://localhost:5000/api/machines/${machineId}/liberer`
+    //     `${PORT}/api/machines/${machineId}/liberer`
     //   );
 
-      const factures = await fetchAndFilterFacturess(machineId);
-     // toast.success("Machine libérée");
+    const factures = await fetchAndFilterFacturess(machineId);
+    // toast.success("Machine libérée");
 
-      if (factures.length > 0) {
-        setModalContent(factures);
-        setShowModal(true);
-        setSetFacture(false);
-      }
-     // fetchMachines();
+    if (factures.length > 0) {
+      setModalContent(factures);
+      setShowModal(true);
+      setSetFacture(false);
+    }
+    // fetchMachines();
     // } catch (error) {
     //   console.error("Erreur lors de la list de la facture :", error);
     // //  toast.error("Erreur lors de la libération de la machine");
@@ -352,8 +350,8 @@ const MachineList = () => {
           </button>
         </div>
         {error && <p className="error-message">{error}</p>}
-        <div className="table">
-          <table>
+        <div className="table-voir">
+          <table className="tables-m">
             <thead>
               <tr>
                 <th>Photo</th>
@@ -375,7 +373,7 @@ const MachineList = () => {
                   <td>
                     {machine.photo && (
                       <img
-                        src={`http://localhost:5000/${machine.photo}`}
+                        src={`${PORT}/${machine.photo}`}
                         alt={machine.name}
                         style={{
                           width: "30px",
@@ -392,67 +390,75 @@ const MachineList = () => {
                   <td>{machine.type}</td>
                   <td>{machine.etat}</td>
                   <td>{new Date(machine.dateAdded).toLocaleString()}</td>
-                  <td>
-                  <button
-                      data-tooltip-id="voir"
-                      className="btn-voir"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        voirFacture(machine._id);
-                      }}
-                    >
-                      <FaEdit />
-                    </button>
+                  <td className="action">
                     <button
-                      data-tooltip-id="modifier"
-                      className="btn-edit"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEditButtonClick(machine);
-                      }}
+                      className="dropdown-btn"
+                      onClick={(e) => toggleMenu(e, machine._id)}
                     >
-                      <FaEdit />
+                      <FontAwesomeIcon icon={faEllipsisV} />
                     </button>
-                    <button
-                      data-tooltip-id="supprimer"
-                      className="btn-delete"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        confirmDelete(machine._id);
-                      }}
-                    >
-                      <FaTrash />
-                    </button>
-                    <button
-                      data-tooltip-id="detail"
-                      className="btn-detail"
-                      onClick={() => handleMachineClick(machine)}
-                    >
-                      <FaEye />
-                    </button>
-                    {machine.etat === "Indisponible" && (
+                    <div className={`menu-action ${openMenuId === machine._id ? "show" : ""}`}>
                       <button
-                        data-tooltip-id="liberer"
+                        data-tooltip-id="voir"
+                        className="btn-voir"
                         onClick={(e) => {
                           e.stopPropagation();
-                          confirmRelease(machine._id);
+                          voirFacture(machine._id);
                         }}
                       >
-                        Libérer
+                        <FaEdit />
                       </button>
-                    )}
-                    {machine.etat === "Disponible" && (
                       <button
-                        data-tooltip-id="start"
-                        className="btn-start"
+                        data-tooltip-id="modifier"
+                        className="btn-edit"
                         onClick={(e) => {
                           e.stopPropagation();
-                          confirmStart(machine._id); // Ouvrir le modal de confirmation
+                          handleEditButtonClick(machine);
                         }}
                       >
-                        Start
+                        <FaEdit />
                       </button>
-                    )}
+                      <button
+                        data-tooltip-id="supprimer"
+                        className="btn-delete"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          confirmDelete(machine._id);
+                        }}
+                      >
+                        <FaTrash />
+                      </button>
+                      <button
+                        data-tooltip-id="detail"
+                        className="btn-detail"
+                        onClick={() => handleMachineClick(machine)}
+                      >
+                        <FaEye />
+                      </button>
+                      {machine.etat === "Indisponible" && (
+                        <button
+                          data-tooltip-id="liberer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            confirmRelease(machine._id);
+                          }}
+                        >
+                          Libérer
+                        </button>
+                      )}
+                      {machine.etat === "Disponible" && (
+                        <button
+                          data-tooltip-id="start"
+                          className="btn-start"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            confirmStart(machine._id); // Ouvrir le modal de confirmation
+                          }}
+                        >
+                          Start
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

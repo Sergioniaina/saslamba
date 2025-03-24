@@ -7,7 +7,7 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   .table{
     overflow: auto;
-    height: 75vh;
+    height: 68vh;
     .icon{
       color: red;
       font-size: x-large;
@@ -22,9 +22,9 @@
   .filter-container{
     display: flex;
     justify-content: space-between;
-  
+    flex-wrap: wrap;
     box-sizing: border-box;
-    
+    gap: 10px;
     .input,.date{
       width: 17%;
       box-sizing: border-box;
@@ -32,6 +32,9 @@
       align-items: center;
       justify-content: center;
       position: relative;
+      flex: 1 1 calc(22% - 10px);
+      min-width: 200px;
+      max-width: 100%;
       .icon{
         position: absolute;
         right: 15px;
@@ -121,3 +124,14 @@
   }
   
 }
+@media (max-width: 700px) {
+  .historique-container .table{
+    height: 60vh;
+  }
+}
+@media (max-width: 500px) {
+  .historique-container .table{
+    height: 55vh;
+  }
+}
+

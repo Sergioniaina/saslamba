@@ -13,12 +13,11 @@
 
     .billetage-content {
         width: 60%;
-        border: 2px solid white;
-        height: 75%;
+        height: 60%;
         border-radius: 10px;
         background: black;
         position: relative;
-        padding: 20px;
+        padding: 30px;
 
         .close {
             position: absolute;
@@ -80,7 +79,6 @@
 
         .input-container {
             margin-bottom: 15px;
-
             label {
                 color: white;
                 display: block;
@@ -98,3 +96,53 @@
         }
     }
 }
+@media (max-width: 1000px) {
+  .billetage{
+    .billetage-content{
+        height: 75% !important;
+    }
+    .input-class{
+        display: flex;
+        flex-direction: column;
+        .input-container{
+            width: 100%;
+            display: flex;
+            .input-totalPrice{
+                width: 100%;
+            }
+        }
+    }
+    
+  }
+}
+@media (max-width: 800px) {
+    .billetage-content{
+        overflow-y: auto;
+        /* width: 80% !important; */
+        height: 80% !important;
+    }
+      .billets-container{
+          display: flex;
+          flex-direction: column;
+          .summary-container{
+            width: 100% !important;
+            gap: 10px;
+           }
+      }
+      
+  }
+  @media (max-width: 768px) {
+    .billetage-content{
+        overflow-y: auto;
+        width: 80% !important;
+    }
+      
+  }
+  @media (max-width: 500px) {
+    .billetage-content{
+        overflow-y: auto;
+        width: 80% !important;
+    }
+      
+  }
+

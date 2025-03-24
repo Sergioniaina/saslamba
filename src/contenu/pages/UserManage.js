@@ -1,13 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import "../css/UserManagement.css";
-import { FaEdit, FaFile, FaSearch, FaTrash } from "react-icons/fa";
+import {
+  FaEdit,
+  FaFile,
+  FaPlusCircle,
+  FaPlusSquare,
+  FaSearch,
+  FaTrash,
+} from "react-icons/fa";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
 import ModalConfirm from "../modal/ModalConfirm";
 import CompanyInfo from "../factures/CompanyInfo";
 
 const UserManagement = () => {
+  const PORT = process.env.REACT_APP_BACKEND_URL;
   const [logo, setLogo] = useState(false);
   const [users, setUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
@@ -25,6 +33,7 @@ const UserManagement = () => {
   const [message, setMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const fileInputRef = useRef(null);
+  const [preview, setPreview] = useState(null);
   // eslint-disable-next-line
   const [subRole, setSubRole] = useState(""); // Nouveau champ subRole
   const [formSubRole, setFormSubRole] = useState(null); // Nouveau champ pour le formulaire
@@ -32,6 +41,14 @@ const UserManagement = () => {
   // Fonction pour déclencher le clic de l'input fichier
   const handleIconClick = () => {
     fileInputRef.current.click();
+  }
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPhoto(file);
+      const imageUrl = URL.createObjectURL(file); // Generate preview URL
+      setPreview(imageUrl);
+    }
   };
 
   useEffect(() => {
@@ -41,7 +58,7 @@ const UserManagement = () => {
       setSubRole(user.subRole);
       setFormUserRole(user.role);
       setFormSubRole(user.subRole);
-      console.log("userRole :", user.role)
+      console.log("userRole :", user.role);
       if (user.role === "admin") {
         fetchUsers();
       } else if (user.role === "user") {
@@ -52,6 +69,7 @@ const UserManagement = () => {
     } else {
       setErrorMessage("No user found in local storage");
     }
+    // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
@@ -83,7 +101,7 @@ const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/auth/users", {
+      const response = await axios.get(`${PORT}/api/auth/users`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       setUsers(response.data.users);
@@ -95,12 +113,9 @@ const UserManagement = () => {
 
   const fetchCurrentUser = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/auth/users/me",
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
+      const response = await axios.get(`${PORT}/api/auth/users/me`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
       setCurrentUser(response.data.user);
     } catch (error) {
       setErrorMessage("Error fetching current user: " + error.message);
@@ -130,7 +145,7 @@ const UserManagement = () => {
   const handleDelete = async (userId) => {
     const deleteUser = async () => {
       try {
-        await axios.delete(`http://localhost:5000/api/auth/users/${userId}`, {
+        await axios.delete(`${PORT}/api/auth/users/${userId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
         fetchUsers();
@@ -161,35 +176,25 @@ const UserManagement = () => {
 
     try {
       if (editingUser) {
-        await axios.put(
-          `http://localhost:5000/api/auth/users/${editingUser._id}`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
+        await axios.put(`${PORT}/api/auth/users/${editingUser._id}`, formData, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
       } else {
-        await axios.post(
-          "http://localhost:5000/api/auth/users/ajout",
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
+        await axios.post(`${PORT}/api/auth/users/ajout`, formData, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
       }
 
       setIsModalOpen(false);
       if (userRole === "user") {
         fetchCurrentUser();
-      }
-      else {
+      } else {
         fetchUsers();
       }
-
     } catch (error) {
       setErrorMessage("Error submitting form: " + error.message);
       console.error("Error submitting form:", error);
@@ -205,6 +210,7 @@ const UserManagement = () => {
     setPhoto(null);
     setFormUserRole(user.role);
     setFormSubRole(user.subRole || "");
+    setPreview(null);
   };
 
   const openModalForCreating = () => {
@@ -216,6 +222,7 @@ const UserManagement = () => {
     setPhoto(null);
     setFormUserRole("user");
     setFormSubRole("caissiere");
+    setPreview(null);
   };
 
   return (
@@ -225,7 +232,9 @@ const UserManagement = () => {
       {userRole === "admin" ? (
         <>
           <div className="search">
-            <button onClick={openModalForCreating}>Créer User</button>
+            <button onClick={openModalForCreating}>
+              <FaPlusSquare className="icons" /> Créer User
+            </button>
             <div className="input">
               <input
                 type="text"
@@ -235,7 +244,9 @@ const UserManagement = () => {
               />
               <FaSearch className="icon" />
             </div>
-            <button onClick={() => setLogo(true)}>Logo</button>
+            <button onClick={() => setLogo(true)}>
+              <FaPlusCircle className="icons" /> Logo
+            </button>
           </div>
           <div className="user-profiles">
             <table className="user-profile">
@@ -253,7 +264,7 @@ const UserManagement = () => {
                   <tr key={user._id}>
                     <td>
                       <img
-                        src={`http://localhost:5000/${user.photo}`}
+                        src={`${PORT}/${user.photo}`}
                         alt={user.name}
                         className="user-profile-photo"
                       />
@@ -297,7 +308,7 @@ const UserManagement = () => {
               <tr>
                 <td>
                   <img
-                    src={`http://localhost:5000/${currentUser.photo}`}
+                    src={`${PORT}/${currentUser.photo}`}
                     alt={currentUser.name}
                     className="user-profile-photo"
                   />
@@ -316,7 +327,6 @@ const UserManagement = () => {
               </tr>
             </tbody>
           </table>
-
         )
       )}
 
@@ -359,6 +369,7 @@ const UserManagement = () => {
                       id="confirmPassword"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)} // Ajout du gestionnaire onChange
+                      placeholder=""
                       required
                     />
                     <label htmlFor="confirmPassword">
@@ -396,33 +407,70 @@ const UserManagement = () => {
               </div>
 
               <div className="form-group">
-                <div>
                   <input
                     type="file"
                     id="photo"
                     ref={fileInputRef}
-                    onChange={(e) => setPhoto(e.target.files[0])} // Ajout du gestionnaire onChange pour le fichier
+                    onChange={handleFileChange} // Updated to use handleFileChange
                     hidden
                   />
                   <button
-                    className="select"
+                    className="select-file"
                     type="button"
                     onClick={handleIconClick}
                   >
                     <FaFile className="faFile" />
                     Sélectionner un fichier
                   </button>
-                </div>
               </div>
+              <div className="form-photo">
               <div className="form-group">
                 <input
-                  value={photo ? photo.name : ""} // Affiche le nom du fichier si un fichier est sélectionné
+                  value={
+                    photo
+                      ? photo.name // Display the name of the newly selected photo
+                      : editingUser && !photo
+                      ? editingUser.photo.split("/").pop() // Display the filename from the database when editing and no new photo is selected
+                      : "" // Default to empty string if neither applies
+                  }
                   placeholder=""
-                  readOnly // Le champ est en lecture seule car il affiche uniquement le nom du fichier
+                  readOnly
                 />
-                <label htmlFor="photo">Photo</label>
+                <label >Photo</label>
               </div>
 
+              {/* Display existing photo when editing and no new photo is selected */}
+              {editingUser && !preview && (
+                <div style={{ marginTop: "10px" }}>
+                  <img
+                    src={`${PORT}/${editingUser.photo}`}
+                    alt="Current User"
+                    style={{
+                      width: "80px",
+                      height: "80px",
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* Display preview of newly selected photo */}
+              {preview && (
+                <div style={{ marginTop: "10px" }}>
+                  <img
+                    src={preview}
+                    alt="Selected"
+                    style={{
+                      width: "80px",
+                      minWidth : "80px",
+                      height: "80px",
+                      borderRadius: "50%",
+                    }}
+                  />
+                </div>
+              )}
+              </div>
               <div className="form-buttons">
                 <button type="submit" className="btn-save">
                   {editingUser ? <FaEdit /> : <FontAwesomeIcon icon={faSave} />}

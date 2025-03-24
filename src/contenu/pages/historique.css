@@ -2,28 +2,40 @@
   padding: 20px;
   .search-container {
     display: flex;
-    margin-bottom: 20px;
-    justify-content: space-evenly;
-    .input{
+    align-items: center;
+    flex-wrap: wrap;
+    /* Allow items to wrap to the next line */
+    justify-content: space-between;
+    /* Center items horizontally */
+    box-sizing: border-box;
+    gap: 10px;
+    .input {
+      flex: 1 1 calc(22% - 10px);
+      /* 3 items per row with some gap space */
+      max-width: 100%;
+      min-width: 60px;
       position: relative;
       align-items: center;
       display: flex;
-      .icon{
+      .icon {
         position: absolute;
         right: 20px;
         color: gray;
       }
     }
-    input{
+    input {
+      flex: 1 1 calc(22% - 10px);
+      /* 3 items per row with some gap space */
+      max-width: 100%;
+      min-width: 60px;
       background: rgba(0, 0, 0, 0.5);
       outline: none;
       color: white;
       border: none;
       height: 25px;
-      width: 20vw;
     }
     input[type="text"] {
-      flex: 1;
+      height: 25px;
       margin-right: 10px;
       padding: 8px;
       border: 3px solid gray;
@@ -32,21 +44,29 @@
       padding-left: 20px;
     }
     input[type="date"] {
-      flex: 1;
       margin-right: 10px;
       padding: 8px;
       border: 2px solid gray;
       padding-left: 20px;
     }
-    
+
     .date-filter {
+      flex: 1 1 calc(22% - 10px);
+      /* 3 items per row with some gap space */
+      max-width: 100%;
+      min-width: 60px;
       display: flex;
       align-items: center;
-      .date{
+      justify-content: space-between;
+      .date {
+        flex: 1 1 calc(22% - 10px);
+        /* 3 items per row with some gap space */
+        max-width: 100%;
+        min-width: 60px;
         position: relative;
         display: flex;
         align-items: center;
-        .icon{
+        .icon {
           position: absolute;
           right: 20px;
           color: #128c9c;
@@ -62,33 +82,34 @@
       }
     }
   }
-.table{
-  height: 74vh;
-  overflow: auto;
-
-}
+  .table {
+    height: 74vh;
+    overflow: auto;
+  }
   table {
     width: 100%;
     border-collapse: collapse;
     background: rgba(0, 0, 0, 0.7);
-    .action,.th{
+    .action,
+    .th {
       width: 100px;
     }
-    .btn-h-d{
+    .btn-h-d {
       background: #043d44;
       letter-spacing: 1px;
     }
-    .btn-h-s{
+    .btn-h-s {
       background: red;
-      letter-spacing: 1px ;
+      letter-spacing: 1px;
     }
-    .action{
+    .action {
       text-align: center;
     }
-    .th{
+    .th {
       text-align: center;
     }
-    th, td {
+    th,
+    td {
       border: 1px solid rgb(59, 58, 58);
       padding: 8px;
       text-align: left;
@@ -115,12 +136,12 @@
     height: 100%;
     top: -1000px;
     background: rgba(0, 0, 0, 0.5);
-    border: 1px solid #ccc;
+
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     transition: top 0.5s ease;
     padding: 20px;
     display: flex;
-   
+
     justify-content: center;
     z-index: 1000;
     table {
@@ -133,7 +154,7 @@
       overflow: hidden; /* Ensures the border radius is applied correctly */
       top: 20px;
     }
-  
+
     /* Styling for the table header */
     thead th {
       background-color: rgb(97, 99, 99);
@@ -141,13 +162,13 @@
       text-align: left;
       font-weight: bold;
     }
-  
+
     /* Styling for the table cells */
     tbody td {
       padding: 10px;
       border-top: 1px solid #ddd; /* Light border between rows */
     }
-  
+
     /* Optional: Add border-radius to individual cells */
     tbody tr:first-child td:first-child {
       border-top-left-radius: 8px;
@@ -177,5 +198,17 @@
       right: 10px;
       color: red;
     }
+  }
+}
+@media (max-width: 750px) {
+  .historique .search-container {
+    input{
+      height: 40px !important;
+    }
+  }
+}
+@media (max-width: 600px) {
+  .historique .table{
+    height: 70vh;
   }
 }

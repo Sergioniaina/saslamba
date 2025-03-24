@@ -1,6 +1,5 @@
 .products-container {
   padding: 20px;
-
   .table-produit{
     margin-top: 20px;
     height: 77vh;
@@ -21,8 +20,9 @@
     cursor: pointer;
   
     .modal-content-p {
-      background: #ffffff;
+      background: linear-gradient(135deg, rgb(30, 30, 30), rgb(50, 50, 50));
       padding: 3rem;
+      padding-top: 0px;
       border-radius: 8px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       cursor: auto;
@@ -31,7 +31,7 @@
       h2 {
         font-size: 1.5rem;
         margin-bottom: 1rem;
-        color: #333;
+        color: white;
         text-align: center;
       }
   
@@ -39,9 +39,17 @@
         display: flex;
         flex-direction: column;
         gap: 1.5rem;
-        .form-group {
+        padding-top: 10px;
+        max-height: 78vh;
+        overflow: auto;
+        box-sizing: border-box;
+        width: auto;
+        overflow-x: hidden;
+        .form-group{
           position: relative;
-  
+          display: flex;
+          justify-content: center;
+          width: 100%;
           label {
             position: absolute;
             top: 50%;
@@ -51,6 +59,7 @@
             color: #aaa;
             pointer-events: none;
             transition: 0.3s ease all;
+            box-sizing: border-box;
           }
   
           input,
@@ -61,24 +70,29 @@
             font-size: 1rem;
             border: 3px solid #ccc;
             border-radius: 4px;
-            background: #f9f9f9;
+            background: linear-gradient(135deg, rgb(30, 30, 30), rgb(50, 50, 50));
             outline: none;
             transition: 0.3s ease all;
+            color: white;
             &:focus,
             &:valid {
               border-color: #007bff;
-              background: #fff;
+              background: transparent;
               border: 3px solid #007bff;
             }
-  
-            &:focus + label,
-            &:valid + label {
-              top: 0;
-              font-size: 0.8rem;
-              color: #007bff;
-              background: white;
-              font-weight: 600;
-              padding: 8px;
+            &:focus,
+            &:not(:placeholder-shown) {
+              & + label {
+                left: 10px;
+                top: 0px;
+                font-size: 12px;
+                color: white;
+                background: linear-gradient(135deg, rgb(30, 30, 30), rgb(50, 50, 50));
+                letter-spacing: 1px;
+                padding-left: 5px;
+                padding-right: 5px;
+                font-weight: 600;
+              }
             }
           }
   
@@ -170,33 +184,43 @@
     align-items: center;
     gap: 10px;
     .input-search{
+      flex-wrap: wrap;
       display: flex;
-      gap: 30px;
+      align-items: center;
+      gap: 10px;
       width: 100%;
+      input{
+        height: 40px;
+      }
     }
     .type-select{
       background: transparent;
       color: white;
       border: 3px solid gray;
       outline: none;
-      height: 50px;
-      width: 20%;
+      height: 45px;
       border-radius:40px;
       text-align: center;
       option{
         background: #333;
+        color: white;
       }
     }
+    select{
+      flex: 1 1 calc(22% - 10px);
+      min-width: 200px;
+      max-width: 100%;
+    }
     .input{
+      flex: 1 1 calc(22% - 10px);
+      min-width: 200px;
+      max-width: 100%;
       display: flex;
       align-items: center;
-      width: 25%;
       position: relative;
       .search-input {
-        padding: 5px 10px;
         border: 3px solid gray;
         background: transparent;
-        height: 35px;
         border-radius: 40px;
         outline: none;
         width: 100%;
@@ -213,15 +237,19 @@
       color: #555;
     }
     .add-button {
+      flex: 1 1 calc(22% - 10px);
+      min-width: 200px;
+      max-width: 100%;
       background-color: #28a745;
       color: white;
       border: none;
       padding: 5px 10px;
+      height: 45px;
+      margin-right: 0px;
       border-radius: 5px;
       cursor: pointer;
       letter-spacing: 1px;
       font-weight: 600;
-      width: 15%;
       &:hover{
         background: #0e9c2f;
       }
@@ -238,15 +266,30 @@
       top: 0px;
     }
     .action{
+      width: 20vw;
       text-align: center;
       .icon{
-        margin-left: 20px;
-        font-size: x-large;  
+        font-size: large;
+      }
+      @media (max-width: 768px) {
+        .icon{
+          font-size: small;
+        }
+      }
+      @media (max-width: 500px) {
+        .icon{
+          font-size: x-small;
+        }
+      }
+      @media (max-width: 400px) {
+        .icon{
+          font-size: xx-small;
+        }
       }
     }
     th, td {
       text-align: center;
-      border: 1px solid gray;
+      border-bottom: 1px solid gray;
     }
     th{
       padding: 10px;
@@ -301,5 +344,37 @@
         }
       }
     }
+  }
+}
+@media (max-width: 890px) {
+  .products-container .table-produit{
+    height: 65vh;
+  }
+}
+@media (max-width: 480px) {
+  .products-container .table-produit{
+    height: 60vh;
+    .icon{
+      font-size: x-small;
+    }
+  }
+}
+@media (max-width: 500px) {
+  .products-container .modal-p .modal-content-p{
+    width: 70%;
+  }
+}
+.select-file{
+  width: 100% !important;
+  background: linear-gradient(-90deg, #202121, #0e888e) !important;
+}
+.form-photo{
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  height: auto;
+  align-items: center;
+  input{
+    height: 30px;
   }
 }

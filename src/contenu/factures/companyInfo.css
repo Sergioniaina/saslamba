@@ -3,26 +3,29 @@
 /* Style de base pour le conteneur principal */
 .company-info {
     font-family: Arial, sans-serif;
-    background-color: rgba(47, 44, 44, 0.7);
+    background: linear-gradient(135deg, rgb(30, 30, 30), rgb(50, 50, 50));
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     z-index: 999;
     padding: 40px;
+    width: 70%;
     border-radius: 10px;
-    .table {
+    animation: modalFadeIn 0.3s ease;
+    height: 30vh;
+    .table-company {
       margin-bottom: 20px;
       width: 100%;
+      overflow: auto;
       table {
         width: 100%;
         border-collapse: collapse;
-  
         th,
         td {
           padding: 10px;
           text-align: center;
-          border: 1px solid gray;
+          border-bottom: 1px solid gray;
         }
   
         th {
@@ -35,21 +38,6 @@
             max-width: 50px;
             height: auto;
             border-radius: 5px;
-          }
-  
-          button {
-            margin-right: 10px;
-            padding: 6px 12px;
-            background-color: #4caf50;
-            border: none;
-            color: white;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: background-color 0.3s ease;
-  
-            &:hover {
-              background-color: #45a049;
-            }
           }
         }
       }
@@ -75,6 +63,7 @@
     .modal-logo {
       position: fixed;
       background-color: rgba(0, 0, 0, 0.5);
+      animation: slideIn 0.4s ease;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -84,7 +73,7 @@
       top: 0px;
       left: 0px;
       .content-logo {
-        background-color: rgba(0, 0, 0, 0.7);
+        background: linear-gradient(135deg, rgb(30, 30, 30), rgb(50, 50, 50));
         padding: 20px;
         width: 400px;
         border-radius: 8px;
@@ -131,7 +120,6 @@
             border-radius: 40px;
             padding: 10px;
             background-color: transparent;
-            color: black;
             font-size: 16px;
             outline: none;
             text-align: center;
@@ -139,15 +127,16 @@
             color: white;
             &:focus,
             &:not(:placeholder-shown) {
-              border: 3px solid blue;
+            
               & + label {
                 left: 30px;
                 top: 0px;
                 font-size: 12px;
-                color: #09890e;
-                background: black;
+                color: white;
+                background: linear-gradient(135deg, rgb(30, 30, 30), rgb(50, 50, 50));
                 letter-spacing: 1px;
-                padding: 5px;
+                padding-left: 5px;
+                padding-right: 5px;
                 font-weight: 600;
               }
              
@@ -171,6 +160,7 @@
             color: white;
             border: none;
             border-radius: 4px;
+            height: 40px;
             cursor: pointer;
             transition: background-color 0.3s ease;
   
@@ -190,4 +180,17 @@
       }
     }
   }
-  
+  @media (max-width: 600px) {
+   .company-info .modal-logo .content-logo{
+      width: 80%;
+    }
+  }
+  .select-file{
+    width: 100%;
+    background: linear-gradient(-90deg, #202121, #0e888e);
+    transition: 1s !important;
+  }
+  .select-file:hover {
+    background: linear-gradient(90deg, #202121, #0e888e) !important;
+    transition: 1s !important; /* Dégradé inversé de gauche à droite */
+  }

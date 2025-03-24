@@ -10,10 +10,15 @@
 
   .view-buttons {
     margin-bottom: 1.5rem;
-   display: flex;
-   justify-content: space-between;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
     transition: 0.3s ease;
-    .filter-groupes{
+    gap: 10px;
+    .filter-groupes {
+      flex: 1 1 calc(33% - 10px);
+      min-width: 200px;
+      max-width: 100%;
       position: relative;
       label {
         position: absolute;
@@ -26,9 +31,119 @@
         transition: 0.3s ease all;
       }
 
-      input,select{
+      input,
+      select {
         width: 100%;
         margin: 0px;
+        padding: 15px;
+        font-size: 1rem;
+        border: 3px solid #ccc;
+        border-radius: 4px;
+        background: black;
+        outline: none;
+        transition: 0.3s ease all;
+        color: white;
+        
+        &:focus,
+        &:valid {
+          border-color: gray;
+          background: rgba(0, 0, 0, 0.3);
+          border: 3px solid gray;
+        }
+
+        &:focus + label,
+        &:valid + label {
+          top: 0;
+          font-size: 0.8rem;
+          color: #007bff;
+          background: rgba(0, 0, 0, 0.8);
+          font-weight: 600;
+          padding: 8px;
+        }
+      }
+      select {
+        padding: 15px;
+        background-color: black!;
+        color: white;
+        flex: 1 1 calc(22% - 10px);
+        min-width: 200px;
+        max-width: 100%;
+        option {
+          background: rgb(48, 43, 43);
+          color: white;
+        }
+      }
+    }
+    button {
+      flex: 1 1 calc(22% - 10px);
+      min-width: 200px;
+      max-width: 100%;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      margin: 0 0.5rem;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 4px;
+      height: 50px;
+      transition: background-color 0.3s ease, width 0.3s ease; /* Ajout des transitions */
+      &:hover {
+        background-color: #45a049; /* Survol */
+      }
+
+      &.active {
+        background-color: rgb(14, 120, 172); /* État actif */
+        width: 60%; /* Transition sur la largeur */
+      }
+    }
+  }
+
+  .filters {
+    flex-wrap: wrap;
+    flex: 1 1 calc(22% - 10px);
+    min-width: 200px;
+    max-width: 100%;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 10px;
+
+    #ddd input[type="text"],
+    input[type="date"] {
+      padding: 0.5rem;
+      font-size: red;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-right: 1rem;
+
+      &:focus {
+        outline: none;
+      }
+    }
+    .filter-groupe {
+      display: flex;
+      justify-content: space-between;
+      flex: 1 1 calc(10% - 10px);
+      min-width: 180px;
+      max-width: 100%;
+      position: relative;
+      label {
+        position: absolute;
+        top: 50%;
+        left: 0.5rem;
+        transform: translateY(-50%);
+        font-size: 1rem;
+        color: #aaa;
+        pointer-events: none;
+        transition: 0.3s ease all;
+      }
+
+      input,
+      select {
+        margin-right: 0px;
+        width: 100%;
         padding: 15px;
         font-size: 1rem;
         border: 3px solid #ccc;
@@ -49,123 +164,28 @@
           top: 0;
           font-size: 0.8rem;
           color: #007bff;
-          background:  rgba(0, 0, 0, 0.8);
+          background: rgba(0, 0, 0, 0.8);
           font-weight: 600;
           padding: 8px;
         }
       }
-      select{
+      select {
         padding: 15px;
         background-color: black!;
         color: white;
-        option{
+        option {
           background: rgb(48, 43, 43);
           color: white;
         }
       }
-    
-
-}
-    button {
-        background-color: #4caf50;
-        color: white;
-        border: none;
-        padding: 0.5rem 1rem;
-        margin: 0 0.5rem;
-        font-size: 16px;
-        cursor: pointer;
-        border-radius: 4px;
-        height: 50px;
-        transition: background-color 0.3s ease, width 0.3s ease; /* Ajout des transitions */
-        &:hover {
-          background-color: #45a049; /* Survol */
-        }
-      
-        &.active {
-          background-color: rgb(14, 120, 172); /* État actif */
-          width: 60%; /* Transition sur la largeur */
-        }
-      }
-      
-  }
-
-  .filters {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 2rem;#ddd
-
-    input[type="text"],
-    input[type="date"] {
-      padding: 0.5rem;
-      font-size: red;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      margin-right: 1rem;
-
-      &:focus {
-        outline: none;
-      }
     }
-    .filter-groupe{
-        position: relative;
-        width: 13%;
-        label {
-          position: absolute;
-          top: 50%;
-          left: 0.5rem;
-          transform: translateY(-50%);
-          font-size: 1rem;
-          color: #aaa;
-          pointer-events: none;
-          transition: 0.3s ease all;
-        }
-
-        input,select{
-          width: 100%;
-          margin: 0px;
-          padding: 15px;
-          font-size: 1rem;
-          border: 3px solid #ccc;
-          border-radius: 4px;
-          background: black;
-          outline: none;
-          transition: 0.3s ease all;
-          color: white;
-          &:focus,
-          &:valid {
-            border-color: gray;
-            background: rgba(0, 0, 0, 0.3);
-            border: 3px solid gray;
-          }
-
-          &:focus + label,
-          &:valid + label {
-            top: 0;
-            font-size: 0.8rem;
-            color: #007bff;
-            background:  rgba(0, 0, 0, 0.8);
-            font-weight: 600;
-            padding: 8px;
-          }
-        }
-        select{
-          padding: 15px;
-          background-color: black!;
-          color: white;
-          option{
-            background: rgb(48, 43, 43);
-            color: white;
-          }
-        }
-      }
-
   }
-  .table-h{
+  .table-h {
     height: auto;
-    max-height: 64vh;
+    max-height: 60vh;
     overflow: auto;
   }
-  thead{
+  thead {
     position: sticky;
     top: 0px;
   }
@@ -198,20 +218,57 @@
     .total {
       margin-right: 2rem;
     }
-   
   }
 
- 
   .no-data {
     text-align: center;
     padding: 1rem;
     font-size: 1.2rem;
     color: #777;
   }
-  .totals{
+  .totals {
     background: black;
     letter-spacing: 1px;
     font-weight: 600;
     color: rgb(0, 255, 179);
+  }
 }
+@media (max-width: 1045px) {
+  .product-history .table-h{
+    height: 50vh;
+  }
+}
+@media (max-width: 990px) {
+  .product-history .table-h{
+    height: 40vh;
+  }
+}
+@media (max-width: 680px) {
+ .product-history{
+  overflow: auto;
+  height: 85vh;
+  padding-top: 20px;
+  table{
+    th,td{
+      font-size: small;
+     }
+  }
+ }
+}
+@media (max-width: 480px) {
+  .product-history .table-h{
+    table{
+      th,td{
+        font-size: x-small;
+       }
+    }
+  
+  }
+}
+@media (max-width: 500px) {
+  table{
+    th,td{
+      font-size: x-small;
+     }
+  }
 }

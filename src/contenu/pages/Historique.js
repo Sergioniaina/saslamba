@@ -11,6 +11,7 @@ import { FaSearch } from "react-icons/fa";
 import ModalConfirm from "../modal/ModalConfirm";
 
 const Historique = () => {
+  const PORT = process.env.REACT_APP_BACKEND_URL;
   const [historique, setHistorique] = useState([]);
   const [error, setError] = useState("");
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -35,6 +36,7 @@ const Historique = () => {
 
   useEffect(() => {
     loadHistorique();
+    // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
@@ -54,7 +56,7 @@ const Historique = () => {
 
   const loadHistorique = () => {
     axios
-      .get("http://localhost:5000/api/historique")
+      .get(`${PORT}/api/historique`)
       .then((response) => {
         setHistorique(response.data);
       })
@@ -68,7 +70,7 @@ const Historique = () => {
       const userIds = [...new Set(historique.map((item) => item.user))]; // IDs uniques des utilisateurs
       if (userIds.length > 0) {
         axios
-          .get("http://localhost:5000/api/auth/get", {
+          .get(`${PORT}/api/auth/get`, {
             params: { ids: userIds },
           })
           .then((response) => {
@@ -86,7 +88,7 @@ const Historique = () => {
           });
       }
     }
-  }, [historique]);
+  }, [historique,PORT]);
 
   const handleSearch = () => {
     let filterHistorique = historique;
@@ -115,7 +117,7 @@ const Historique = () => {
 
   const deleteEvent = (id) => {
     axios
-      .delete(`http://localhost:5000/api/historique/${id}`)
+      .delete(`${PORT}/api/historique/${id}`)
       .then(() => {
         setHistorique(historique.filter((event) => event._id !== id));
       })

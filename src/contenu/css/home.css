@@ -15,7 +15,7 @@ body {
 .app {
   position: fixed;
   width: 100%;
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   border-radius: 10px;
   height: 100vh;
@@ -97,7 +97,7 @@ body {
 .content {
   flex-grow: 1;
   color: white;
-  margin-left: 15px;
+  padding-left: 5px;
   padding-right: 5px;
 }
 /* Styles pour l'ouverture de la Sidebar */
@@ -141,7 +141,7 @@ body {
 
 /* Ajustements pour le contenu */
 .app.sidebar-left .main-content {
-  margin-left: 220px;
+  margin-left: 215px;
   margin-right: 0;
   transition: margin-left 0.3s ease; /* Transition de marge pour l'ouverture */
 }
@@ -176,7 +176,10 @@ body {
 .animated-element {
   animation: popLoop 1s infinite ease-in-out;
 }
-@media (max-width: 768px) {
-  
+@media (max-width: 1200px) {
+  .app.sidebar-left .main-content {
+    margin-left: -10px;
+    margin-right: 0;
+    transition: margin-left 0.3s ease; /* Transition de marge pour l'ouverture */
+  }
 }
-

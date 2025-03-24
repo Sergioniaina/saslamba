@@ -12,7 +12,8 @@ const ProductHistory = require('../models/ProductHistorique');
 // Configuration de multer pour le stockage des fichiers
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/"); // Dossier où les fichiers seront stockés
+    // cb(null, path.resolve("uploads")); // Dossier où les fichiers seront stockés
+    cb(null, "uploads/"); 
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + path.extname(file.originalname)); // Nom unique pour chaque fichier
@@ -41,7 +42,7 @@ const upload = multer({
 // Route avec les middlewares
 router.get("/", authMiddleware, checkPermission("produits", "list"), async (req, res) => {
   try {
-    console.log("Accès autorisé - Récupération des produits");
+    // console.log("Accès autorisé - Récupération des produits");
     const products = await Product.find().sort({ date: -1 });
     res.json(products);
   } catch (error) {

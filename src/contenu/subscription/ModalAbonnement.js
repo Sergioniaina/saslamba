@@ -23,7 +23,7 @@ function ModalAbonnement({
     sechage: abonnementActuel ? abonnementActuel.sechage : "",
     features: abonnementActuel ? abonnementActuel.features : [],
   });
-
+  const PORT = process.env.REACT_APP_BACKEND_URL;
   // Gérer les changements dans les inputs
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -52,7 +52,7 @@ function ModalAbonnement({
     if (abonnementActuel) {
       axios
         .put(
-          `http://localhost:5000/api/abonnements/${abonnementActuel._id}`,
+          `${PORT}/api/abonnements/${abonnementActuel._id}`,
           formData
         )
         .then((response) => {
@@ -69,7 +69,7 @@ function ModalAbonnement({
       setModalOpen(false);
     } else {
       axios
-        .post("http://localhost:5000/api/abonnements", formData)
+        .post(`${PORT}/api/abonnements`, formData)
         .then((response) => {
           setAbonnements([...abonnements, response.data]);
           setModalOpen(false);
@@ -94,8 +94,8 @@ function ModalAbonnement({
   }, [abonnementActuel]);
 
   return (
-    <div className="modal">
-      <div className="modal-content">
+    <div className="modal-abonnement">
+      <div className="modal-content-a">
         <div className="entete">
           <h2>
             {abonnementActuel

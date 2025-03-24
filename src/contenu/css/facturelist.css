@@ -1,17 +1,18 @@
-.tooltip{
+.tooltip {
   /* background: rgba(242, 11, 11, 0.5)!important; */
   letter-spacing: 1px;
   font-weight: 600;
   z-index: 1000;
-  color: #16cde6!important;
+  color: #16cde6 !important;
 }
-tbody tr:hover{
+tbody tr:hover {
   border-top: 3px solid grey;
   border-bottom: 3px solid grey;
 }
 .facturelist {
   padding: 20px;
-  .tooltip{
+
+  .tooltip {
     /* background: rgba(242, 11, 11, 0.5)!important; */
     letter-spacing: 1px;
     font-weight: 600;
@@ -25,20 +26,30 @@ tbody tr:hover{
   .search-container {
     display: flex;
     gap: 10px;
-    margin-bottom: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
     justify-content: space-between;
     .date-filter,
     .payment-filter {
       display: flex;
+      flex-wrap: wrap;
+      max-width: 100%;
       align-items: center;
       gap: 10px;
+      flex: 1 1 calc(22%-10px);
     }
     .input {
       position: relative;
       display: flex;
       align-items: center;
+      min-width: 100px;
+      flex: 1 1 calc(22%-10px);
+      max-width: 100%;
       input {
         padding-right: 30px;
+        min-width: 100px;
+        flex: 1 1 calc(22%-10px);
+        max-width: 100%;
       }
       .icon {
         position: absolute;
@@ -53,6 +64,11 @@ tbody tr:hover{
         right: 10px;
         pointer-events: none;
         color: #16cde6;
+      }
+      input {
+        min-width: 100px;
+        flex: 1 1 calc(22%-10px);
+        max-width: 100%;
       }
     }
     input {
@@ -70,11 +86,30 @@ tbody tr:hover{
       color: white;
       border: 3px solid gray;
       outline: none;
+      min-width: 100px;
+      flex: 1 1 calc(22%-10px);
+      max-width: 100%;
     }
     input[type="text"] {
       border-radius: 40px;
       border: 3px solid gray;
       color: white;
+      min-width: 100px;
+      flex: 1 1 calc(22%-10px);
+      max-width: 100%;
+    }
+    .num-filter {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-evenly;
+      flex: 1 1 calc(22%-10px);
+      max-width: 100%;
+      gap: 10px;
+      input {
+        min-width: 50px !important ; /* Largeur minimale */
+        flex: 1 1 10%; /* Permet à l'input de s'étendre tout en respectant min-width */
+        max-width: 100%; /* Empêche de dépasser la largeur disponible */
+      }
     }
   }
   .table {
@@ -82,53 +117,54 @@ tbody tr:hover{
     height: 71vh;
     overflow: auto;
     position: relative;
-    
   }
-  .facture-t{
-    height: 71vh;
+  .facture-t {
+    height: 67vh;
     overflow: auto;
+    box-sizing: border-box;
+    /* Conteneur principal */
   }
   .facture-table {
     width: 100%;
     border-collapse: collapse;
     background: rgba(0, 0, 0, 0.6);
     .highlighted {
-      background-color: rgb(7, 43, 63); 
+      background-color: rgb(7, 43, 63);
       font-weight: bold;
     }
-    
-    tfoot{
+
+    tfoot {
       position: sticky;
       bottom: 1px;
       font-size: large;
       background-color: #06272c;
-      strong{
+      strong {
         display: flex;
-        align-items: center; 
+        align-items: center;
         justify-content: space-evenly;
         letter-spacing: 1px;
-        .div{
+        .div {
           display: flex;
           gap: 10px;
-          .reste{
+          .reste {
             color: rgb(25, 200, 219);
           }
         }
       }
-      td{
+      td {
         text-align: center;
       }
     }
-    .action{
+    .action {
       text-align: center;
       width: auto;
     }
-    .act{
+    .act {
       text-align: center;
     }
-    thead{
+    thead {
       position: sticky;
-      top: 0px; 
+      top: 0px;
     }
     th,
     td {
@@ -165,12 +201,13 @@ tbody tr:hover{
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.6);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 999;
-  
+    animation: modalFadeIn 0.3s ease;
+
     .modals {
       background-color: #fff;
       padding: 20px;
@@ -180,18 +217,18 @@ tbody tr:hover{
       color: black;
       text-align: center;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  
+
       h2 {
         margin-top: 0;
         font-size: 24px;
         color: #333;
       }
-  
+
       .modal-actions {
         display: flex;
         justify-content: center;
         gap: 10px;
-  
+
         button {
           padding: 8px 16px;
           border: none;
@@ -202,23 +239,21 @@ tbody tr:hover{
           align-items: center;
           justify-content: center;
           gap: 10px;
-  
         }
-        .save{
+        .save {
           background: rgb(3, 131, 69);
-          &:hover{
+          &:hover {
             background: rgb(4, 133, 51);
           }
-          
         }
-        .cancel{
+        .cancel {
           background: rgb(220, 48, 48);
-          &:hover{
+          &:hover {
             background: rgb(164, 38, 38);
           }
         }
       }
-  
+
       .input-group {
         position: relative;
         margin-bottom: 20px;
@@ -235,7 +270,7 @@ tbody tr:hover{
           pointer-events: none;
           transition: 0.2s ease all;
         }
-  
+
         input,
         select {
           text-align: left;
@@ -247,12 +282,11 @@ tbody tr:hover{
           border-radius: 5px;
           outline: none;
           border: 3px solid gray;
-          background: white!important;
+          background: white !important;
           color: black;
           font-weight: 600;
           &:focus,
           &:not(:placeholder-shown) {
-            border: 3px solid blue;
             & + label {
               top: 0px;
               font-size: 12px;
@@ -261,28 +295,27 @@ tbody tr:hover{
               padding: 5px;
               font-weight: 600;
             }
-           
           }
         }
-        option{
-          background: rgb(32, 41, 46)!important;
+        option {
+          background: rgb(32, 41, 46) !important;
           color: white;
           font-weight: 600;
         }
-        select{
+        select {
           height: 48px;
           background: white;
         }
       }
     }
-  } 
+  }
 }
 @keyframes clignote {
   0% {
     background-color: black;
   }
   50% {
-    background-color:#2d2e30; /* Couleur d'arrière-plan claire */
+    background-color: #2d2e30; /* Couleur d'arrière-plan claire */
   }
   100% {
     background-color: black;
@@ -293,4 +326,47 @@ tbody tr:hover{
   animation: clignote 0.8s infinite;
   background-color: red;
 }
-
+@media (max-width: 700px) {
+  .search-container {
+    overflow-x: auto;
+  }
+}
+@media (max-width: 750px) {
+  .facturelist .facture-t {
+    height: 65vh;
+  }
+}
+@media (max-width: 595px) {
+  .facturelist .facture-t {
+    height: 58vh;
+  }
+}
+@media (max-width: 565px) {
+  .facturelist .facture-t {
+    height: 54vh;
+  }
+}
+@media (max-width: 450px) {
+  .facturelist .facture-t {
+    height: 58vh;
+  }
+}
+.action {
+  position: relative;
+  .dropdown-btn{
+    display: none;
+  }
+  /* Responsive : cacher les boutons desktop et afficher le menu déroulant */
+  @media (max-width: 768px) {
+    .dropdown-btn{
+      display: inline-block;
+      min-width: 25px;
+    }
+    .menu-action{
+      display: none;
+    }
+    .menu-action.show{
+      display: inline-block;
+    }
+  }
+}

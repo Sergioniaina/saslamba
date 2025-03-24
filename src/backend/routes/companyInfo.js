@@ -11,6 +11,7 @@ const router = express.Router();
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'logo/'); // Dossier de destination des fichiers
+    // cb(null, path.resolve("logo"));
   },
   filename: (req, file, cb) => {
     cb(null, `${Date.now()}-${file.originalname}`); // Renommer les fichiers pour éviter les conflits
@@ -36,7 +37,7 @@ const upload = multer({
 // Route pour ajouter ou mettre à jour les informations de l'entreprise
 router.post('/add', upload.single('photo'), async (req, res) => {
   try {
-    const { name, phone, address } = req.body;
+    const { name, phone, address, email } = req.body;
     const photoPath = req.file?.path || null;
 
     let companyInfo = await CompanyInfo.findOne();
@@ -44,13 +45,14 @@ router.post('/add', upload.single('photo'), async (req, res) => {
     if (!companyInfo) {
       // Créer une nouvelle entreprise si aucune entrée existante
       companyInfo = new CompanyInfo({
-        name, phone, address, photo: photoPath
+        name, phone, address,email, photo: photoPath
       });
     } else {
       // Mettre à jour les informations de l'entreprise existante
       companyInfo.name = name || companyInfo.name;
       companyInfo.phone = phone || companyInfo.phone;
       companyInfo.address = address || companyInfo.address;
+      companyInfo.email = email || companyInfo.email;
       companyInfo.photo = photoPath || companyInfo.photo;
     }
 
@@ -63,12 +65,12 @@ router.post('/add', upload.single('photo'), async (req, res) => {
 // Route pour ajouter une nouvelle entreprise
 router.post('/ajout', upload.single('photo'), async (req, res) => {
   try {
-    const { name, phone, address } = req.body;
+    const { name, phone, address, email } = req.body;
     const photoPath = req.file?.path || null;
 
     // Créer une nouvelle entreprise et l'ajouter à la base de données
     const companyInfo = new CompanyInfo({
-      name, phone, address, photo: photoPath
+      name, phone, address,email, photo: photoPath
     });
 
     await companyInfo.save();
@@ -106,7 +108,7 @@ router.get('/list', async (req, res) => {
 // Route pour mettre à jour les informations de l'entreprise
 router.put('/update', upload.single('photo'), async (req, res) => {
   try {
-    const { name, phone, address } = req.body;
+    const { name, phone, address, email } = req.body;
     const photoPath = req.file?.path || null;
 
     const companyInfo = await CompanyInfo.findOne();
@@ -119,6 +121,7 @@ router.put('/update', upload.single('photo'), async (req, res) => {
     companyInfo.name = name || companyInfo.name;
     companyInfo.phone = phone || companyInfo.phone;
     companyInfo.address = address || companyInfo.address;
+    companyInfo.email = email || companyInfo.email;
     companyInfo.photo = photoPath || companyInfo.photo;
 
     await companyInfo.save();

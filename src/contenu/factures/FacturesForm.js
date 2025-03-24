@@ -12,6 +12,7 @@ import {
   faEdit,
   faTimes,
   faClock,
+  faTicketAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import FactureList from "./FacturesList";
 import {
@@ -55,12 +56,13 @@ const FactureForm = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchM, setSearchT] = useState("");
   const [currentView, setCurrentView] = useState(
-    // localStorage.getItem("currentView") || 
+    // localStorage.getItem("currentView") ||
     "machines" // Load currentView from localStorage
   );
   const [current, setCurrent] = useState(
     // localStorage.getItem("current" ||
-     "client");
+    "client"
+  );
   const inputRefs = useRef({});
   const inputRefss = useRef({});
   const [showClientList, setShowClientList] = useState(false);
@@ -72,6 +74,7 @@ const FactureForm = () => {
   const [confirmMessage, setConfirmMessage] = useState(""); // Stores the confirmation message
   const [loading, setLoading] = useState(true);
   const [reste, setReste] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
   const PORT = process.env.REACT_APP_BACKEND_URL;
   // useEffect(() => {
   //   localStorage.setItem("currentView", currentView); // Save currentView to localStorage
@@ -1029,7 +1032,7 @@ const FactureForm = () => {
         // alert("Facture modifiée avec succès");
         // setCurrent(current)
         // setCurrentView(currentView)
-      //  toast.success("Facture modifier avec succes");
+        //  toast.success("Facture modifier avec succes");
       } else {
         response = await axios.post(`${PORT}/api/factures`, factureData, {
           headers: {
@@ -1038,17 +1041,16 @@ const FactureForm = () => {
           },
         });
         // alert("Facture créée avec succès");
-         setCurrent(current);
-         setCurrentView(currentView);
+        setCurrent(current);
+        setCurrentView(currentView);
         toast.success("La facture crée avec succès !");
       }
 
       console.log("Données de la facture envoyées :", response.data._id);
-     const printableArea = document.getElementById("printable-area");
+      const printableArea = document.getElementById("printable-area");
       if (printableArea) {
         console.log("L'élément à imprimer est prêt.");
         printContentAsPDF(); // Appel à l'impression
-       
       } else {
         console.error("L'élément à imprimer n'a pas été trouvé.");
       }
@@ -1225,17 +1227,16 @@ const FactureForm = () => {
         // Appeler la fonction pour "en attente"
         await billetConfirmEnattente();
         setCurrent("client");
-        setCurrentView("machines")
+        setCurrentView("machines");
       } else {
         // Appeler la fonction pour les autres états
         await billetConfirm();
-        if (isEditMode){
+        if (isEditMode) {
           setCurrent("client");
-          setCurrentView("machines")
-        }
-        else {
+          setCurrentView("machines");
+        } else {
           setCurrent(current);
-          setCurrentView(current)
+          setCurrentView(current);
         }
       }
       // setCurrentView("machines")
@@ -1249,7 +1250,6 @@ const FactureForm = () => {
     }
   };
 
-  
   // const handleDetails = (facture) => {
   //   if (!facture || typeof facture !== "object") {
   //     setError("Facture non disponible ou mal formatée pour l'édition.");
@@ -1972,6 +1972,13 @@ const FactureForm = () => {
           </form>
         </div>
       )}
+      <button
+        className="toggle-button-modal"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+         <FontAwesomeIcon icon={isOpen ? faTimes : faTicketAlt} />
+        {isOpen ? "Fermer" : "Ouvrir"} 
+      </button>
       <form
         className="facture-form"
         onSubmit={(e) => {
@@ -2260,7 +2267,7 @@ const FactureForm = () => {
                       <label className="machine-etat">{machine.etat}</label>
                       {machine.photo && (
                         <img
-                          src={`http://localhost:5000/${machine.photo}`}
+                          src={`${PORT}/${machine.photo}`}
                           alt={machine.name}
                           style={{
                             width: "150px",
@@ -2401,7 +2408,7 @@ const FactureForm = () => {
 
                       {product.photo && (
                         <img
-                          src={`http://localhost:5000/${product.photo}`}
+                          src={`${PORT}/${product.photo}`}
                           alt={product.name}
                           style={{
                             width: "100px",
@@ -2504,7 +2511,8 @@ const FactureForm = () => {
         </div>
         {/*facture*/}
         {/* <button onClick={handlePreview}>Prévisualiser</button> */}
-        <div className="tick">
+
+        <div className={`tick ${isOpen ? "show" : ""}`}>
           <div className="ticket">
             <div className="prev-relative">
               {/* {latestFacture ? (
@@ -2755,9 +2763,6 @@ const FactureForm = () => {
               className="billetage-content"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="close">
-                <button onClick={() => setBillet(false)}>❌</button>
-              </div>
               <div className="input-class">
                 <div className="input-container">
                   <input
@@ -2873,7 +2878,7 @@ const FactureForm = () => {
               <div className="company-photo-facture">
                 {/* Affiche la photo de l'entreprise */}
                 <img
-                  src={`http://localhost:5000/${companyInfo.photo}`}
+                  src={`${PORT}/${companyInfo.photo}`}
                   alt="Logo de l'entreprise"
                   style={{
                     borderRadius: "10px",
@@ -3087,6 +3092,7 @@ const FactureForm = () => {
           </p> */}
         </div>
       </div>
+
       <ToastContainer />
       {isConfirmVisible && (
         <ModalConfirm

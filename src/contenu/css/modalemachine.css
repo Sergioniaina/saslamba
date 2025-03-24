@@ -1,0 +1,169 @@
+.modal-machine {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: modalFadeIn 0.4s ease;
+    .modal-content-m {
+      background: linear-gradient(135deg, rgb(30, 30, 30), rgb(62, 61, 61));
+        padding: 20px;
+        border-radius: 8px;
+        width: 450px;
+        max-width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        max-height: 80vh;
+        overflow-y: auto;
+        animation: slideIn 0.4s ease;
+        .form{
+          height: auto;
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          gap: 30px;
+          .range{
+            width: 100%;
+            text-align: center;
+            border-bottom: 3px solid gray;
+          }
+        }
+        select{
+          padding: 5px;
+          width: 50%;
+          color: white;
+          background-color: transparent;
+          text-align: center;
+          border: 2px solid gray;
+          outline: none;
+          border-radius: 30px;
+          height: 45px;
+          /* background: var(--background-content); */
+        }
+        .form1{
+          display: flex;
+          justify-content: space-between;
+          gap: 10px;
+          input{
+            color: white;
+            padding: 5px;
+            border-radius: 30px;
+            border: 2px solid gray;
+            background-color: transparent;
+            outline: none;
+            text-align: center;
+            width: 50%;
+            height: 35px;
+  
+          }
+          
+        }
+        .form2{
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 10px;
+          input,textarea{
+            color: white;
+            padding: 5px;
+            border-radius: 30px;
+            border: 2px solid gray;
+            background-color: transparent;
+            outline: none;
+            text-align: center;
+            width: 50%;
+            height: 35px;
+          }
+          .file{
+            width: 100%;
+          }
+          button{
+            width: 50%;
+            height: 45px;
+            border: none;
+            border-radius: 5px;
+          }
+          .btn-ad{
+            background: var(--btn-add);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+          }
+          .btn-c{
+            background: var(--btn-cancel);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+          }
+        }
+        .linge {
+          display: flex;
+          justify-content: center;
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
+          .add-price{
+            width: 80%;
+            margin-right: 0px;
+            height: 40px;
+          }
+          .price-range {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            /* Allow items to wrap to the next line */
+            justify-content: center;
+            /* Center items horizontally */
+            box-sizing: border-box;
+            gap: 5px;
+           
+            input {
+              flex: 1 1 calc(22% - 10px);
+              /* 3 items per row with some gap space */
+              max-width: 100%;
+              min-width: 60px;
+             /* Empêche les inputs de devenir trop petits */
+              background: transparent;
+              border: 2px solid wheat;
+              color: black;
+              outline: none;
+              height: 30px;
+            }
+        
+            button {
+              flex: 1 1 calc(22% - 10px);/* Même comportement que les inputs */
+              max-width: 100%;
+              height: 35px;
+              min-width: 60px;
+              background: red;
+            }
+          }
+        }
+        .btn-ad:hover{
+          background: rgb(64, 180, 70);
+        }
+        .btn-c:hover{
+          background: rgb(231, 36, 36);
+        }
+      }
+  }
+  @media (max-width: 750px) {
+    .modal-machine .modal-content-m{
+     width: 70%;
+    }
+  }
+  .file{
+    width: 100%;
+  }
+  option{
+    background: rgb(53, 49, 49);
+  }
+  

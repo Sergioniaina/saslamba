@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { FaEdit, FaSave, FaTimes } from "react-icons/fa";
+import React, { useState, useEffect, useRef } from "react";
+import { FaEdit, FaFile, FaSave, FaTimes } from "react-icons/fa";
 
 const ProductModal = ({ show, onClose, onSave, product }) => {
+  const PORT = process.env.REACT_APP_BACKEND_URL;
+  const [preview, setPreview] = useState(null);
+  const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     _id: "",
     name: "",
@@ -11,8 +14,6 @@ const ProductModal = ({ show, onClose, onSave, product }) => {
     stockAlerte: 5,
     photo: null,
   });
-
-  const [fileDetails, setFileDetails] = useState(null);
 
   useEffect(() => {
     if (product) {
@@ -25,21 +26,18 @@ const ProductModal = ({ show, onClose, onSave, product }) => {
         stockAlerte: product.stockAlerte || 5,
         photo: product.photo || null,
       });
-      setFileDetails(
-        product.photo ? { name: product.photo.split("/").pop() } : null
-      );
+      setPreview(null); // Réinitialiser la prévisualisation lors du chargement d'un produit existant
     } else {
       setFormData({
         _id: "",
         name: "",
         price: "",
         description: "",
-        date: "",
         stock: 1,
         stockAlerte: 5,
         photo: null,
       });
-      setFileDetails(null);
+      setPreview(null);
     }
   }, [product]);
 
@@ -58,17 +56,17 @@ const ProductModal = ({ show, onClose, onSave, product }) => {
         ...prev,
         photo: file,
       }));
-      setFileDetails({
-        name: file.name,
-        size: file.size,
-        type: file.type,
-      });
+      const imageUrl = URL.createObjectURL(file);
+      setPreview(imageUrl);
     }
+  };
+
+  const handleIconClick = () => {
+    fileInputRef.current.click();
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     const updatedFormData = new FormData();
     Object.keys(formData).forEach((key) => {
       if (key === "photo" && formData[key]) {
@@ -77,12 +75,10 @@ const ProductModal = ({ show, onClose, onSave, product }) => {
         updatedFormData.append(key, formData[key]);
       }
     });
-    // Ajouter l'ID de l'utilisateur connecté
     const currentUser = JSON.parse(localStorage.getItem("user"));
     if (currentUser && currentUser._id) {
       updatedFormData.append("userId", currentUser._id);
     }
-
     onSave(updatedFormData);
   };
 
@@ -101,7 +97,6 @@ const ProductModal = ({ show, onClose, onSave, product }) => {
               value={formData.name}
               onChange={handleChange}
               required
-            
             />
             <label>Name</label>
           </div>
@@ -156,49 +151,77 @@ const ProductModal = ({ show, onClose, onSave, product }) => {
             <label>Stock Alerte</label>
           </div>
 
-          <input
-            type="file"
-            name="photo"
-            accept="image/*"
-            onChange={handleFileChange}
-          />
+          <div className="form-group">
+            <input
+              type="file"
+              name="photo"
+              accept="image/*"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              hidden
+            />
+            <button type="button" className="select-file" onClick={handleIconClick}>
+              <FaFile /> Sélectionner une photo
+            </button>
+          </div>
 
-          {fileDetails && (
-            <div className="file-preview">
-              <p>
-                <strong>File Name:</strong> {fileDetails.name}
-              </p>
-              <p>
-                <strong>File Size:</strong>{" "}
-                {Math.round(fileDetails.size / 1024)} KB
-              </p>
-              <p>
-                <strong>File Type:</strong> {fileDetails.type}
-              </p>
-            </div>
-          )}
-
-          {formData.photo && !fileDetails && (
-            <div className="image-preview">
-              <img
-                src={`http://localhost:5000/uploads/${formData.photo
-                  .split("/")
-                  .pop()}`}
-                alt="Product"
+          <div className="form-photo">
+            <div className="form-group">
+              <input
+                className="file"
+                value={
+                  formData.photo instanceof File
+                    ? formData.photo.name
+                    : formData.photo && typeof formData.photo === "string"
+                    ? formData.photo.split("/").pop()
+                    : product && !formData.photo
+                    ? product.photo.split("/").pop()
+                    : ""
+                }
+                placeholder=""
+                readOnly
+                required
               />
-              <p>
-                <strong>Current Photo</strong>
-              </p>
+              <label>Photo</label>
             </div>
-          )}
+            {/* Affichage de la photo */}
+            {preview ? (
+              <div style={{ marginTop: "10px" }}>
+                <img
+                  src={preview}
+                  alt="Aperçu de la nouvelle"
+                  style={{
+                    maxWidth: "100px",
+                    height: "80px",
+                    minWidth: "100px",
+                    borderRadius: "10px",
+                  }}
+                />
+              </div>
+            ) : formData.photo && typeof formData.photo === "string" ? (
+              <div style={{ marginTop: "10px" }}>
+                <img
+                  src={`${PORT}/${formData.photo}`}
+                  alt="actuelle du produit"
+                  style={{
+                    maxWidth: "100px",
+                    height: "80px",
+                    minWidth: "100px",
+                    borderRadius: "10px",
+                  }}
+                />
+              </div>
+            ) : null}
+          </div>
           <div className="proudit-btn">
-          <button type="submit">
-          {product ? <FaEdit/> : <FaSave/>}
-            {product ? "Update" : "Add"}</button>
-          <button type="button" onClick={onClose}>
-            <FaTimes/>
-            Cancel
-          </button>
+            <button type="submit">
+              {product ? <FaEdit /> : <FaSave />}
+              {product ? "Update" : "Add"}
+            </button>
+            <button type="button" onClick={onClose}>
+              <FaTimes />
+              Cancel
+            </button>
           </div>
         </form>
       </div>

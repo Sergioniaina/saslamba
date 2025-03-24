@@ -14,6 +14,7 @@ import ModalConfirm from "../modal/ModalConfirm";
 import { useLocation } from "react-router-dom";
 
 const ProductStockForm = () => {
+  const PORT = process.env.REACT_APP_BACKEND_URL;
   const [products, setProducts] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [quantities, setQuantities] = useState({});
@@ -47,7 +48,7 @@ const ProductStockForm = () => {
     const fetchProducts = async () => {
       const token = localStorage.getItem("token");
       try {
-        const response = await axios.get("http://localhost:5000/api/products", {
+        const response = await axios.get(`${PORT}/api/products`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (location.pathname === "/home/alerte") {
@@ -62,11 +63,11 @@ const ProductStockForm = () => {
       }
     };
     fetchProducts();
-  }, [location]);
+  }, [location,PORT]);
   const fetchProducts = async () => {
     const token = localStorage.getItem("token");
     try {
-      const response = await axios.get("http://localhost:5000/api/products", {
+      const response = await axios.get(`${PORT}/api/products`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProducts(response.data);
@@ -112,7 +113,7 @@ const ProductStockForm = () => {
     try {
       // Ajouter l'en-tête Authorization avec le token JWT
       await axios.post(
-        "http://localhost:5000/api/products/update-stock",
+        `${PORT}/api/products/update-stock`,
         { stockUpdates }, // Le corps de la requête
         {
           headers: {

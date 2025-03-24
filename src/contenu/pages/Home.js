@@ -56,12 +56,12 @@ import GestionCaisse from "./HistoriqueDepense";
 import ProductHistory from "./ProductH";
 import FactureMachine from "../factures/FactureMachine";
 import axios from "axios";
+import PaymentForm from "./reabonnement";
 
 // import App from "./App";
 
 const DropdownItem = ({ title, icon, children }) => {
   const [isOpen, setIsOpen] = useState(false);
-
   const toggleSubMenu = () => {
     setIsOpen(!isOpen);
   };
@@ -90,16 +90,20 @@ const Home = ({ onLogout }) => {
   const [isFixedDivVisible, setFixedDivVisible] = useState(false);
   const [lowStockProducts, setLowStockProducts] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const PORT = process.env.REACT_APP_BACKEND_URL;
+  // eslint-disable-next-line
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line
   const [error, setError] = useState(null);
   useEffect(() => {
     fetchProducts();
+    // eslint-disable-next-line
   }, []);
   const navigate = useNavigate();
   const fetchProducts = async () => {
     try {
       const token = localStorage.getItem("token"); // Récupération du token
-      const response = await axios.get("http://localhost:5000/api/products", {
+      const response = await axios.get(`${PORT}/api/products`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -227,6 +231,7 @@ const Home = ({ onLogout }) => {
             <Route path="/depense" element={<GestionCaisse />} />
             <Route path="/productH" element={<ProductHistory />} />
             <Route path="/machineCompte" element={<FactureMachine />} />
+            <Route path="/reabonnement" element={<PaymentForm/>} />
             {/* <Route path="/app" element={<App />} /> */}
             {/* <Route path="/FactureId/:id" element={<FactureId />} /> */}
             <Route
@@ -243,7 +248,7 @@ const Home = ({ onLogout }) => {
               onClick={(e) => e.stopPropagation()}
             >
               <button className="btn-close" onClick={closeFixedDiv}>
-                ❌
+                x
               </button>
               <div className="dropdown-menu">
                 <DropdownItem
@@ -266,7 +271,7 @@ const Home = ({ onLogout }) => {
                     to="/home/historiqueStock"
                     className="dropdown-subitem"
                   >
-                    <FaHistory style={{ color: "brown" }} /> HISTORIQUE
+                    <FaHistory style={{ color: "brown" }} /> HISTORIQUES
                   </NavLink>
                   <NavLink to="/home/productH" className="dropdown-subitem">
                     <FaHistory style={{ color: "brown" }} /> SUIVIS
@@ -287,7 +292,7 @@ const Home = ({ onLogout }) => {
                     <FaExchangeAlt style={{ color: "#4CAF50" }} /> MOUVEMENT
                   </NavLink>
                   <NavLink to="/home/caisseTable" className="dropdown-subitem">
-                    <FaHistory style={{ color: "#4CAF50" }} /> HISTORIQUE
+                    <FaHistory style={{ color: "#4CAF50" }} /> HISTORIQUES
                   </NavLink>
                   <NavLink to="/home/depense" className="dropdown-subitem">
                     <FaHistory style={{ color: "#4CAF50" }} /> DEPENSE
@@ -324,7 +329,9 @@ const Home = ({ onLogout }) => {
                   </NavLink>
                   <NavLink to="/home/abonnements" className="dropdown-subitem">
                     <FaUserFriends style={{ color: "#9C27B0" }} />{" "}
-                    CLIENT-ABONNEMENT
+                    <div className="marquee-container">
+                      <span className="marquee-content">CLIENT-ABONNEMENT</span>
+                    </div>
                   </NavLink>
                 </DropdownItem>
 
@@ -335,8 +342,11 @@ const Home = ({ onLogout }) => {
                   <NavLink to="/home/test" className="dropdown-subitem">
                     <FaSignOutAlt style={{ color: "#607D8B" }} /> DECONNECTER
                   </NavLink>
-                  <NavLink to="/home/contact" className="dropdown-subitem">
-                    <FaUserTie style={{ color: "#607D8B" }} /> CLIENT-ABONNEMENT
+                  <NavLink to="/home/reabonnement" className="dropdown-subitem">
+                    <FaUserTie style={{ color: "#607D8B" }} />
+                    <div className="marquee-container">
+                      <span className="marquee-content">CLIENT-ABONNEMENT</span>
+                    </div>
                   </NavLink>
                 </DropdownItem>
               </div>
@@ -345,8 +355,11 @@ const Home = ({ onLogout }) => {
         )}
       </div>
       {isModalOpen && (
-        <div className="modal-alerte" onClick={()=>setIsModalOpen(false)}>
-          <div className="modal-content-alerte" onClick={(e)=>e.stopPropagation()}>
+        <div className="modal-alerte" onClick={() => setIsModalOpen(false)}>
+          <div
+            className="modal-content-alerte"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h2>⚠️ Alerte Stock Bas</h2>
             <p>
               Il y a <strong>{lowStockProducts.length}</strong> produits en
@@ -366,7 +379,6 @@ const Home = ({ onLogout }) => {
               >
                 <FaEye size={18} /> Voir Détails
               </button>
-
             </div>
           </div>
         </div>

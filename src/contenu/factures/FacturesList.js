@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toast, ToastContainer } from "react-toastify";
 import { useLocation } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
+import * as XLSX from "xlsx";
 import {
   faEye,
   faEdit,
@@ -15,11 +16,18 @@ import {
   faClock,
   faCalendarAlt,
   faBan,
+  faEllipsisV,
 } from "@fortawesome/free-solid-svg-icons";
-import { FaSave, FaSearch, FaTimes } from "react-icons/fa";
+import { FaFileExcel, FaSave, FaSearch, FaTimes } from "react-icons/fa";
 import ModalConfirm from "../modal/ModalConfirm";
 import Facture from "./Facture";
-const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }) => {
+const FactureList = ({
+  onEdit,
+  etatFilter,
+  setCurrentView,
+  setCurrent,
+  handlePays,
+}) => {
   const [factures, setFactures] = useState([]);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -43,6 +51,16 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
   const [newPaymentType, setNewPaymentType] = useState("");
   const [userPrivileges, setUserPrivileges] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [numMin, setNumMin] = useState("");
+  const [numMax, setNumMax] = useState("");
+  const [openMenuId, setOpenMenuId] = useState(null); // Stocke l'ID du menu ouvert
+
+  // Fonction pour basculer l'affichage du menu
+  const toggleMenu = (e, id) => {
+    e.stopPropagation(); // Empêche la propagation de l'événement
+    setOpenMenuId(openMenuId === id ? null : id); // Ferme si déjà ouvert, sinon ouvre
+  };
+
   // eslint-disable-next-line
   const [user, setUser] = useState("");
   const PORT = process.env.REACT_APP_BACKEND_URL;
@@ -59,34 +77,40 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
     const fetchFactures = async () => {
       const res = await fetch(`${PORT}/api/factures`); // Remplacer par l'URL de votre API pour récupérer les factures
       const facturesData = await res.json();
-    
-      const updatedFactures = await Promise.all(facturesData.map(async (facture) => {
-        if (facture.etat === "en attente") {
-          // Récupérer les machines associées à la facture en attente
-          const machinesRes = await fetch(`${PORT}/api/machines/factures-machines?factureId=${facture._id}`);
-          const machinesData = await machinesRes.json();
-    
-          // Vérifier si toutes les machines associées sont disponibles
-          const allAvailable = machinesData.every((machine) => machine.etat === "Disponible");
-    
-          return {
-            ...facture,
-            allMachinesAvailable: allAvailable, // Déterminer si la facture doit clignoter
-          };
-        }
-        return facture; // Si la facture n'est pas "en attente", retournez la facture telle quelle
-      }));
-    
+
+      const updatedFactures = await Promise.all(
+        facturesData.map(async (facture) => {
+          if (facture.etat === "en attente") {
+            // Récupérer les machines associées à la facture en attente
+            const machinesRes = await fetch(
+              `${PORT}/api/machines/factures-machines?factureId=${facture._id}`
+            );
+            const machinesData = await machinesRes.json();
+
+            // Vérifier si toutes les machines associées sont disponibles
+            const allAvailable = machinesData.every(
+              (machine) => machine.etat === "Disponible"
+            );
+
+            return {
+              ...facture,
+              allMachinesAvailable: allAvailable, // Déterminer si la facture doit clignoter
+            };
+          }
+          return facture; // Si la facture n'est pas "en attente", retournez la facture telle quelle
+        })
+      );
+
       const sortedFactures = updatedFactures.sort(
         (a, b) => new Date(b.dateFacture) - new Date(a.dateFacture) // Trier par date décroissante
       );
 
-      setFactures(sortedFactures); 
+      setFactures(sortedFactures);
     };
-  
-      fetchFactures();
+
+    fetchFactures();
   }, [PORT]);
-  
+
   const fetchPaymentTypes = async () => {
     try {
       const response = await axios.get(`${PORT}/api/payement`);
@@ -111,9 +135,9 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
 
     if (view) {
       setCurrentView(view);
-      setCurrent("factures") // Appelle la fonction passée depuis FactureForm
+      setCurrent("factures"); // Appelle la fonction passée depuis FactureForm
     }
-  }, [location, setCurrentView,setCurrent]);
+  }, [location, setCurrentView, setCurrent]);
   useEffect(() => {
     fetchPaymentTypes();
     // eslint-disable-next-line
@@ -138,7 +162,7 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
           },
         })
         .then((response) => {
-         // console.log("Réponse de l'API :", response.data);
+          // console.log("Réponse de l'API :", response.data);
           // Cherchez les privilèges pour le role et subRole de l'utilisateur
           const userRole = user.role;
           const userSubrole = user.subRole;
@@ -149,10 +173,10 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
           )?.permissions;
 
           if (privileges) {
-           // console.log("Privilèges de l'utilisateur :", privileges);
+            // console.log("Privilèges de l'utilisateur :", privileges);
             setUserPrivileges(privileges);
           } else {
-           // console.log("Aucun privilège trouvé pour ce rôle et sous-rôle");
+            // console.log("Aucun privilège trouvé pour ce rôle et sous-rôle");
             setUserPrivileges([]); // Si aucun privilège n'est trouvé
           }
         })
@@ -168,12 +192,12 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
     const fetchFactures = async () => {
       try {
         const response = await axios.get(`${PORT}/api/factures`);
-  
+
         // Trier les factures par ordre décroissant selon la date ou un autre critère
         const sortedFactures = response.data.sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         );
-  
+
         setFactures(sortedFactures);
         setLoading(false);
       } catch (error) {
@@ -181,17 +205,15 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
         setError("Une erreur est survenue lors du chargement des factures.");
       }
     };
-  
+
     fetchFactures();
   }, [PORT]);
-  
+
   const fetchFactureDetails = async (id) => {
     try {
-      const response = await axios.get(
-        `${PORT}/api/factures/listPar/${id}`
-      );
+      const response = await axios.get(`${PORT}/api/factures/listPar/${id}`);
       setSelectedFactures(response.data);
-     // console.log("Le facture:", response.data); // Affiche correctement les détails de la facture
+      // console.log("Le facture:", response.data); // Affiche correctement les détails de la facture
       setShowFacture(true);
     } catch (err) {
       console.error(
@@ -250,7 +272,7 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
   const handleDelete = async (id) => {
     try {
       // Supprimer la facture en utilisant axios
-      await axios.delete(`http://localhost:5000/api/factures/${id}`, {
+      await axios.delete(`${PORT}/api/factures/${id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
 
@@ -273,14 +295,14 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
     const token = localStorage.getItem("token");
     const url = `${PORT}/api/factures/cancel/${id}`;
     console.log("URL appelée :", url);
-  
+
     try {
       await axios.post(url, null, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-  
+
       setFactures(
         factures.map((facture) =>
           facture._id === id ? { ...facture, etat: "annulée" } : facture
@@ -291,7 +313,6 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
       setError("Une erreur est survenue lors de l'annulation de la facture.");
     }
   };
-  
 
   const handlePay = (facture) => {
     setSelectedFacture(facture);
@@ -309,7 +330,9 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
 
   const confirmPayer = () => {
     setConfirmMessage("Voulez-vous faire ce Payement?");
-    setConfirmAction(() => async () =>{await handlePaymentSubmit()});
+    setConfirmAction(() => async () => {
+      await handlePaymentSubmit();
+    });
     setIsConfirmVisible(true);
   };
 
@@ -361,10 +384,9 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
       );
 
       if (newReste === 0) {
-        await axios.put(
-          `${PORT}/api/factures/${selectedFacture._id}/etat`,
-          { estPaye: true }
-        );
+        await axios.put(`${PORT}/api/factures/${selectedFacture._id}/etat`, {
+          estPaye: true,
+        });
       }
 
       // Mettre à jour le solde de la caisse
@@ -376,12 +398,9 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
           );
           return;
         }
-        await axios.put(
-          `${PORT}/api/caisses/${selectedCaisse}/add-solde`,
-          {
-            solde: amountToPay,
-          }
-        );
+        await axios.put(`${PORT}/api/caisses/${selectedCaisse}/add-solde`, {
+          solde: amountToPay,
+        });
       }
 
       setShowPaymentModal(false);
@@ -409,27 +428,29 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
   const handleSearch = () => {
     let filteredFactures = factures;
 
-  // Filtrage par nom de client
-  if (searchTerm) {
-    filteredFactures = filteredFactures.filter((facture) =>
-      facture.customerName.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }
+    // Filtrage par nom de client
+    if (searchTerm) {
+      filteredFactures = filteredFactures.filter((facture) =>
+        facture.customerName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
 
-  // Filtrage par état de la facture
-  if (etatFilter && Array.isArray(etatFilter)) {
-    filteredFactures = filteredFactures.filter((facture) =>
-      etatFilter.some((filter) =>
-        facture.etat && facture.etat.toLowerCase() === filter.toLowerCase()
-      )
-    );
-  } else if (etatFilter) {
-    // Si etatFilter n'est pas un tableau (c'est une seule valeur)
-    filteredFactures = filteredFactures.filter(
-      (facture) =>
-        facture.etat && facture.etat.toLowerCase() === etatFilter.toLowerCase()
-    );
-  }
+    // Filtrage par état de la facture
+    if (etatFilter && Array.isArray(etatFilter)) {
+      filteredFactures = filteredFactures.filter((facture) =>
+        etatFilter.some(
+          (filter) =>
+            facture.etat && facture.etat.toLowerCase() === filter.toLowerCase()
+        )
+      );
+    } else if (etatFilter) {
+      // Si etatFilter n'est pas un tableau (c'est une seule valeur)
+      filteredFactures = filteredFactures.filter(
+        (facture) =>
+          facture.etat &&
+          facture.etat.toLowerCase() === etatFilter.toLowerCase()
+      );
+    }
 
     // Filtrage par état de paiement
     if (paymentFilter !== "tous") {
@@ -458,11 +479,21 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
         return factureDate >= start && factureDate <= end;
       });
     }
+    // Filtrage par numéro de facture
+    if (numMin !== "" && numMax !== "") {
+      const min = parseInt(numMin, 10);
+      const max = parseInt(numMax, 10);
+
+      filteredFactures = filteredFactures.filter((facture) => {
+        const numFacture = parseInt(facture.ticketNumber, 10);
+        return numFacture >= min && numFacture <= max;
+      });
+    }
 
     filteredFactures = filteredFactures.sort(
       (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
     );
-  
+
     return filteredFactures;
   };
   if (loading) {
@@ -472,7 +503,24 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
       </div>
     );
   }
+  const exportTableToExcel = () => {
+    // Clone le tableau pour ne pas modifier l'original
+    const table = document.querySelector(".acture-table").cloneNode(true);
 
+    // Supprimer les colonnes "Action" du tableau cloné
+    table.querySelectorAll("th.action, td.action").forEach((el) => el.remove());
+
+    // Convertir le tableau en fichier Excel
+    const workbook = XLSX.utils.table_to_book(table, { sheet: "Facture" });
+
+    // Télécharger le fichier Excel
+    XLSX.writeFile(workbook, "facture.xlsx");
+  };
+  const confirmExcel = () => {
+    setConfirmMessage("Voulez-vous exporter en Excel?");
+    setConfirmAction(() => () => exportTableToExcel());
+    setIsConfirmVisible(true);
+  };
   return (
     <div className="facturelist">
       {error && <div className="alert alert-error">{error}</div>}
@@ -504,7 +552,6 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
             onChange={(e) => setEndDate(e.target.value)}
           />
         </div>
-
         <div className="payment-filter">
           <select
             value={paymentFilter}
@@ -516,7 +563,32 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
             <option value="annulee">Annulée</option> {/* Nouvelle option */}
           </select>
         </div>
+        <div className="num-filter">
+          <input
+            type="number"
+            placeholder="Numéro min"
+            value={numMin}
+            onChange={(e) => setNumMin(e.target.value)}
+          />
+          <input
+            type="number"
+            placeholder="Numéro max"
+            value={numMax}
+            onChange={(e) => setNumMax(e.target.value)}
+          />
+          <button
+            type="button"
+            onClick={confirmExcel}
+            className="export-button"
+          >
+            <FaFileExcel
+              style={{ marginRight: "8px", color: "green", fontSize: "1.2em" }}
+            />
+            Exporter en Excel
+          </button>
+        </div>
       </div>
+
       <div className="facture-t">
         <table className="facture-table">
           <thead>
@@ -534,7 +606,9 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
               <tr
                 key={facture._id}
                 ref={(el) => (factureRefs.current[facture._id] = el)} // Associer une référence à chaque ligne
-                className={`${facture._id === highlightedId ? "highlighted" : ""} ${facture.allMachinesAvailable ? "clignote" : ""}`}
+                className={`${
+                  facture._id === highlightedId ? "highlighted" : ""
+                } ${facture.allMachinesAvailable ? "clignote" : ""}`}
               >
                 <td>{facture.customerName}</td>
                 <td>{facture.totalPrice} Ar</td>
@@ -558,14 +632,26 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
               </td> */}
                 <td className="action">
                   <button
+                    className="dropdown-btn"
                     type="button"
-                    onClick={() => fetchFactureDetails(facture._id)}
+                    onClick={(e) => toggleMenu(e, facture._id)}
                   >
-                    <FontAwesomeIcon icon={faEye} />
+                    <FontAwesomeIcon icon={faEllipsisV} />
                   </button>
-                  {facture.etat !== "annulée" && (
-                    <>
-                      {/* <button
+                  <div
+                    className={`menu-action ${
+                      openMenuId === facture._id ? "show" : ""
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => fetchFactureDetails(facture._id)}
+                    >
+                      <FontAwesomeIcon icon={faEye} />
+                    </button>
+                    {facture.etat !== "annulée" && (
+                      <>
+                        {/* <button
                         data-tooltip-id="menu-eye"
                         type="button"
                         onClick={() => onViewDetails(facture)}
@@ -574,62 +660,63 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
                         <FontAwesomeIcon icon={faEye} />
                       </button> */}
 
-                      <button
-                        data-tooltip-id={`${
-                          facture.etat === "en attente"
-                            ? "encaisser"
-                            : "modifier"
-                        }`}
-                        type="button"
-                        onClick={() => onEdit(facture)}
-                        style={{ color: "#28a745" }}
-                      >
-                        <FontAwesomeIcon
-                          icon={
-                            facture.etat === "en attente" ? faClock : faEdit
-                          }
-                        />
-                      </button>
-
-                      {facture.reste > 0 && (
                         <button
-                          data-tooltip-id="payer"
+                          data-tooltip-id={`${
+                            facture.etat === "en attente"
+                              ? "encaisser"
+                              : "modifier"
+                          }`}
                           type="button"
-                          onClick={() => handlePay(facture)}
-                          style={{ color: "orange" }}
-                          // style={{
-                          //   color: "#ff5733",
-                          //   opacity: facture.reste === 0  ? 0 : 1, // Opacité à 0 si annulée
-                          //   pointerEvents: facture.reste === 0 ? "none" : "auto" // Désactive les clics
-                          // }}
-                          // disabled={facture.reste === 0} // Si annulée, le bouton est désactivé
+                          onClick={() => onEdit(facture)}
+                          style={{ color: "#28a745" }}
                         >
-                          <FontAwesomeIcon icon={faMoneyBillWave} />
+                          <FontAwesomeIcon
+                            icon={
+                              facture.etat === "en attente" ? faClock : faEdit
+                            }
+                          />
                         </button>
-                      )}
-                    </>
-                  )}
-                  {userPrivileges?.factures?.includes("delete") && (
-                    <button
-                      data-tooltip-id="delete"
-                      type="button"
-                      onClick={() => confirmDelete(facture._id)}
-                      style={{ color: "#dc3545" }}
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                    </button>
-                  )}
-                  {facture.etat !== "annulée" && (
-                    <button
-                      data-tooltip-id="annuler"
-                      type="button"
-                      onClick={() => confirmAnnuler(facture._id)}
-                      style={{ color: "#ff5733" }}
-                      disabled={facture.etat === "annulée"}
-                    >
-                      <FontAwesomeIcon icon={faBan} />
-                    </button>
-                  )}
+
+                        {facture.reste > 0 && (
+                          <button
+                            data-tooltip-id="payer"
+                            type="button"
+                            onClick={() => handlePay(facture)}
+                            style={{ color: "orange" }}
+                            // style={{
+                            //   color: "#ff5733",
+                            //   opacity: facture.reste === 0  ? 0 : 1, // Opacité à 0 si annulée
+                            //   pointerEvents: facture.reste === 0 ? "none" : "auto" // Désactive les clics
+                            // }}
+                            // disabled={facture.reste === 0} // Si annulée, le bouton est désactivé
+                          >
+                            <FontAwesomeIcon icon={faMoneyBillWave} />
+                          </button>
+                        )}
+                      </>
+                    )}
+                    {userPrivileges?.factures?.includes("delete") && (
+                      <button
+                        data-tooltip-id="delete"
+                        type="button"
+                        onClick={() => confirmDelete(facture._id)}
+                        style={{ color: "#dc3545" }}
+                      >
+                        <FontAwesomeIcon icon={faTrash} />
+                      </button>
+                    )}
+                    {facture.etat !== "annulée" && (
+                      <button
+                        data-tooltip-id="annuler"
+                        type="button"
+                        onClick={() => confirmAnnuler(facture._id)}
+                        style={{ color: "#ff5733" }}
+                        disabled={facture.etat === "annulée"}
+                      >
+                        <FontAwesomeIcon icon={faBan} />
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -744,11 +831,7 @@ const FactureList = ({ onEdit, etatFilter,setCurrentView,setCurrent,handlePays }
 
             {/* Actions du modal */}
             <div className="modal-actions">
-              <button
-                className="save"
-                type="button"
-                onClick={confirmPayer}
-              >
+              <button className="save" type="button" onClick={confirmPayer}>
                 {" "}
                 <FaSave />
                 <span>enregistrer</span>

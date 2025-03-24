@@ -8,10 +8,11 @@ import "react-toastify/dist/ReactToastify.css";
 import { toast, ToastContainer } from "react-toastify";
 
 import { useNavigate } from "react-router-dom";
+import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const FactureModal = ({ factures, onClose, setFacture }) => {
   const navigate = useNavigate();
-
   const handleViewFacture = (factureId) => {
     // Naviguer vers la page FactureList avec un paramètre de filtre
     navigate(`/home/demande?id=${factureId}`);
@@ -62,6 +63,7 @@ const FactureModal = ({ factures, onClose, setFacture }) => {
 };
 
 const Machines = () => {
+  const PORT = process.env.REACT_APP_BACKEND_URL;
   const [showModal, setShowModal] = useState(false); // Affichage de la modale
   const [modalContent, setModalContent] = useState([]); // Contenu des factures
   const [machines, setMachines] = useState([]);
@@ -70,21 +72,31 @@ const Machines = () => {
   const [confirmAction, setConfirmAction] = useState(null); // Stores the action to confirm
   const [confirmMessage, setConfirmMessage] = useState(""); // Stores the confirmation message
   const [setFacture, setSetFacture] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState(null); // Stocke l'ID du menu ouvert
+  // Fonction pour basculer l'affichage du menu
+  const toggleMenu = (e, id) => {
+    e.stopPropagation(); // Empêche la propagation de l'événement
+    setOpenMenuId(openMenuId === id ? null : id); // Ferme si déjà ouvert, sinon ouvre
+  };
+
   const confirmActionAndClose = () => {
     if (confirmAction) confirmAction();
     setIsConfirmVisible(false);
   };
-  useEffect(() => {
-    fetchMachines();
+  useEffect(
+    () => {
+      fetchMachines();
+    },
     // eslint-disable-next-line
-  }, [searchQuery]);
+    [searchQuery],
+    PORT
+  );
 
   const fetchMachines = async () => {
     try {
-      const result = await axios.get(
-        "http://localhost:5000/api/machines/search",
-        { params: { modelNumber: searchQuery } }
-      );
+      const result = await axios.get(`${PORT}/api/machines/search`, {
+        params: { modelNumber: searchQuery },
+      });
       setMachines(result.data);
     } catch (error) {
       console.error("Erreur lors de la récupération des machines :", error);
@@ -102,9 +114,7 @@ const Machines = () => {
   };
   const handleStart = async (machineId) => {
     try {
-      await axios.patch(
-        `http://localhost:5000/api/machines/${machineId}/indisponible`
-      );
+      await axios.patch(`${PORT}/api/machines/${machineId}/indisponible`);
 
       toast.success("Machine demarré et mise à l'état Indisponible");
       fetchMachines(); // Recharger la liste des machines
@@ -125,9 +135,7 @@ const Machines = () => {
   const fetchAndFilterFactures = async (machineId) => {
     try {
       // Récupérer toutes les factures depuis l'API
-      const { data: factures } = await axios.get(
-        "http://localhost:5000/api/factures"
-      );
+      const { data: factures } = await axios.get(`${PORT}/api/factures`);
 
       // Filtrer les factures avec etat = "en attente" et associées à la machine
       return factures.filter(
@@ -142,9 +150,7 @@ const Machines = () => {
   const fetchAndFilterFacturess = async (machineId) => {
     try {
       // Récupérer toutes les factures depuis l'API
-      const { data: factures } = await axios.get(
-        "http://localhost:5000/api/factures"
-      );
+      const { data: factures } = await axios.get(`${PORT}/api/factures`);
 
       // Filtrer les factures avec etat = "en attente" et associées à la machine
       return factures.filter((facture) => facture.machines.includes(machineId));
@@ -156,9 +162,7 @@ const Machines = () => {
 
   const handleRelease = async (machineId) => {
     try {
-      await axios.patch(
-        `http://localhost:5000/api/machines/${machineId}/liberer`
-      );
+      await axios.patch(`${PORT}/api/machines/${machineId}/liberer`);
 
       const factures = await fetchAndFilterFactures(machineId);
       toast.success("Machine libérée");
@@ -178,7 +182,7 @@ const Machines = () => {
   const voirFacture = async (machineId) => {
     // try {
     //   await axios.patch(
-    //     `http://localhost:5000/api/machines/${machineId}/liberer`
+    //     `${PORT}/api/machines/${machineId}/liberer`
     //   );
 
     const factures = await fetchAndFilterFacturess(machineId);
@@ -212,8 +216,8 @@ const Machines = () => {
             />
           </div>
         </div>
-        <div className="table">
-          <table className="table-machines">
+        <div className="table-voir">
+          <table className="tables-m">
             <thead>
               <tr>
                 <th>Photo</th>
@@ -228,13 +232,11 @@ const Machines = () => {
             </thead>
             <tbody>
               {machines.map((machine) => (
-                <tr
-                  key={machine._id}
-                >
+                <tr key={machine._id}>
                   <td>
                     {machine.photo && (
                       <img
-                        src={`http://localhost:5000/${machine.photo}`}
+                        src={`${PORT}/${machine.photo}`}
                         alt={machine.name}
                         style={{
                           width: "30px",
@@ -251,7 +253,14 @@ const Machines = () => {
                   <td>{machine.type}</td>
                   <td>{machine.etat}</td>
                   <td>{new Date(machine.dateAdded).toLocaleString()}</td>
-                  <td>
+                  <td className="action">
+                    <button
+                      className="dropdown-btn"
+                      onClick={(e) => toggleMenu(e, machine._id)}
+                    >
+                      <FontAwesomeIcon icon={faEllipsisV} />
+                    </button>
+                    <div className={`menu-action ${openMenuId === machine._id ? "show" : ""}`}>
                     <button
                       data-tooltip-id="voir"
                       className="btn-voir"
@@ -260,7 +269,7 @@ const Machines = () => {
                         voirFacture(machine._id);
                       }}
                     >
-                      <FaEye/>
+                      <FaEye />
                     </button>
                     {machine.etat === "Indisponible" && (
                       <button
@@ -270,7 +279,6 @@ const Machines = () => {
                           confirmRelease(machine._id);
                         }}
                       >
-                        
                         Libérer
                       </button>
                     )}
@@ -286,6 +294,7 @@ const Machines = () => {
                         Demarrer
                       </button>
                     )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -306,12 +315,7 @@ const Machines = () => {
         content="Modifier"
         place="top"
       />
-      <Tooltip
-        className="tooltip"
-        id="start"
-        content="Demarrer"
-        place="top"
-      />
+      <Tooltip className="tooltip" id="start" content="Demarrer" place="top" />
       <Tooltip className="tooltip" id="voir" content="facture" place="top" />
       <Tooltip className="tooltip" id="liberer" content="Liberer" place="top" />
       <ToastContainer />

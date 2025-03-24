@@ -14,6 +14,7 @@ import {
 import ModalConfirm from "../modal/ModalConfirm";
 
 function Abonnement() {
+  const PORT = process.env.REACT_APP_BACKEND_URL;
   const [abonnements, setAbonnements] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [abonnementActuel, setAbonnementActuel] = useState(null);
@@ -28,7 +29,7 @@ function Abonnement() {
   // Charger les abonnements
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/abonnements")
+      .get(`${PORT}/api/abonnements`)
       .then((response) => {
         setAbonnements(response.data);
 
@@ -53,11 +54,11 @@ function Abonnement() {
       .catch((error) =>
         console.error("Erreur lors du chargement des abonnements:", error)
       );
-  }, []);
+  }, [PORT]);
  
   const fetchAbonnements = () => {
     axios
-      .get("http://localhost:5000/api/abonnements")
+      .get(`${PORT}/api/abonnements`)
       .then((response) => setAbonnements(response.data))
       .catch((error) =>
         console.error("Erreur lors du chargement des abonnements:", error)
@@ -80,7 +81,7 @@ function Abonnement() {
   // Supprimer un abonnement
   const supprimerAbonnement = (id) => {
     axios
-      .delete(`http://localhost:5000/api/abonnements/${id}`)
+      .delete(`${PORT}/api/abonnements/${id}`)
       .then(() => {
         alert("Abonnement supprimé avec succès.");
         fetchAbonnements(); // Recharger la liste après suppression
@@ -165,7 +166,6 @@ function Abonnement() {
         </div>
       </div>
 
-      <div className="content-wrapper">
       <div className="table-abonnement">
         <table>
           <thead>
@@ -242,8 +242,7 @@ function Abonnement() {
          
         </div>
          )}
-      </div>
-
+    
       {modalOpen && (
         <ModalAbonnement 
           setModalOpen={setModalOpen}

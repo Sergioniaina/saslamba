@@ -10,6 +10,7 @@ const bcrypt = require('bcryptjs');
 // Configuration de multer pour les téléchargements de photos de profil
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
+    // cb(null, path.resolve('uploadUser'));
     cb(null, 'uploadUser/');
   },
   filename: function (req, file, cb) {
@@ -39,6 +40,8 @@ router.post('/signup', upload.single('photo'), async (req, res) => {
   let photo = req.file ? req.file.path : null;
 
   try {
+    console.log('Requête reçue:', req.body); // Ajouter un log pour voir les données envoyées
+
     const existingUser = await User.findOne({ name });
     if (existingUser) {
       return res.status(400).json({ message: 'Cet utilisateur existe déjà' });

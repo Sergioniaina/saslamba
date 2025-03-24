@@ -9,6 +9,7 @@ import { FaFileExcel } from "react-icons/fa";
 import * as XLSX from "xlsx";
 
 const HistoriqueProducts = () => {
+  const PORT = process.env.REACT_APP_BACKEND_URL;
   const [historiqueData, setHistoriqueData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [products, setProducts] = useState([]);
@@ -27,7 +28,7 @@ const HistoriqueProducts = () => {
     const fetchHistorique = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/historique",
+          `${PORT}/api/historique`,
           {}
         );
         const filteredData = response.data.filter(
@@ -43,13 +44,13 @@ const HistoriqueProducts = () => {
         const token = localStorage.getItem("token");
 
         const [productResponse, userResponse] = await Promise.all([
-          axios.get("http://localhost:5000/api/products", {
+          axios.get(`${PORT}/api/products`, {
             params: { ids: productIds },
             headers: {
               Authorization: `Bearer ${token}`, // Ajout de l'en-tête d'autorisation
             },
           }),
-          axios.get("http://localhost:5000/api/auth/get", {
+          axios.get(`${PORT}/api/auth/get`, {
             params: { ids: userIds },
           }),
         ]);
@@ -62,14 +63,14 @@ const HistoriqueProducts = () => {
     };
 
     fetchHistorique();
-  }, []);
+  }, [PORT]);
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     setUser(user);
     if (user) {
       // Récupérer les privilèges de l'utilisateur via l'API
       axios
-        .get("http://localhost:5000/api/privileges", {
+        .get(`${PORT}/api/privileges`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -100,7 +101,7 @@ const HistoriqueProducts = () => {
           );
         });
     }
-  }, []);
+  }, [PORT]);
 
   useEffect(() => {
     const filterHistorique = () => {
@@ -141,7 +142,7 @@ const HistoriqueProducts = () => {
 
   const deleteHistorique = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/historique/${id}`);
+      await axios.delete(`${PORT}/api/historique/${id}`);
       setHistoriqueData(historiqueData.filter((entry) => entry._id !== id));
       toast.success("historique supprimer avec succes");
     } catch (error) {

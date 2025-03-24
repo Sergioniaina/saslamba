@@ -1,7 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { FaEdit, FaPlus, FaTimes } from "react-icons/fa";
+import React, { useState, useEffect, useRef } from "react";
+import { FaEdit, FaFile, FaPlus, FaTimes } from "react-icons/fa";
+import "../css/modalemachine.css";
 
 const MachineModal = ({ show, onClose, onSave, machine }) => {
+  const PORT = process.env.REACT_APP_BACKEND_URL;
+  const [preview, setPreview] = useState(null);
+  const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     type: "",
     modelNumber: "",
@@ -9,10 +13,11 @@ const MachineModal = ({ show, onClose, onSave, machine }) => {
     weightCapacity: "",
     etat: "Disponible",
     photo: null,
-    priceRanges: [{ minWeight: "", maxWeight: "", price: "" }], // Initialize priceRanges
+    priceRanges: [{ minWeight: "", maxWeight: "", price: "" }],
   });
-  const [fileDetails, setFileDetails] = useState(null);
+  // const [fileDetails, setFileDetails] = useState(null);
 
+  // Initialisation de formData avec les données de machine lors de l'édition
   useEffect(() => {
     if (machine) {
       setFormData({ ...machine });
@@ -47,7 +52,10 @@ const MachineModal = ({ show, onClose, onSave, machine }) => {
   const handlePriceRangeChange = (index, e) => {
     const { name, value } = e.target;
     const updatedPriceRanges = [...formData.priceRanges];
-    updatedPriceRanges[index][name] = value;
+    updatedPriceRanges[index] = {
+      ...updatedPriceRanges[index],
+      [name]: value,
+    };
     setFormData((prev) => ({
       ...prev,
       priceRanges: updatedPriceRanges,
@@ -57,15 +65,22 @@ const MachineModal = ({ show, onClose, onSave, machine }) => {
   const handleAddPriceRange = () => {
     setFormData((prev) => ({
       ...prev,
-      priceRanges: [...prev.priceRanges, { minWeight: "", maxWeight: "", price: "" }],
+      priceRanges: [
+        ...prev.priceRanges,
+        { minWeight: "", maxWeight: "", price: "" },
+      ],
     }));
   };
 
   const handleRemovePriceRange = (index) => {
-    const updatedPriceRanges = formData.priceRanges.filter((_, i) => i !== index);
+    const updatedPriceRanges = formData.priceRanges.filter(
+      (_, i) => i !== index
+    );
     setFormData((prev) => ({
       ...prev,
-      priceRanges: updatedPriceRanges,
+      priceRanges: updatedPriceRanges.length
+        ? updatedPriceRanges
+        : [{ minWeight: "", maxWeight: "", price: "" }],
     }));
   };
 
@@ -74,41 +89,63 @@ const MachineModal = ({ show, onClose, onSave, machine }) => {
     if (file) {
       setFormData((prev) => ({
         ...prev,
-        photo: file,
+        photo: file, // Nouvelle photo sélectionnée (objet File)
       }));
-      setFileDetails({
-        name: file.name,
-        size: file.size,
-        type: file.type,
-      });
+      // setFileDetails({
+      //   name: file.name,
+      //   size: file.size,
+      //   type: file.type,
+      // });
+      const imageUrl = URL.createObjectURL(file);
+      setPreview(imageUrl);
     }
+  };
+
+  const handleIconClick = () => {
+    fileInputRef.current.click();
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-      const currentUser = JSON.parse(localStorage.getItem('user'));
+    const currentUser = JSON.parse(localStorage.getItem("user"));
     if (currentUser && currentUser._id) {
-      formData.append("userId", currentUser._id);
+      formData.userId = currentUser._id;
     }
     onSave(formData);
   };
 
   if (!show) return null;
 
+  // Fonction pour extraire le nom du fichier à partir de machine.photo ou formData.photo
+  const getPhotoName = () => {
+    if (formData.photo instanceof File) {
+      return formData.photo.name; // Nouvelle photo sélectionnée
+    }
+    if (machine && formData.photo && typeof formData.photo === "string") {
+      return formData.photo.split("/").pop(); // Photo existante (chaîne)
+    }
+    return ""; // Rien à afficher
+  };
+
   return (
     <div className="modal-machine" onClick={onClose}>
-      <div className="modal-content-m" onClick={(e)=>e.stopPropagation()}>
+      <div className="modal-content-m" onClick={(e) => e.stopPropagation()}>
         <h2>{machine ? "Modifier Machine" : "Ajouter Machine"}</h2>
         <form onSubmit={handleSubmit} className="form">
           <div className="form1">
-            <select name="type" value={formData.type} onChange={handleChange} required>
-            <option value="">Selectionner type</option>
+            <select
+              name="type"
+              value={formData.type}
+              onChange={handleChange}
+              required
+            >
+              <option value="">Sélectionner type</option>
               <option value="Machine à laver">Machine à laver</option>
               <option value="Sèche-linge">Sèche-linge</option>
             </select>
             <input
               type="text"
-              placeholder="Numero de Model"
+              placeholder="Numéro de modèle"
               name="modelNumber"
               value={formData.modelNumber}
               onChange={handleChange}
@@ -127,23 +164,23 @@ const MachineModal = ({ show, onClose, onSave, machine }) => {
             <input
               type="number"
               name="weightCapacity"
-              placeholder="Capacité de Poids (kg)"
+              placeholder="Capacité de poids (kg)"
               value={formData.weightCapacity}
               onChange={handleChange}
               required
             />
           </div>
 
-          {/* Price Ranges Section */}
+          {/* Section des plages de prix */}
           {formData.type === "Sèche-linge" && (
-            <div>
-              <h3 className="range">Details</h3>
+            <div className="linge">
+              <h3 className="range">Détails</h3>
               {formData.priceRanges.map((range, index) => (
                 <div key={index} className="price-range">
                   <input
                     type="number"
                     name="minWeight"
-                    placeholder="Min Weight (kg)"
+                    placeholder="Poids min (kg)"
                     value={range.minWeight}
                     onChange={(e) => handlePriceRangeChange(index, e)}
                     required
@@ -151,7 +188,7 @@ const MachineModal = ({ show, onClose, onSave, machine }) => {
                   <input
                     type="number"
                     name="maxWeight"
-                    placeholder="Max Weight (kg)"
+                    placeholder="Poids max (kg)"
                     value={range.maxWeight}
                     onChange={(e) => handlePriceRangeChange(index, e)}
                     required
@@ -159,48 +196,91 @@ const MachineModal = ({ show, onClose, onSave, machine }) => {
                   <input
                     type="number"
                     name="price"
-                    placeholder="Price (€)"
+                    placeholder="Prix (€)"
                     value={range.price}
                     onChange={(e) => handlePriceRangeChange(index, e)}
                     required
                   />
-                  <button type="button" onClick={() => handleRemovePriceRange(index)}>Remove</button>
+                  {formData.priceRanges.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemovePriceRange(index)}
+                    >
+                      Supprimer
+                    </button>
+                  )}
                 </div>
               ))}
-              <button type="button" onClick={handleAddPriceRange}><FaPlus/> Add Price Range</button>
+              <button
+                type="button"
+                onClick={handleAddPriceRange}
+                className="add-price"
+              >
+                <FaPlus /> Ajouter une plage de prix
+              </button>
             </div>
           )}
-
           <div className="form2">
             <input
               type="file"
               name="photo"
               accept="image/*"
+              ref={fileInputRef}
               onChange={handleFileChange}
+              hidden
             />
-            {fileDetails && (
-              <div style={{ background: 'yellow', color: 'black' }}>
-                <p><strong>File Name:</strong> {fileDetails.name}</p>
-                <p><strong>File Size:</strong> {Math.round(fileDetails.size / 1024)} KB</p>
-                <p><strong>File Type:</strong> {fileDetails.type}</p>
+            <button
+              type="button"
+              className="select-file"
+              onClick={handleIconClick}
+            >
+              <FaFile /> Sélectionner une photo
+            </button>
+          </div>
+          <div className="form2">
+            <input
+              className="file"
+              value={getPhotoName()} // Utilisation de la fonction pour le nom
+              placeholder="photo"
+              required
+              readOnly
+            />
+            {preview && (
+              <div style={{ marginTop: "10px" }}>
+                <img
+                  src={preview}
+                  alt="Sélectionnée"
+                  style={{
+                    maxWidth: "100px",
+                    height: "80px",
+                    borderRadius: "10px",
+                  }}
+                />
               </div>
             )}
-            {formData.photo && !fileDetails && (
+            {!preview && machine && formData.photo && typeof formData.photo === "string" && (
               <div>
                 <img
-                  src={`http://localhost:5000/machine/${formData.photo.split('/').pop()}`}
+                  src={`${PORT}/${formData.photo.split("/").pop()}`}
                   alt="Machine"
-                  style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+                  style={{
+                    width: "100px",
+                    height: "80px",
+                    borderRadius: "10px",
+                    objectFit: "cover",
+                  }}
                 />
-                <p><strong>Current Photo</strong></p>
               </div>
             )}
           </div>
           <div className="form2">
             <button className="btn-ad" type="submit">
-            {machine ? <FaEdit/> : <FaPlus/>}
-              {machine ? "Modifier" : "Ajouter"}</button>
-            <button className="btn-c" type="button" onClick={onClose}> <FaTimes/>Cancel</button>
+              {machine ? <FaEdit /> : <FaPlus />}
+              {machine ? "Modifier" : "Ajouter"}
+            </button>
+            <button className="btn-c" type="button" onClick={onClose}>
+              <FaTimes /> Annuler
+            </button>
           </div>
         </form>
       </div>

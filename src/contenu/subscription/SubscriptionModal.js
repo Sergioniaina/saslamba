@@ -16,11 +16,12 @@ const SubscriptionModal = ({ show, onClose, onSave, subscription }) => {
   const [clients, setClients] = useState([]);
   const [filteredClients, setFilteredClients] = useState([]);
   const [newClient, setNewClient] = useState(false);
+  const PORT = process.env.REACT_APP_BACKEND_URL;
 
   useEffect(() => {
     const fetchClients = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/clients");
+        const response = await axios.get(`${PORT}/api/clients`);
         setClients(response.data);
       } catch (error) {
         console.error("Error fetching clients:", error);
@@ -28,7 +29,7 @@ const SubscriptionModal = ({ show, onClose, onSave, subscription }) => {
     };
 
     fetchClients();
-  }, []);
+  }, [PORT]);
 
   useEffect(() => {
     if (subscription) {
@@ -93,7 +94,7 @@ const SubscriptionModal = ({ show, onClose, onSave, subscription }) => {
       try {
         // Créer un nouveau client avant de sauvegarder l'abonnement
         const newClientResponse = await axios.post(
-          "http://localhost:5000/api/clients",
+          `${PORT}/api/clients`,
           {
             name: formData.clientName,
             contact: formData.clientContact,

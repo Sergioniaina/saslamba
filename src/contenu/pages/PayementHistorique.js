@@ -8,7 +8,7 @@ const PaymentList = () => {
   const [payments, setPayments] = useState([]);
   const [users, setUsers] = useState({});
   const [error, setError] = useState(null);
-
+  const PORT = process.env.REACT_APP_BACKEND_URL;
   // États de filtre
   const [typeFilter, setTypeFilter] = useState("");
   const [userFilter, setUserFilter] = useState("");
@@ -36,7 +36,7 @@ const PaymentList = () => {
 
   const fetchPayments = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/payement");
+      const response = await axios.get(`${PORT}/api/payement`);
       const paymentData = response.data;
       setPayments(paymentData);
 
@@ -56,7 +56,7 @@ const PaymentList = () => {
 
   const fetchUsers = async (userIds) => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/auth/get`, {
+      const response = await axios.get(`${PORT}/api/auth/get`, {
         params: { ids: userIds },
       });
       const usersData = response.data;
@@ -72,7 +72,7 @@ const PaymentList = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/payement/${id}`);
+      await axios.delete(`${PORT}/api/payement/${id}`);
       setPayments(payments.filter((payment) => payment._id !== id));
     } catch (error) {
       setError("Erreur lors de la suppression du paiement");

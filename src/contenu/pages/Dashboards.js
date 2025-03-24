@@ -25,6 +25,7 @@ ChartJS.register(
 );
 
 function Dashboards() {
+  const PORT = process.env.REACT_APP_BACKEND_URL;
   const [caisses, setCaisses] = useState([]);
   const [selectedCaisse, setSelectedCaisse] = useState("");
   const [periodeCaisse, setPeriodeCaisse] = useState("semaine");
@@ -43,7 +44,7 @@ function Dashboards() {
   useEffect(() => {
     async function fetchCaisses() {
       try {
-        const response = await axios.get("http://localhost:5000/api/caisses");
+        const response = await axios.get(`${PORT}/api/caisses`);
         setCaisses(response.data);
         if (response.data.length > 0) {
           setSelectedCaisse(response.data[0]._id);
@@ -53,7 +54,7 @@ function Dashboards() {
       }
     }
     fetchCaisses();
-  }, []);
+  }, [PORT]);
 
   // Récupérer les données de la caisse sélectionnée
   useEffect(() => {
@@ -62,7 +63,7 @@ function Dashboards() {
     async function fetchData() {
       try {
         const caisseResponse = await axios.get(
-          `http://localhost:5000/api/mouvements/stats/caisse/${selectedCaisse}/${periodeCaisse}`
+          `${PORT}/api/mouvements/stats/caisse/${selectedCaisse}/${periodeCaisse}`
         );
         setCaisseData(caisseResponse.data);
       } catch (error) {
@@ -73,14 +74,14 @@ function Dashboards() {
       }
     }
     fetchData();
-  }, [selectedCaisse, periodeCaisse]);
+  }, [selectedCaisse, periodeCaisse,PORT]);
 
   // Récupérer les données globales
   useEffect(() => {
     async function fetchGlobalData() {
       try {
         const globalResponse = await axios.get(
-          `http://localhost:5000/api/mouvements/stats/global/${periodeGlobal}`
+          `${PORT}/api/mouvements/stats/global/${periodeGlobal}`
         );
         setGlobalData(globalResponse.data);
       } catch (error) {
@@ -91,7 +92,7 @@ function Dashboards() {
       }
     }
     fetchGlobalData();
-  }, [periodeGlobal]);
+  }, [periodeGlobal,PORT]);
 
   useEffect(() => {
     async function fetchGlobalDatas() {
@@ -104,7 +105,7 @@ function Dashboards() {
         await Promise.all(
           periods.map(async (period) => {
             const response = await axios.get(
-              `http://localhost:5000/api/mouvements/stats/global/${period}`
+              `${PORT}/api/mouvements/stats/global/${period}`
             );
             dataByPeriod[period] = response.data;
           })
@@ -112,7 +113,7 @@ function Dashboards() {
 
         // Fetch data from "avant-fermeture" for recette and depense
         const avantFermetureResponse = await axios.get(
-          "http://localhost:5000/api/mouvements/toutes/mouvements/avant-fermeture"
+          `${PORT}/api/mouvements/toutes/mouvements/avant-fermeture`
         );
 
         const avantFermetureData = avantFermetureResponse.data;
@@ -141,7 +142,7 @@ function Dashboards() {
     }
 
     fetchGlobalDatas();
-  }, []);
+  }, [PORT]);
 
   // Options du graphique
   const chartOptions = {

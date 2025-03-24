@@ -6,11 +6,42 @@ const cors = require('cors');
 const path = require('path');
 const User = require('./models/User'); // Import du modèle User
 
-const app = express();
+const app = express(); 
 
-app.use(cors());
+// Configuration de CORS pour autoriser toutes les origines
+app.use(cors({ 
+  origin: '*', 
+  methods: 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+  allowedHeaders: 'Authorization, Content-Type'
+}));
+
+// Gérer les requêtes OPTIONS manuellement (si nécessaire)
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+  res.sendStatus(204);
+});
 app.use(bodyParser.json());
+app.get("/", (req, res) => {
+  res.send("<h1>Bienvenue sur saslamba !</h1>");
+});
 
+// Exemple de route
+app.get('/api/', (req, res) => {
+  res.json({ message: "Backend fonctionne!" });
+});
+// Exemple de route
+app.get('/api/test', (req, res) => {
+  res.json({ message: "CORS fonctionne correctement sur get!" });
+});
+
+// Exemple de route
+app.post('/api/test', (req, res) => {
+  res.json({ message: "CORS fonctionne correctement sur post!" });
+});
+ 
+ 
 // Connexion à MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(async () => {
@@ -69,7 +100,11 @@ const privilege = require('./routes/privilegeRoute');
 const historiqueCaisse = require('./routes/HistoriqueCaisse');
 const historiqueProduct = require('./routes/productHistory');
 const factureAbonnement = require('./routes/factureAbonnement');
+const payment = require('./routes/reabonnement');
+const globalTimeRoutes = require('./routes/GlobalTime');
 
+app.use('/api/globaltime', globalTimeRoutes);
+app.use('/api/paiement', payment);
 app.use('/api/products', productsRoutes);
 app.use('/api/machines', machinesRoutes);
 app.use('/api/subscriptions', abonnement);

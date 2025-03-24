@@ -5,11 +5,15 @@
   .searchFilters{
     margin-top: 10px;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
+    gap: 10px;
     justify-content: space-between;
     .c-input{
       display: flex;
-      width: 20%;
+      flex: 1 1 calc(10% - 10px);
+      min-width: 200px;
+      max-width: 100%;
       position: relative;
       justify-content: center;
       align-items: center;
@@ -128,5 +132,14 @@
       background-color: #c0392b;
     }
   }
-  
+}
+@media (max-width: 800px) {
+  .caisseTable .table{
+    height: 65vh;
+  }
+}
+@media (max-width: 650px) {
+  .caisseTable .table{
+    height: 55vh;
+  }
 }

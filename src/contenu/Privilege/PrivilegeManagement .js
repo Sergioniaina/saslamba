@@ -8,6 +8,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const PrivilegeManagement = () => {
+  const PORT = process.env.REACT_APP_BACKEND_URL;
   const [roles, setRoles] = useState([]);
   const [privileges, setPrivileges] = useState({});
   const [loading, setLoading] = useState(true);
@@ -41,10 +42,10 @@ const PrivilegeManagement = () => {
     const fetchData = async () => {
       try {
         const rolesRes = await axios.get(
-          "http://localhost:5000/api/auth/roles"
+          `${PORT}/api/auth/roles`
         );
         const privilegesRes = await axios.get(
-          "http://localhost:5000/api/privileges"
+          `${PORT}/api/privileges`
         );
 
         setRoles(rolesRes.data);
@@ -69,7 +70,7 @@ const PrivilegeManagement = () => {
     };
 
     fetchData();
-  }, [modules]);
+  }, [modules,PORT]);
 
   const handleCheckboxChange = (roleKey, module, action) => {
     setPrivileges((prev) => {
@@ -117,7 +118,7 @@ const PrivilegeManagement = () => {
         }
       );
 
-      await axios.put("http://localhost:5000/api/privileges", { updates });
+      await axios.put(`${PORT}/api/privileges`, { updates });
       // alert("Privilèges sauvegardés !");
       toast.success("Privilèges sauvegardés !")
     } catch (err) {

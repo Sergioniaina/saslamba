@@ -6,6 +6,7 @@ import { FaTrashAlt } from "react-icons/fa";
 import { FaFileExcel } from "react-icons/fa";
 import * as XLSX from "xlsx";
 const ProductHistory = () => {
+  const PORT = process.env.REACT_APP_BACKEND_URL;
   const [productHistory, setProductHistory] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -24,7 +25,7 @@ const ProductHistory = () => {
   useEffect(() => {
     const fetchProductHistory = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/product-history");
+        const response = await axios.get(`${PORT}/api/product-history`);
         setProductHistory(response.data);
         setFilteredData(response.data);
       } catch (error) {
@@ -32,10 +33,10 @@ const ProductHistory = () => {
       }
     };
     fetchProductHistory();
-  }, []);
+  }, [PORT]);
   const fetchProductHistory = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/product-history");
+      const response = await axios.get(`${PORT}/api/product-history`);
       setProductHistory(response.data);
       setFilteredData(response.data);
     } catch (error) {
@@ -222,7 +223,7 @@ const ProductHistory = () => {
 
   const handleHardDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/product-history/${id}`);
+      await axios.delete(`${PORT}/api/product-history/${id}`);
       fetchProductHistory();
     } catch (error) {
       console.error("Erreur lors du hard delete : ", error);

@@ -11,7 +11,8 @@ const authMiddleware = require("../middleware/authMiddleware");
 //const checkPermission = require('../middleware/checkPermission');
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "machine/"); // Dossier où les fichiers seront stockés
+    // cb(null, path.resolve("machine")); // Dossier où les fichiers seront stockés
+    cb(null, "machine/"); 
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + path.extname(file.originalname)); // Nom unique pour chaque fichier

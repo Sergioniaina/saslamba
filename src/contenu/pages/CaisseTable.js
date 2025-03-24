@@ -13,17 +13,18 @@ function CaisseTable() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  const apiBaseURL = "http://localhost:5000/api";
+  const PORT = process.env.REACT_APP_BACKEND_URL;
 
   // Récupérer les données de la collection HistoriqueCaisse et des caisses
   useEffect(() => {
     fetchHistoriques();
     fetchCaisses();
+    // eslint-disable-next-line
   }, []);
 
   const fetchHistoriques = async () => {
     try {
-      const response = await axios.get(`${apiBaseURL}/historiques`);
+      const response = await axios.get(`${PORT}/api/historiques`);
       const sortedFactures = response.data.sort(
         (a, b) => new Date(b.date) - new Date(a.date)
       );
@@ -35,7 +36,7 @@ function CaisseTable() {
 
   const fetchCaisses = async () => {
     try {
-      const response = await axios.get(`${apiBaseURL}/caisses`);
+      const response = await axios.get(`${PORT}/api/caisses`);
       setCaisses(response.data);
     } catch (error) {
       console.error("Erreur lors de la récupération des caisses", error);
@@ -45,7 +46,7 @@ function CaisseTable() {
   // Supprimer un historique
   const deleteHistorique = async (historiqueId) => {
     try {
-      const response = await axios.delete(`${apiBaseURL}/historiques/${historiqueId}`);
+      const response = await axios.delete(`${PORT}/api/historiques/${historiqueId}`);
       if (response.status === 204) {
         fetchHistoriques(); // Rafraîchir après suppression
       } else {

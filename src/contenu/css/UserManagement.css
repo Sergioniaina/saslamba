@@ -30,6 +30,7 @@
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(200, 185, 185, 0.1);
   color: white;
+
   button{
     letter-spacing: 1px;
   }
@@ -152,7 +153,7 @@
     align-items: center;
     justify-content: center;
     opacity: 0;
-    animation: modalFadeIn 0.2s forwards;
+    animation: modalFadeIn 0.3s forwards;
     .modal-users {
       position: fixed;
       top: 0;
@@ -165,7 +166,7 @@
       justify-content: center;
       background: rgba(0, 0, 0, 0.6);
       opacity: 0;
-      animation: modalFadeIn 0.2s forwards;
+      animation: modalFadeIn 0.3s forwards;
     }
     
     &.close {
@@ -173,7 +174,7 @@
     }
 
     .modal-content {
-      background: white;
+      background: linear-gradient(135deg, rgb(30, 30, 30), rgb(50, 50, 50));
       padding: 20px;
       border-radius: 8px;
       z-index: 999;
@@ -191,6 +192,11 @@
         justify-content: space-between;
         button{
           width: 45%;
+          display: flex;
+          gap: 10px;
+          align-items: center;
+          justify-content: center;
+          margin-right: 0px;
         }
         .btn-save{
           background: green;
@@ -223,8 +229,8 @@
       }
       .form-group {
         position: relative;
-        width: 70%;
-      
+        width: 100%;
+        display: flex;
         label {
           position: absolute;
           top: 50%;
@@ -235,42 +241,44 @@
           pointer-events: none;
           transition: 0.3s ease all;
         }
-
         input,select{
           width: 100%;
           margin: 0px;
+          margin-right: 0px;
           font-size: 1rem;
           border: 3px solid #ccc;
           border-radius: 4px;
-          background: #f9f9f9;
+          background: transparent;
           outline: none;
           transition: 0.3s ease all;
-          color: black!important;
+          color: white;
           &:focus,
-          &:valid {
-            border-color: #007bff;
-            background: #fff;
-            border: 3px solid #007bff;
-          }
-
-          &:focus + label,
-          &:valid + label {
-            top: 0;
-            font-size: 0.8rem;
-            color: #007bff;
-            background: white;
-            font-weight: 600;
-            padding: 8px;
+          &:not(:placeholder-shown) {
+            & + label {
+              left: 10px;
+              top: 0px;
+              font-size: 12px;
+              color: white;
+              background: linear-gradient(135deg, rgb(30, 30, 30), rgb(50, 50, 50));
+              letter-spacing: 1px;
+              padding-left: 5px;
+              padding-right: 5px;
+              font-weight: 600;
+            }
+           
           }
         }
         select{
           padding: 15px;
-          background-color: white!important;
-          color: black!important;
+          color: wheat !important;
           option{
             background: rgb(48, 43, 43);
             color: white;
           }
+        }
+        input{
+          width: 100%;
+          padding-right: 0px !important;
         }
       }
       .btn-user{
@@ -323,17 +331,48 @@
   /* Other styles */
   .search {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 20px;
 
     button {
       height: 40px;
       background: #45a049;
+      flex: 1 1 100px;
+      max-width: 100%;
+      min-width: 200px;
+      margin-right: 0px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      transition: 0.3s;
+      &:hover{
+        flex: 1 1 200px;
+        background: #349139;
+      }
+      .icons{
+        font-size: large;
+        color: orange;
+      }
     }
     .input{
       position: relative;
       display: flex;
       align-items: center;
+      flex: 1 1 100px;
+      max-width: 100%;
+      min-width: 200px;
+      transition: 0.3s;
+      &:hover{
+        flex: 1 1 200px;
+      }
+      input{
+        width: 100%;
+       
+      }
     }
       .icon {
         right: 15px;
@@ -438,7 +477,6 @@
   .user-profile td {
     padding: 8px;
   }
-
   .modal {
     max-width: 90%;
   }
@@ -447,4 +485,21 @@
     font-size: 14px;
   }
 
+}
+@media (max-width: 600px) {
+  .modal-user .modal-content{
+    width: 80% !important;
+  }
+}
+
+.form-photo{
+  width: 100%;
+}
+.select-file{
+  height: 45px;
+  margin-right: 0px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }

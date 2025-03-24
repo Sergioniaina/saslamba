@@ -14,6 +14,7 @@ import * as XLSX from "xlsx";
 import { FaFileExcel } from "react-icons/fa";
 
 const MachineConsumptionHistory = () => {
+  const PORT = process.env.REACT_APP_BACKEND_URL;
   const [consumptionHistory, setConsumptionHistory] = useState([]);
   const [machines, setMachines] = useState([]);
   const [totals, setTotals] = useState({});
@@ -28,8 +29,8 @@ const MachineConsumptionHistory = () => {
     const fetchData = async () => {
       try {
         const [consumptionRes, machinesRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/machines/consumption"),
-          axios.get("http://localhost:5000/api/machines"),
+          axios.get(`${PORT}/api/machines/consumption`),
+          axios.get(`${PORT}/api/machines`),
         ]);
         setConsumptionHistory(consumptionRes.data);
         setMachines(machinesRes.data);
@@ -43,7 +44,7 @@ const MachineConsumptionHistory = () => {
     };
 
     fetchData();
-  }, []);
+  }, [PORT]);
 
   const calculateTotals = (history) => {
     const now = new Date();
@@ -91,7 +92,7 @@ const MachineConsumptionHistory = () => {
   const deleteEntry = async (id) => {
     try {
       await axios.delete(
-        `http://localhost:5000/api/machines/consumption/${id}`
+        `${PORT}/api/machines/consumption/${id}`
       );
       setConsumptionHistory((prev) => prev.filter((entry) => entry._id !== id));
     } catch (error) {

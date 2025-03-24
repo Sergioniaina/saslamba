@@ -23,6 +23,7 @@ import {
 import ModalConfirm from "../modal/ModalConfirm";
 
 const MouvementCaisseList = () => {
+  const PORT = process.env.REACT_APP_BACKEND_URL;
   const [mouvements, setMouvements] = useState([]);
   const [filteredMouvements, setFilteredMouvements] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -50,7 +51,7 @@ const MouvementCaisseList = () => {
     const fetchMouvements = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/mouvements"
+          `${PORT}/api/mouvements`
         );
         setMouvements(response.data);
         setFilteredMouvements(response.data);
@@ -65,7 +66,7 @@ const MouvementCaisseList = () => {
       }
     };
     fetchMouvements();
-  }, []);
+  }, [PORT]);
 
   useEffect(() => {
     const applyFilters = () => {
@@ -113,7 +114,7 @@ const MouvementCaisseList = () => {
   const fetchMouvementsJour = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/mouvements/toutes/mouvements/avant-fermeture"
+        `${PORT}/api/mouvements/toutes/mouvements/avant-fermeture`
       );
       setMouvementsJour(response.data);
     } catch (error) {
@@ -133,7 +134,7 @@ const MouvementCaisseList = () => {
   };
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/mouvements/${id}`);
+      await axios.delete(`${PORT}/api/mouvements/${id}`);
       setMouvements(mouvements.filter((mouvement) => mouvement._id !== id));
       setFilteredMouvements(
         filteredMouvements.filter((mouvement) => mouvement._id !== id)

@@ -15,6 +15,9 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ModalConfirm from "../modal/ModalConfirm";
+import { FaCalendarAlt } from "react-icons/fa";
+import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 function AbonnementForm() {
   const [clients, setClients] = useState([]);
   const [filteredClients, setFilteredClients] = useState([]);
@@ -47,6 +50,15 @@ function AbonnementForm() {
   const [prixPay, setPrixPay] = useState(null);
   const [companyInfo, setCompanyInfo] = useState(null);
   const PORT = process.env.REACT_APP_BACKEND_URL;
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [openMenuId, setOpenMenuId] = useState(null); // Stocke l'ID du menu ouvert
+
+  // Fonction pour basculer l'affichage du menu
+  const toggleMenu = (e, id) => {
+    e.stopPropagation(); // Empêche la propagation de l'événement
+    setOpenMenuId(openMenuId === id ? null : id); // Ferme si déjà ouvert, sinon ouvre
+  };
   const [formData, setFormData] = useState({
     customerName: "",
     contact: "",
@@ -105,7 +117,7 @@ function AbonnementForm() {
   };
   const fetchPaymentTypes = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/payement");
+      const response = await axios.get(`${PORT}/api/payement`);
 
       // Ajouter "Espèce" comme option par défaut s'il n'est pas déjà dans la liste
       const uniquePaymentTypes = Array.from(
@@ -122,6 +134,7 @@ function AbonnementForm() {
   };
   useEffect(() => {
     fetchPaymentTypes();
+    // eslint-disable-next-line
   }, []);
   // const handlePay = (facture) => {
   //   setSelectedAbonnement(facture);
@@ -173,7 +186,7 @@ function AbonnementForm() {
 
       // Envoi du paiement
       await axios.post(
-        "http://localhost:5000/api/payement/abonnement",
+        `${PORT}/api/payement/abonnement`,
         {
           type: paymentTypeToSubmit,
           abonnementClient: idAbonnement,
@@ -190,10 +203,9 @@ function AbonnementForm() {
 
       // Mise à jour de la caisse
       if (caisse) {
-        await axios.put(
-          `http://localhost:5000/api/caisses/${selectedCaisse}/add-solde`,
-          { solde: amountToPay }
-        );
+        await axios.put(`${PORT}/api/caisses/${selectedCaisse}/add-solde`, {
+          solde: amountToPay,
+        });
       }
 
       try {
@@ -209,7 +221,7 @@ function AbonnementForm() {
 
         // Création de la facture
         const response = await axios.post(
-          "http://localhost:5000/api/factureAbonnement",
+          `${PORT}/api/factureAbonnement`,
           {
             idClient: abonnementClient.idClient, // Récupéré via .find
             idAbonnementClient: abonnementClient._id,
@@ -263,7 +275,7 @@ function AbonnementForm() {
   useEffect(() => {
     const fetchCaisses = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/caisses");
+        const response = await axios.get(`${PORT}/api/caisses`);
         setCaisses(response.data);
         if (response.data.length > 0) {
           setSelectedCaisse(response.data[0]._id);
@@ -274,12 +286,12 @@ function AbonnementForm() {
     };
 
     fetchCaisses();
-  }, []);
+  }, [PORT]);
 
   useEffect(() => {
     const fetchClients = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/clients");
+        const response = await axios.get(`${PORT}/api/clients`);
         setClients(response.data);
         setFilteredClients(response.data);
       } catch (error) {
@@ -289,9 +301,7 @@ function AbonnementForm() {
 
     const fetchAbonnements = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:5000/api/abonnements"
-        );
+        const response = await axios.get(`${PORT}/api/abonnements`);
         setAbonnements(response.data);
       } catch (error) {
         console.error("Erreur lors du chargement des abonnements:", error);
@@ -300,7 +310,7 @@ function AbonnementForm() {
 
     fetchClients();
     fetchAbonnements();
-  }, []);
+  }, [PORT]);
 
   useEffect(() => {
     const results = clients.filter(
@@ -314,9 +324,7 @@ function AbonnementForm() {
   useEffect(() => {
     const fetchAbonnementClients = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:5000/api/abonnementClient"
-        );
+        const response = await axios.get(`${PORT}/api/abonnementClient`);
         const sortedAbonnement = response.data.sort(
           (a, b) => new Date(b.dateAbonnement) - new Date(a.dateAbonnement)
         );
@@ -330,12 +338,10 @@ function AbonnementForm() {
     };
 
     fetchAbonnementClients();
-  }, []);
+  }, [PORT]);
   const fetchAbonnementClients = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/abonnementClient"
-      );
+      const response = await axios.get(`${PORT}/api/abonnementClient`);
       const sortedAbonnement = response.data.sort(
         (a, b) => new Date(b.dateAbonnement) - new Date(a.dateAbonnement)
       );
@@ -353,7 +359,22 @@ function AbonnementForm() {
       const client = clients.find(
         (client) => client._id === abonnementClient.idClient
       );
-      return client?.name.toLowerCase().includes(clientSearch.toLowerCase());
+
+      // Convert the abonnement date to a comparable format
+      const abonnementDate = new Date(abonnementClient.dateAbonnement);
+
+      // Existing name filter
+      const matchesName = client?.name
+        .toLowerCase()
+        .includes(clientSearch.toLowerCase());
+
+      // Date range filter
+      const matchesDate =
+        (!startDate || abonnementDate >= new Date(startDate)) &&
+        (!endDate || abonnementDate <= new Date(endDate));
+
+      // Return true if both conditions are met
+      return matchesName && matchesDate;
     }
   );
   const confirmHandleSubmitAjour = (e) => {
@@ -396,19 +417,16 @@ function AbonnementForm() {
 
         // Créer un nouveau client si nécessaire
         if (!clientId) {
-          const response = await axios.post(
-            "http://localhost:5000/api/clients",
-            {
-              name: search,
-              contact,
-            }
-          );
+          const response = await axios.post(`${PORT}/api/clients`, {
+            name: search,
+            contact,
+          });
           clientId = response.data._id;
         }
 
         // Mise à jour de l'abonnement client
         const updateResponse = await axios.put(
-          `http://localhost:5000/api/abonnementClient/${currentAbonnementClient._id}`,
+          `${PORT}/api/abonnementClient/${currentAbonnementClient._id}`,
           {
             idClient: clientId,
             idAbonnement: selectedAbonnement,
@@ -424,7 +442,7 @@ function AbonnementForm() {
       } else {
         // Création d'un nouvel abonnement client
         const response = await axios.post(
-          "http://localhost:5000/api/abonnementClient/associer",
+          `${PORT}/api/abonnementClient/associer`,
           requestData
         );
         abonnementId = response.data._id;
@@ -434,7 +452,7 @@ function AbonnementForm() {
 
       // Mettre à jour les abonnements clients
       const abonnementsResponse = await axios.get(
-        "http://localhost:5000/api/abonnementClient"
+        `${PORT}/api/abonnementClient`
       );
       setAbonnementClients(abonnementsResponse.data);
 
@@ -460,8 +478,8 @@ function AbonnementForm() {
         ...prevFormData,
         customerName: selectedClient ? selectedClient.name : search,
         contact: contact,
-        nom : abonnement.nom,
-        prix : abonnement.prix,
+        nom: abonnement.nom,
+        prix: abonnement.prix,
         // Conservez les autres valeurs existantes
       }));
     } catch (error) {
@@ -517,7 +535,7 @@ function AbonnementForm() {
 
       // Mise à jour de l'abonnement client via API
       await axios.put(
-        `http://localhost:5000/api/abonnementClient/reabonnement/${abonnementClient._id}`,
+        `${PORT}/api/abonnementClient/reabonnement/${abonnementClient._id}`,
         {
           idClient: abonnementClient.idClient,
           idAbonnement: abonnementClient.idAbonnement,
@@ -541,8 +559,8 @@ function AbonnementForm() {
         ...prevFormData,
         customerName: client.name,
         contact: client.contact,
-        nom : abonnement.nom,
-        prix : abonnement.prix,
+        nom: abonnement.nom,
+        prix: abonnement.prix,
         // Conservez les autres valeurs existantes
       }));
     } catch (error) {
@@ -565,12 +583,10 @@ function AbonnementForm() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/abonnementClient/${id}`);
+      await axios.delete(`${PORT}/api/abonnementClient/${id}`);
       // alert("Abonnement supprimé avec succès");
 
-      const response = await axios.get(
-        "http://localhost:5000/api/abonnementClient"
-      );
+      const response = await axios.get(`${PORT}/api/abonnementClient`);
       setAbonnementClients(response.data);
     } catch (error) {
       console.error(
@@ -604,8 +620,8 @@ function AbonnementForm() {
       ...prevFormData,
       customerName: client.name,
       contact: client.contact,
-      nom : abonnement.nom,
-      prix : abonnement.prix,
+      nom: abonnement.nom,
+      prix: abonnement.prix,
       // Conservez les autres valeurs existantes
     }));
   };
@@ -647,23 +663,24 @@ function AbonnementForm() {
     setShowModal(false);
     setSechageReste("");
     setLavageReste("");
+    setWeight("")
   };
 
   const handleDetail = async (abonnementClient) => {
     try {
       // Récupérer les données du client
       const clientResponse = await axios.get(
-        `http://localhost:5000/api/clients/${abonnementClient.idClient}`
+        `${PORT}/api/clients/${abonnementClient.idClient}`
       );
 
       // Récupérer les données de l'abonnement
       const abonnementResponse = await axios.get(
-        `http://localhost:5000/api/abonnements/${abonnementClient.idAbonnement}`
+        `${PORT}/api/abonnements/${abonnementClient.idAbonnement}`
       );
 
       // Récupérer les détails de l'abonnementClient, incluant sechage et lavage
       const abonnementClientDetails = await axios.get(
-        `http://localhost:5000/api/abonnementClient/${abonnementClient._id}`
+        `${PORT}/api/abonnementClient/${abonnementClient._id}`
       );
 
       // Mettre à jour l'état avec toutes les informations combinées
@@ -679,390 +696,436 @@ function AbonnementForm() {
 
   return (
     <div className="abonnement-form">
-      <div className="abonnement-add">
-        <button className="add-btn" onClick={() => setShowModal(true)}>
-          <FaPlus className="icon" /> Ajouter Abonnement
-        </button>
-        <input
-          type="text"
-          value={clientSearch}
-          onChange={(e) => setClientSearch(e.target.value)}
-          placeholder="Rechercher par nom de client"
-          className="search-input"
-        />
-        <button onClick={facturesPrint}>Print-test</button>
-      </div>
-      <div className="client">
-        {showModal && (
-          <div className="modal-overlay" onClick={() => setShowModal(false)}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <form onSubmit={confirmHandleSubmitAjour}>
-                <div className="client-client">
-                  <div className="client1">
-                    <input
-                      type="text"
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      placeholder="Nom du client"
-                      onFocus={() => setShowClientList(true)} // Afficher la liste au focus
-                      required
-                      onBlur={() =>
-                        setTimeout(() => setShowClientList(false), 200)
-                      } // Masquer la liste après un délai
-                    />
-                    <input
-                      type="number"
-                      value={weight}
-                      onChange={(e) => setWeight(e.target.value)}
-                      placeholder="Poids"
-                      // Afficher la liste au focus
-                    />
-                    <input
-                      type="number"
-                      value={lavageReste}
-                      onChange={(e) => setLavageReste(e.target.value)}
-                      placeholder="LavageReste"
-                      // Afficher la liste au focus
-                    />
-                    <input
-                      type="number"
-                      value={sechageReste}
-                      onChange={(e) => setSechageReste(e.target.value)}
-                      placeholder="SechageReste"
-                    />
-                    {filteredClients.length === 0 && (
+      <div className="a-vh">
+        <div className="abonnement-add">
+          <button className="add-btn" onClick={() => setShowModal(true)}>
+            <FaPlus className="icon" /> Ajouter Abonnement
+          </button>
+          <input
+            type="text"
+            value={clientSearch}
+            onChange={(e) => setClientSearch(e.target.value)}
+            placeholder="Rechercher par nom de client"
+            className="search-input"
+          />
+          <div className="date-input-wrapper">
+            <FaCalendarAlt className="date-icon" />
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              placeholder="Date de début"
+              className="date-input"
+            />
+          </div>
+          <div className="date-input-wrapper">
+            <FaCalendarAlt className="date-icon" />
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              placeholder="Date de fin"
+              className="date-input"
+            />
+          </div>
+          <button onClick={facturesPrint}>Print-test</button>
+        </div>
+        <div className="client">
+          {showModal && (
+            <div className="modal-overlay" onClick={() => setShowModal(false)}>
+              <div
+                className="modal-content"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <form onSubmit={confirmHandleSubmitAjour}>
+                  <div className="client-client">
+                    <div className="client1">
                       <input
                         type="text"
-                        value={contact}
-                        onChange={(e) => setContact(e.target.value)}
-                        placeholder="Entrez le contact"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Nom du client"
+                        onFocus={() => setShowClientList(true)} // Afficher la liste au focus
                         required
+                        onBlur={() =>
+                          setTimeout(() => setShowClientList(false), 200)
+                        } // Masquer la liste après un délai
                       />
-                    )}
-                    <button
-                      type="submit"
-                      className={`submit-btn ${
-                        editMode ? "update-btn" : "add-btn"
-                      }`}
-                    >
-                      {editMode ? <FaEdit /> : <FaPlus />}
-
-                      {editMode ? "Mettre à jour" : "Ajouter"}
-                    </button>
-
-                    {editMode && (
+                      <input
+                        type="number"
+                        value={weight}
+                        onChange={(e) => setWeight(e.target.value)}
+                        placeholder="Poids"
+                        // Afficher la liste au focus
+                      />
+                      <input
+                        type="number"
+                        value={lavageReste}
+                        onChange={(e) => setLavageReste(e.target.value)}
+                        placeholder="LavageReste"
+                        // Afficher la liste au focus
+                      />
+                      <input
+                        type="number"
+                        value={sechageReste}
+                        onChange={(e) => setSechageReste(e.target.value)}
+                        placeholder="SechageReste"
+                      />
+                      {filteredClients.length === 0 && (
+                        <input
+                          type="text"
+                          value={contact}
+                          onChange={(e) => setContact(e.target.value)}
+                          placeholder="Entrez le contact"
+                          required
+                        />
+                      )}
                       <button
-                        type="button"
-                        className="cancel-btn"
-                        onClick={handleCancel}
+                        type="submit"
+                        className={`submit-btn ${
+                          editMode ? "update-btn" : "add-btn"
+                        }`}
                       >
-                        <FaTimes className="icon" /> Annuler
+                        {editMode ? <FaEdit /> : <FaPlus />}
+
+                        {editMode ? "Mettre à jour" : "Ajouter"}
                       </button>
+
+                      {editMode && (
+                        <button
+                          type="button"
+                          className="cancel-btn"
+                          onClick={handleCancel}
+                        >
+                          <FaTimes className="icon" /> Annuler
+                        </button>
+                      )}
+                    </div>
+                    {showClientList && filteredClients.length > 0 && (
+                      <div
+                        className={`client-list ${
+                          filteredClients.length === 0 ? "no-border" : ""
+                        }`}
+                      >
+                        {filteredClients.map((client) => (
+                          <div
+                            className="client"
+                            key={client._id}
+                            onClick={() => {
+                              setSearch(client.name); // Remplir l'input avec le nom sélectionné
+                              setShowClientList(false); // Masquer la liste après sélection
+                              setFormData((prevFormData) => ({
+                                ...prevFormData,
+                                customerName: client.name,
+                                contact: client.contact,
+                                // Conservez les autres valeurs existantes
+                              }));
+                            }}
+                            style={{ cursor: "pointer" }}
+                          >
+                            <span>{client.name}</span>
+                            <span> {client.contact}</span>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
-                  {showClientList && filteredClients.length > 0 && (
-                    <div
-                      className={`client-list ${
-                        filteredClients.length === 0 ? "no-border" : ""
-                      }`}
-                    >
-                      {filteredClients.map((client) => (
-                        <div
-                          className="client"
-                          key={client._id}
-                          onClick={() => {
-                            setSearch(client.name); // Remplir l'input avec le nom sélectionné
-                            setShowClientList(false); // Masquer la liste après sélection
-                            setFormData((prevFormData) => ({
-                              ...prevFormData,
-                              customerName: client.name,
-                              contact: client.contact,
-                              // Conservez les autres valeurs existantes
-                            }));
-                          }}
-                          style={{ cursor: "pointer" }}
-                        >
-                          <span>{client.name}</span>
-                          <span> {client.contact}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <div className="ab-table">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Nom</th>
-                        <th>Prix</th>
-                        <th>Caractéristiques</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {abonnements.map((abonnement) => (
-                        <tr
-                          key={abonnement._id}
-                          onClick={() => handleSelectAbonnement(abonnement)}
-                          style={{ cursor: "pointer" }}
-                        >
-                          <td
-                            className={
-                              selectedAbonnement === abonnement._id
-                                ? "selected"
-                                : ""
-                            }
-                          >
-                            {abonnement.nom}
-                          </td>
-                          <td
-                            className={
-                              selectedAbonnement === abonnement._id
-                                ? "selected"
-                                : ""
-                            }
-                          >
-                            {abonnement.prix} Ar
-                          </td>
-                          <td
-                            className={
-                              selectedAbonnement === abonnement._id
-                                ? "selected"
-                                : ""
-                            }
-                          >
-                            {abonnement.features}
-                          </td>
-                          <td>
-                            <button
-                              type="button"
-                              className="select-btn"
-                              onClick={(e) => {
-                                e.stopPropagation(); // Pour éviter de déclencher le onClick de la ligne
-                                handleSelectAbonnement(abonnement);
-                              }}
-                            >
-                              <FaCheck className="icon" /> Sélectionner
-                            </button>
-                          </td>
+                  <div className="ab-table">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Nom</th>
+                          <th>Prix</th>
+                          <th>Caractéristiques</th>
+                          <th>Actions</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </form>
+                      </thead>
+                      <tbody>
+                        {abonnements.map((abonnement) => (
+                          <tr
+                            key={abonnement._id}
+                            onClick={() => handleSelectAbonnement(abonnement)}
+                            style={{ cursor: "pointer" }}
+                          >
+                            <td
+                              className={
+                                selectedAbonnement === abonnement._id
+                                  ? "selected"
+                                  : ""
+                              }
+                            >
+                              {abonnement.nom}
+                            </td>
+                            <td
+                              className={
+                                selectedAbonnement === abonnement._id
+                                  ? "selected"
+                                  : ""
+                              }
+                            >
+                              {abonnement.prix} Ar
+                            </td>
+                            <td
+                              className={
+                                selectedAbonnement === abonnement._id
+                                  ? "selected"
+                                  : ""
+                              }
+                            >
+                              {abonnement.features}
+                            </td>
+                            <td>
+                              <button
+                                type="button"
+                                className="select-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Pour éviter de déclencher le onClick de la ligne
+                                  handleSelectAbonnement(abonnement);
+                                }}
+                              >
+                                <FaCheck className="icon" /> Sélectionner
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </form>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
-      <div className="abonnement-tables">
-        <table className="abonnement-table">
-          <thead>
-            <tr>
-              <th>Client</th>
-              <th>contact</th>
-              <th>Abonnement</th>
-              <th>Prix</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredAbonnementClients.map((abonnementClient) => {
-              const client = clients.find(
-                (client) => client._id === abonnementClient.idClient
-              );
-              const abonnement = abonnements.find(
-                (abonnement) => abonnement._id === abonnementClient.idAbonnement
-              );
-
-              return (
-                <tr key={abonnementClient._id}>
-                  <td>{client?.name}</td>
-                  <td>{client?.contact}</td>
-                  <td>{abonnement?.nom}</td>
-                  <td>{abonnement?.prix}</td>
-                  <td>
-                    <button
-                      className="edit-btn"
-                      onClick={() => handleEdit(abonnementClient)}
-                    >
-                      <FaEdit className="icon" /> Modifier
-                    </button>
-                    {/* <button
+          )}
+        </div>
+        <div className="abonnement-tables">
+          <table className="abonnement-table">
+            <thead>
+              <tr>
+                <th>Client</th>
+                <th>contact</th>
+                <th>Abonnement</th>
+                <th>Prix</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredAbonnementClients.map((abonnementClient) => {
+                const client = clients.find(
+                  (client) => client._id === abonnementClient.idClient
+                );
+                const abonnement = abonnements.find(
+                  (abonnement) =>
+                    abonnement._id === abonnementClient.idAbonnement
+                );
+                return (
+                  <tr key={abonnementClient._id}>
+                    <td>{client?.name}</td>
+                    <td>{client?.contact}</td>
+                    <td>{abonnement?.nom}</td>
+                    <td>{abonnement?.prix}</td>
+                    <td>
+                      {new Date(
+                        abonnementClient.dateAbonnement
+                      ).toLocaleString()}
+                    </td>
+                    <td className="action">
+                      <button
+                        className="dropdown-btn"
+                        type="button"
+                        onClick={(e) => toggleMenu(e, abonnementClient._id)}
+                      >
+                        <FontAwesomeIcon icon={faEllipsisV} />
+                      </button>
+                      <div
+                        className={`menu-action ${
+                          openMenuId === abonnementClient._id ? "show" : ""
+                        }`}
+                      >
+                        <button
+                          className="edit-btn"
+                          onClick={() => handleEdit(abonnementClient)}
+                        >
+                          <FaEdit className="icon" /> Modifier
+                        </button>
+                        {/* <button
                       className="edit-btn"
                       onClick={() => handlePay(abonnementClient)}
                     >
                       <FaEdit className="icon" /> pay
                     </button> */}
-                    <button
-                      className="delete-btn"
-                      onClick={() => confirmDelete(abonnementClient._id)}
-                    >
-                      <FaTrash className="icon" /> Supprimer
-                    </button>
+                        <button
+                          className="delete-btn"
+                          onClick={() => confirmDelete(abonnementClient._id)}
+                        >
+                          <FaTrash className="icon" /> Supprimer
+                        </button>
 
-                    <button
-                      className="details-btn"
-                      onClick={() => handleDetail(abonnementClient)}
-                    >
-                      <FaInfoCircle className="icon" /> Détails
-                    </button>
-                    <button
-                      className="reabonnement-btn"
-                      onClick={() => confirmHandleSubmit(abonnementClient)}
-                    >
-                      <FaRedoAlt className="icon" /> Réabonnement
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-      {detailedAbonnement && (
-        <div className="details" onClick={() => setDetailedAbonnement(null)}>
-          <div
-            className="details-table-abonnement"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <table>
-              <thead>
-                <tr>
-                  <th>Client</th>
-                  <th>Contact</th>
-                  <th>Type</th>
-                  <th>Prix</th>
-                  <th>Détails</th>
-                  <th>Séchage Restant</th>
-                  <th>Lavage Restant</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>{detailedAbonnement.client.name}</td>
-                  <td>{detailedAbonnement.client.contact}</td>
-                  <td>{detailedAbonnement.abonnement.nom}</td>
-                  <td>{detailedAbonnement.abonnement.prix} Ar</td>
-                  <td>{detailedAbonnement.abonnement.features.join(", ")}</td>
-                  <td>{detailedAbonnement.abonnementDetails.sechage.reste}</td>
-                  <td>{detailedAbonnement.abonnementDetails.lavage.reste}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                        <button
+                          className="details-btn"
+                          onClick={() => handleDetail(abonnementClient)}
+                        >
+                          <FaInfoCircle className="icon" /> Détails
+                        </button>
+                        <button
+                          className="reabonnement-btn"
+                          onClick={() => confirmHandleSubmit(abonnementClient)}
+                        >
+                          <FaRedoAlt className="icon" /> Réabonnement
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-      )}
-
-      {showPaymentModal && (
-        <div className="modal-abonnement-client">
-          <div className="modals-abonnement-client">
-            <h2>Enregistrer le Paiement</h2>
-
-            {/* Choix de la caisse */}
-            <div className="input-group">
-              <select
-                value={selectedCaisse}
-                onChange={(e) => setSelectedCaisse(e.target.value)}
-                required
-              >
-                {caisses.map((caisse) => (
-                  <option key={caisse._id} value={caisse._id}>
-                    {caisse.nom}
-                  </option>
-                ))}
-                <option value="">Sélectionner une caisse</option>
-              </select>
-              <label>Choisir une caisse :</label>
+        {detailedAbonnement && (
+          <div className="details" onClick={() => setDetailedAbonnement(null)}>
+            <div
+              className="details-table-abonnement"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <table>
+                <thead>
+                  <tr>
+                    <th>Client</th>
+                    <th>Contact</th>
+                    <th>Type</th>
+                    <th>Prix</th>
+                    <th>Détails</th>
+                    <th>Séchage Restant</th>
+                    <th>Lavage Restant</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{detailedAbonnement.client.name}</td>
+                    <td>{detailedAbonnement.client.contact}</td>
+                    <td>{detailedAbonnement.abonnement.nom}</td>
+                    <td>{detailedAbonnement.abonnement.prix} Ar</td>
+                    <td>{detailedAbonnement.abonnement.features.join(", ")}</td>
+                    <td>
+                      {detailedAbonnement.abonnementDetails.sechage.reste}
+                    </td>
+                    <td>{detailedAbonnement.abonnementDetails.lavage.reste}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
+          </div>
+        )}
 
-            {/* Type de paiement */}
-            <div className="input-group">
-              <select
-                value={selectedPaymentType || ""}
-                onChange={handlePaymentTypeChange}
-                required
-              >
-                <option value="">Sélectionnez un type de paiement</option>
-                {paymentTypes.map((type) => (
-                  <option key={type._id} value={type.type}>
-                    {type.type}
-                  </option>
-                ))}
-                <option value="autre">Autre</option>
-              </select>
-              <label>Type de paiement :</label>
-            </div>
+        {showPaymentModal && (
+          <div className="modal-abonnement-client">
+            <div className="modals-abonnement-client">
+              <h2>Enregistrer le Paiement</h2>
 
-            {/* Nouveau type de paiement */}
-            {selectedPaymentType === "autre" && (
+              {/* Choix de la caisse */}
+              <div className="input-group">
+                <select
+                  value={selectedCaisse}
+                  onChange={(e) => setSelectedCaisse(e.target.value)}
+                  required
+                >
+                  {caisses.map((caisse) => (
+                    <option key={caisse._id} value={caisse._id}>
+                      {caisse.nom}
+                    </option>
+                  ))}
+                  <option value="">Sélectionner une caisse</option>
+                </select>
+                <label>Choisir une caisse :</label>
+              </div>
+
+              {/* Type de paiement */}
+              <div className="input-group">
+                <select
+                  value={selectedPaymentType || ""}
+                  onChange={handlePaymentTypeChange}
+                  required
+                >
+                  <option value="">Sélectionnez un type de paiement</option>
+                  {paymentTypes.map((type) => (
+                    <option key={type._id} value={type.type}>
+                      {type.type}
+                    </option>
+                  ))}
+                  <option value="autre">Autre</option>
+                </select>
+                <label>Type de paiement :</label>
+              </div>
+
+              {/* Nouveau type de paiement */}
+              {selectedPaymentType === "autre" && (
+                <div className="input-group">
+                  <input
+                    type="text"
+                    placeholder=" "
+                    onChange={(e) => setNewPaymentType(e.target.value)}
+                    value={newPaymentType}
+                    required
+                  />
+                  <label>Nouveau type de paiement :</label>
+                </div>
+              )}
+
+              {/* Montant à payer */}
               <div className="input-group">
                 <input
-                  type="text"
-                  placeholder=" "
-                  onChange={(e) => setNewPaymentType(e.target.value)}
-                  value={newPaymentType}
+                  type="number"
+                  value={paymentAmount}
+                  onChange={(e) => {
+                    // Convertir la valeur saisie en nombre
+                    const newValue = Number(e.target.value);
+
+                    // Si la valeur est un nombre valide et inférieure ou égale au montant restant
+                    if (!isNaN(newValue) && newValue <= prixPay) {
+                      setPaymentAmount(newValue);
+                    } else if (newValue > prixPay) {
+                      // Si la valeur dépasse le maximum, on définit la valeur de l'input à max
+                      setPaymentAmount(prixPay);
+                    }
+                  }}
+                  min={0}
+                  max={prixPay} // Définir le maximum de l'input
+                  placeholder=""
                   required
                 />
-                <label>Nouveau type de paiement :</label>
+                <label>{`Montant restant : ${prixPay} Ar`}</label>
               </div>
-            )}
 
-            {/* Montant à payer */}
-            <div className="input-group">
-              <input
-                type="number"
-                value={paymentAmount}
-                onChange={(e) => {
-                  // Convertir la valeur saisie en nombre
-                  const newValue = Number(e.target.value);
-
-                  // Si la valeur est un nombre valide et inférieure ou égale au montant restant
-                  if (!isNaN(newValue) && newValue <= prixPay) {
-                    setPaymentAmount(newValue);
-                  } else if (newValue > prixPay) {
-                    // Si la valeur dépasse le maximum, on définit la valeur de l'input à max
-                    setPaymentAmount(prixPay);
-                  }
-                }}
-                min={0}
-                max={prixPay} // Définir le maximum de l'input
-                placeholder=""
-                required
-              />
-              <label>{`Montant restant : ${prixPay} Ar`}</label>
-            </div>
-
-            {/* Actions du modal */}
-            <div className="modal-actions">
-              <button
-                className="save"
-                type="button"
-                onClick={handlePaymentSubmit}
-              >
-                {" "}
-                <FaSave />
-                <span>enregistrer</span>
-              </button>
-              <button
-                className="cancel"
-                onClick={() => setShowPaymentModal(false)}
-              >
-                <FaTimes />
-                <span>annuler</span>
-              </button>
+              {/* Actions du modal */}
+              <div className="modal-actions">
+                <button
+                  className="save"
+                  type="button"
+                  onClick={handlePaymentSubmit}
+                >
+                  {" "}
+                  <FaSave />
+                  <span>enregistrer</span>
+                </button>
+                <button
+                  className="cancel"
+                  onClick={() => setShowPaymentModal(false)}
+                >
+                  <FaTimes />
+                  <span>annuler</span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-      {isConfirmVisible && (
-        <ModalConfirm
-          onConfirm={confirmActionAndClose}
-          onCancel={() => setIsConfirmVisible(false)}
-          message={confirmMessage}
-        />
-      )}
-      <ToastContainer />
+        )}
+        {isConfirmVisible && (
+          <ModalConfirm
+            onConfirm={confirmActionAndClose}
+            onCancel={() => setIsConfirmVisible(false)}
+            message={confirmMessage}
+          />
+        )}
+        <ToastContainer />
+      </div>
       <div className="facturePrint" id="printable-area">
         <div className="information">
           {companyInfo && (
@@ -1070,7 +1133,7 @@ function AbonnementForm() {
               <div className="company-photo-facture">
                 {/* Affiche la photo de l'entreprise */}
                 <img
-                  src={`http://localhost:5000/${companyInfo.photo}`}
+                  src={`${PORT}/${companyInfo.photo}`}
                   alt="Logo de l'entreprise"
                   style={{
                     borderRadius: "10px",

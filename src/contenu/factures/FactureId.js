@@ -5,6 +5,7 @@ import { FaEye } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
 
 const FactureId = () => {
+  const PORT = process.env.REACT_APP_BACKEND_URL;
   const [factures, setFactures] = useState([]);
   const [selectedFacture, setSelectedFacture] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -13,12 +14,13 @@ const FactureId = () => {
 
   useEffect(() => {
     fetchCompanyInfo(); // Load company info when the component mounts
+    // eslint-disable-next-line
   }, []);
 
   const fetchCompanyInfo = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/company-info/list"
+        `${PORT}/api/company-info/list`
       );
       setCompanyInfo(response.data[0]); // Assuming the first entry is the company info
     } catch (error) {
@@ -37,7 +39,7 @@ const FactureId = () => {
   useEffect(() => {
     const fetchFactures = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/factures");
+        const response = await axios.get(`${PORT}/api/factures`);
         const sortedFactures = response.data.sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         );
@@ -47,7 +49,7 @@ const FactureId = () => {
       }
     };
     fetchFactures();
-  }, []);
+  }, [PORT]);
   // Défilement automatique vers la ligne mise en évidence
   useEffect(() => {
     if (highlightedId && factureRefs.current[highlightedId]) {
@@ -61,7 +63,7 @@ const FactureId = () => {
   const fetchFactureDetails = async (id) => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/factures/listPar/${id}`
+        `${PORT}/api/factures/listPar/${id}`
       );
       setSelectedFacture(response.data);
       setShowModal(true);
@@ -134,7 +136,7 @@ const FactureId = () => {
                     <div className="company-photo-factureId">
                       {/* Affiche la photo de l'entreprise */}
                       <img
-                        src={`http://localhost:5000/${companyInfo.photo}`}
+                        src={`${PORT}/${companyInfo.photo}`}
                         alt="Logo de l'entreprise"
                         style={{
                           borderRadius: "10px",
